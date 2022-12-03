@@ -98,14 +98,14 @@ def get_score(get_game_points: Callable[[Game], int]) -> int:
 def main() -> None:
     # Part 1
     print(
-        "Part 1: ",
+        "Part 1:",
         get_score(
             lambda g: MOVE_INFO[g.player_move].points + get_game_outcome_points(g)
         ),
     )
 
     # Part 2
-    print("Part 2: ", get_score(lambda g: g.outcome.value + get_player_move_points(g)))
+    print("Part 2:", get_score(lambda g: g.outcome.value + get_player_move_points(g)))
 
 
 if __name__ == "__main__":

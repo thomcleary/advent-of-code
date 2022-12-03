@@ -29,7 +29,7 @@ def main() -> None:
     elves = get_elves()
 
     # Part 1: Find the elf with the most calories
-    print("Part 1: ", get_elf_with_most_calories(elves).calories)
+    print("Part 1:", get_elf_with_most_calories(elves).calories)
 
     # Part 2: Find the top 3 elves with the most calories
     calories = 0
@@ -38,7 +38,7 @@ def main() -> None:
         calories += top_elf.calories
         elves.remove(top_elf)
 
-    print("Part 2: ", calories)
+    print("Part 2:", calories)
 
 
 if __name__ == ("__main__"):
