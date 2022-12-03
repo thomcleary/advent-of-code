@@ -5,4 +5,4 @@
 | Day | Challenge           | Language  | Stars  |
 | :-: | ------------------- | :-------: | :----: |
 |  1  | Calorie Counting    | 🐍 Python | ⭐️⭐️ |
-|  2  | Paper Scissors Rock | 🐍 Python |  ⭐️   |
+|  2  | Paper Scissors Rock | 🐍 Python | ⭐️⭐️ |
