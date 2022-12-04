@@ -65,9 +65,7 @@ def get_games() -> list[Game]:
                 ENCRYPTED_PLAYER_MOVES[player_strategy],
                 ENCRYPTED_OUTCOME[player_strategy],
             )
-            for opponent_move, player_strategy in [
-                game.split(" ") for game in puzzle_input.read().split("\n")
-            ]
+            for opponent_move, player_strategy in [game.split(" ") for game in puzzle_input.read().split("\n")]
         ]
 
 
@@ -84,11 +82,7 @@ def get_player_move_points(game: Game) -> int:
         return MOVE_INFO[MOVE_INFO[game.opponent_move].beats].points
     if game.outcome == Outcome.DRAW:
         return MOVE_INFO[game.opponent_move].points
-    return MOVE_INFO[
-        [move for move, info in MOVE_INFO.items() if info.beats == game.opponent_move][
-            0
-        ]
-    ].points
+    return MOVE_INFO[[move for move, info in MOVE_INFO.items() if info.beats == game.opponent_move][0]].points
 
 
 def get_score(get_game_points: Callable[[Game], int]) -> int:
@@ -99,9 +93,7 @@ def main() -> None:
     # Part 1
     print(
         "Part 1:",
-        get_score(
-            lambda g: MOVE_INFO[g.player_move].points + get_game_outcome_points(g)
-        ),
+        get_score(lambda g: MOVE_INFO[g.player_move].points + get_game_outcome_points(g)),
     )
 
     # Part 2

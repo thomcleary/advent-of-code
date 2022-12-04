@@ -15,9 +15,7 @@ class Rucksack:
 
 def get_rucksack(rucksack: str) -> Rucksack:
     items_per_compartment = len(rucksack) // 2
-    return Rucksack(
-        rucksack, rucksack[:items_per_compartment], rucksack[items_per_compartment:]
-    )
+    return Rucksack(rucksack, rucksack[:items_per_compartment], rucksack[items_per_compartment:])
 
 
 def get_rucksacks() -> list[Rucksack]:
@@ -26,9 +24,7 @@ def get_rucksacks() -> list[Rucksack]:
 
 
 def get_item_type_in_both_compartments(rucksack: Rucksack) -> str:
-    item_in_both_compartments = set(rucksack.left_compartment).intersection(
-        set(rucksack.right_compartment)
-    )
+    item_in_both_compartments = set(rucksack.left_compartment).intersection(set(rucksack.right_compartment))
 
     if len(item_in_both_compartments) > 1:
         raise Exception("Found more than 1 item that is in both compartments")
@@ -37,9 +33,7 @@ def get_item_type_in_both_compartments(rucksack: Rucksack) -> str:
 
 
 def get_item_type_in_all_rucksacks(rucksacks: list[Rucksack]) -> str:
-    item_in_all_rucksacks: set[str] = set.intersection(
-        *(map(lambda r: set(r.contents), rucksacks))
-    )
+    item_in_all_rucksacks: set[str] = set.intersection(*(map(lambda r: set(r.contents), rucksacks)))
 
     if len(item_in_all_rucksacks) > 1:
         raise Exception("Found more than 1 item in the group's rucksacks")
