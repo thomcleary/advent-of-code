@@ -7,3 +7,4 @@
 |  1  | Calorie Counting        | 🐍 Python | ⭐️⭐️ |
 |  2  | Paper Scissors Rock     | 🐍 Python | ⭐️⭐️ |
 |  3  | Rucksack Reorganization | 🐍 Python | ⭐️⭐️ |
+|  4  | Camp Cleanup            | 🐍 Python | ⭐️⭐️ |
