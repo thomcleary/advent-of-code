@@ -2,7 +2,8 @@
 Day 6: Tuning Trouble
 """
 
-PACKET_MARKER_LENGTH = 4
+END_OF_PACKET_MARKER_LENGTH = 4
+START_OF_PACKET_MARKER_LENGTH = 14
 
 
 def read_signal():
@@ -10,19 +11,23 @@ def read_signal():
         return puzzle_input.read().strip()
 
 
-def main() -> None:
-    # Part 1
+def num_chars_before_end_of_first_marker(marker_lengh: int) -> int:
     signal = read_signal()
 
-    marker_found = False
-    window_start, window_end = 0, PACKET_MARKER_LENGTH
-    while not marker_found:
-        marker_found = len(set(signal[window_start:window_end])) == PACKET_MARKER_LENGTH
-        if not marker_found:
-            window_start += 1
-            window_end += 1
+    window_start, window_end = 0, marker_lengh
+    while not len(set(signal[window_start:window_end])) == marker_lengh:
+        window_start += 1
+        window_end += 1
 
-    print("Part 1:", window_end)
+    return window_end
+
+
+def main() -> None:
+    # Part 1
+    print("Part 1:", num_chars_before_end_of_first_marker(END_OF_PACKET_MARKER_LENGTH))
+
+    # Part 2
+    print("Part 2:", num_chars_before_end_of_first_marker(START_OF_PACKET_MARKER_LENGTH))
 
 
 if __name__ == "__main__":

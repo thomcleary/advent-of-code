@@ -9,3 +9,4 @@
 |  3  | Rucksack Reorganization | 🐍 Python | ⭐️⭐️ |
 |  4  | Camp Cleanup            | 🐍 Python | ⭐️⭐️ |
 |  5  | Supply Stacks           | 🐍 Python | ⭐️⭐️ |
+|  6  | Tuning Trouble          | 🐍 Python | ⭐️⭐️ |
