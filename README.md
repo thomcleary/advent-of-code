@@ -8,4 +8,4 @@
 |  2  | Paper Scissors Rock     | 🐍 Python | ⭐️⭐️ |
 |  3  | Rucksack Reorganization | 🐍 Python | ⭐️⭐️ |
 |  4  | Camp Cleanup            | 🐍 Python | ⭐️⭐️ |
-|  5  | Supply Stacks           | 🐍 Python |  ⭐️   |
+|  5  | Supply Stacks           | 🐍 Python | ⭐️⭐️ |

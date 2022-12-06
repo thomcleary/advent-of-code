@@ -3,6 +3,7 @@ Day 5: Supply Stacks
 """
 
 from dataclasses import dataclass
+from typing import Callable
 
 
 @dataclass
@@ -49,18 +50,31 @@ def get_stacks_and_commands() -> tuple[list[list[str]], list[Command]]:
         return (get_stacks(stack_lines), commands)
 
 
-def run_commands(stacks: list[list[str]], commands: list[Command]) -> None:
+def cratemover_9000(stacks: list[list[str]], commands: list[Command]) -> None:
     for command in commands:
         for _ in range(command.move_count):
             stacks[command.move_to - 1].append(stacks[command.move_from - 1].pop())
 
 
-def main() -> None:
-    stacks, commands = get_stacks_and_commands()
+def cratemover_9001(stacks: list[list[str]], commands: list[Command]) -> None:
+    for command in commands:
+        crates_to_move = stacks[command.move_from - 1][-command.move_count :]
+        stacks[command.move_to - 1] += crates_to_move
+        stacks[command.move_from - 1] = stacks[command.move_from - 1][: -command.move_count]
 
+
+def get_top_of_stacks(move_with: Callable[[list[list[str]], list[Command]], None]) -> str:
+    stacks, commands = get_stacks_and_commands()
+    move_with(stacks, commands)
+    return "".join([stack.pop() for stack in stacks])
+
+
+def main() -> None:
     # Part 1
-    run_commands(stacks, commands)
-    print("Part 1:", "".join([stack.pop() for stack in stacks]))
+    print("Part 1:", get_top_of_stacks(cratemover_9000))
+
+    # Part 2
+    print("Part 1:", get_top_of_stacks(cratemover_9001))
 
 
 if __name__ == "__main__":
