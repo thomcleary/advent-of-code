@@ -2,11 +2,12 @@
 
 [Advent of Code - 2022](https://adventofcode.com/2022)
 
-| Day | Challenge               | Language  | Stars  |
-| :-: | ----------------------- | :-------: | :----: |
-|  1  | Calorie Counting        | 🐍 Python | ⭐️⭐️ |
-|  2  | Paper Scissors Rock     | 🐍 Python | ⭐️⭐️ |
-|  3  | Rucksack Reorganization | 🐍 Python | ⭐️⭐️ |
-|  4  | Camp Cleanup            | 🐍 Python | ⭐️⭐️ |
-|  5  | Supply Stacks           | 🐍 Python | ⭐️⭐️ |
-|  6  | Tuning Trouble          | 🐍 Python | ⭐️⭐️ |
+| Day | Challenge               | Stars  |
+| :-: | ----------------------- | :----: |
+|  1  | Calorie Counting        | ⭐️⭐️ |
+|  2  | Paper Scissors Rock     | ⭐️⭐️ |
+|  3  | Rucksack Reorganization | ⭐️⭐️ |
+|  4  | Camp Cleanup            | ⭐️⭐️ |
+|  5  | Supply Stacks           | ⭐️⭐️ |
+|  6  | Tuning Trouble          | ⭐️⭐️ |
+|  7  | No Space Left On Device |  ⭐️   |
