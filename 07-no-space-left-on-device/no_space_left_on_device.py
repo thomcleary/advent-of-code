@@ -24,6 +24,17 @@ class File:
         self.children.append(child)
         self.update_size(child.size)
 
+    def get_directories(self, dirs: list["File"] = []) -> list["File"]:
+        if not self.is_dir:
+            return dirs
+
+        for file in self.children:
+            if file.is_dir:
+                dirs.append(file)
+                file.get_directories(dirs=dirs)
+
+        return dirs
+
     def update_size(self, size: int) -> None:
         current_dir: Optional["File"] = self
         while current_dir != None:
@@ -95,16 +106,22 @@ def get_file_system_info() -> File:
 
 def get_directories_under_size(root: File, max_size: int, valid_dirs: list[File] = []) -> list[File]:
     assert root.is_dir == True
-    context = Context(current_dir=root)
 
     if root.size <= max_size:
         valid_dirs.append(root)
 
-    for child in context.current_dir.children:
+    for child in root.children:
         if child.is_dir:
             get_directories_under_size(child, max_size, valid_dirs)
 
     return valid_dirs
+
+
+def get_optimal_directory_to_delete(root: File, available_space: int, required_space: int) -> File:
+    space_remaining = available_space - root.size
+    min_space_to_delete = required_space - space_remaining
+
+    return sorted(filter(lambda d: d.size >= min_space_to_delete, root.get_directories()), key=lambda d: d.size)[0]
 
 
 def main() -> None:
@@ -112,7 +129,15 @@ def main() -> None:
 
     # Part 1
     MAX_DIR_SIZE = 100_000
-    print("Part 1:", sum([dir.size for dir in get_directories_under_size(root, MAX_DIR_SIZE)]))
+    print("Part 1:", f"{sum([dir.size for dir in get_directories_under_size(root, MAX_DIR_SIZE)]):_}")
+
+    # Part 2
+    TOTAL_AVAILABLE_DISK_SPACE = 70_000_000
+    MIN_REQUIRED_SPACE = 30_000_000
+    print(
+        "Part 2:",
+        f"{get_optimal_directory_to_delete(root, available_space=TOTAL_AVAILABLE_DISK_SPACE, required_space=MIN_REQUIRED_SPACE).size:_}",
+    )
 
 
 if __name__ == "__main__":
