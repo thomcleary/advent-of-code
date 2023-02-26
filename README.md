@@ -1,3 +1,3 @@
 # 🎄 advent-of-code
 
-[Advent of Code - 2022](https://adventofcode.com)
+[Advent of Code](https://adventofcode.com)
