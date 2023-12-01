@@ -8,5 +8,5 @@ export const getPuzzleInput = async (moduleUrl: string) => {
 
   const filePath = path.join(dirPath, fileName);
 
-  return (await readFile(filePath)).toString();
+  return (await readFile(filePath)).toString().trim();
 };
