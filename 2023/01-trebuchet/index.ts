@@ -1,25 +1,58 @@
-import { getPuzzleInput } from "../utils.js";
+import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
 
-const part1 = (lines: string[]) => {
-  const digits = lines.map((line) => line.replace(/\D/g, ""));
+const wordsToDigits: Record<string, number> = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+};
+const digitWords = Object.keys(wordsToDigits);
 
-  const calibrationValues = digits.map((line) => {
-    const first = line.at(0);
-    const last = line.at(line.length - 1);
+const reverseString = (s: string) => s.split("").reverse().join("");
+const sum = (a: number, b: number) => a + b;
 
-    return Number.parseInt(`${first}${last}`);
-  });
+const regex = ({ reverseDigitWords }: { reverseDigitWords?: boolean } = {}) => {
+  const wordsToMatch = reverseDigitWords ? [...digitWords].map(reverseString) : digitWords;
+  return new RegExp(`(${wordsToMatch.join("|")}|[1-9])`);
+};
 
-  const total = calibrationValues.reduce((acc, curr) => acc + curr, 0);
+const part1 = (lines: string[]) =>
+  lines
+    .map((line) => line.replace(/\D/g, ""))
+    .map((line) => Number.parseInt(`${line.at(0)}${line.at(line.length - 1)}`))
+    .reduce(sum, 0);
 
-  console.log(`Part 1: ${total}`);
+const part2 = (lines: string[]) => {
+  const forwards = regex();
+  const backwards = regex({ reverseDigitWords: true });
+
+  return lines
+    .map((line, index) => {
+      const first = line.match(forwards)?.[0];
+      if (!first) {
+        throw new Error(`[Part 2] No match found on line ${index} searching forwards`);
+      }
+      const last = reverseString(line).match(backwards)?.[0] ?? first;
+      return Number.parseInt(
+        [first, reverseString(last)].map((digit) => wordsToDigits[digit]?.toString() ?? digit).join(""),
+      );
+    })
+    .reduce(sum, 0);
 };
 
 const trebuchet = async () => {
-  const puzzleInput = await getPuzzleInput(import.meta.url);
-  const lines = puzzleInput.split("\n").map((line) => line.trim());
+  const calibrationDocumentLines = toLines(await getPuzzleInput(import.meta.url));
 
-  part1(lines);
+  logChallenge({
+    name: "Trebuchet?!",
+    part1: { run: () => part1(calibrationDocumentLines), expected: 57346 },
+    part2: { run: () => part2(calibrationDocumentLines), expected: 57345 },
+  });
 };
 
 await trebuchet();
