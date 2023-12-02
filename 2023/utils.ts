@@ -22,7 +22,12 @@ export const toLines = (fileContents: string) => fileContents.split("\n").map((l
 
 const border = () => gradient("red", "green")("-".repeat(process.stdout.columns));
 
-const part = (number: 1 | 2, { run, expected }: Part) => {
+const part = (number: 1 | 2, part: Part | undefined) => {
+  if (!part) {
+    return chalk.dim(`Part ${number}: TODO`);
+  }
+
+  const { run, expected } = part;
   const start = performance.now();
   const result = run();
   const timeTaken = performance.now() - start;
@@ -38,12 +43,14 @@ const part = (number: 1 | 2, { run, expected }: Part) => {
   return partOutput + chalk.dim(" | ") + timeTakenMessage + expectedMessage;
 };
 
+const todo = { run: () => "TODO" } satisfies Part;
+
 export const logChallenge = ({ name, part1, part2 }: { name: string; part1?: Part; part2?: Part }) => {
   console.log(border());
   console.log(`🎄 ${name}`);
   console.log(border());
-  part1 && console.log(part(1, part1));
+  console.log(part(1, part1));
   console.log(border());
-  part2 && console.log(part(2, part2));
+  console.log(part(2, part2));
   console.log(border());
 };

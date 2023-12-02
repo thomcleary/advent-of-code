@@ -49,7 +49,7 @@ const trebuchet = async () => {
   const calibrationDocumentLines = toLines(await getPuzzleInput(import.meta.url));
 
   logChallenge({
-    name: "Trebuchet?!",
+    name: "Day 1: Trebuchet?!",
     part1: { run: () => part1(calibrationDocumentLines), expected: 57346 },
     part2: { run: () => part2(calibrationDocumentLines), expected: 57345 },
   });
