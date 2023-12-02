@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge } from "./utils.js";
+import { getPuzzleInput, logChallenge } from "../utils.js";
 
 const template = async () => {
   const puzzleInput = getPuzzleInput(import.meta.url);

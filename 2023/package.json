@@ -6,7 +6,8 @@
     "node": "20.x"
   },
   "scripts": {
-    "tsx": "tsx"
+    "tsx": "tsx",
+    "tsx:watch": "tsx --watch"
   },
   "dependencies": {
     "chalk": "^5.3.0",

@@ -38,7 +38,7 @@ const part = (number: 1 | 2, part: Part | undefined) => {
     result,
   )}`;
   const timeTakenMessage = chalk.dim(`${timeTaken.toFixed(2)}ms`);
-  const expectedMessage = expected && !correct ? chalk.dim(`\n         > ${expected}`) : "";
+  const expectedMessage = expected && !correct ? chalk.dim(`\nExpected > ${expected}`) : "";
 
   return partOutput + chalk.dim(" | ") + timeTakenMessage + expectedMessage;
 };
