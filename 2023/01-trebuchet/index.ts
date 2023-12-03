@@ -1,5 +1,7 @@
 import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
 
+const calibrationDocumentLines = toLines(await getPuzzleInput(import.meta.url));
+
 const wordsToDigits: Record<string, number> = {
   one: 1,
   two: 2,
@@ -20,39 +22,31 @@ const regex = ({ reverseDigitWords }: { reverseDigitWords?: boolean } = {}) => {
   const wordsToMatch = reverseDigitWords ? [...digitWords].map(reverseString) : digitWords;
   return new RegExp(`(${wordsToMatch.join("|")}|[1-9])`);
 };
+const forwards = regex();
+const backwards = regex({ reverseDigitWords: true });
 
-const part1 = (lines: string[]) =>
-  lines
+const part1 = () =>
+  calibrationDocumentLines
     .map((line) => line.replace(/\D/g, ""))
     .map((line) => Number.parseInt(`${line.at(0)}${line.at(line.length - 1)}`))
     .reduce(sum, 0);
 
-const part2 = (lines: string[]) => {
-  const forwards = regex();
-  const backwards = regex({ reverseDigitWords: true });
-
-  return lines
-    .map((line, index) => {
-      const first = line.match(forwards)?.[0];
-      if (!first) {
-        throw new Error(`[Part 2] No match found on line ${index} searching forwards`);
-      }
+const part2 = () =>
+  calibrationDocumentLines
+    .map((line) => {
+      const first = line.match(forwards)![0];
       const last = reverseString(line).match(backwards)?.[0] ?? first;
       return Number.parseInt(
         [first, reverseString(last)].map((digit) => wordsToDigits[digit]?.toString() ?? digit).join(""),
       );
     })
     .reduce(sum, 0);
-};
 
-const trebuchet = async () => {
-  const calibrationDocumentLines = toLines(await getPuzzleInput(import.meta.url));
-
+const trebuchet = async () =>
   logChallenge({
     name: "Day 1: Trebuchet?!",
-    part1: { run: () => part1(calibrationDocumentLines), expected: 57346 },
-    part2: { run: () => part2(calibrationDocumentLines), expected: 57345 },
+    part1: { run: part1, expected: 57346 },
+    part2: { run: part2, expected: 57345 },
   });
-};
 
 await trebuchet();

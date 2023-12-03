@@ -6,7 +6,7 @@
 | :-: | -------------- | :----: |
 |  1  | Trebuchet?!    | ⭐️⭐️ |
 |  2  | Cube Conundrum | ⭐️⭐️ |
-|  3  | Gear Ratios    |  ⭐️   |
+|  3  | Gear Ratios    | ⭐️⭐️ |
 |  4  |                |        |
 |  5  |                |        |
 |  6  |                |        |
