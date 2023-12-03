@@ -1,7 +1,7 @@
 import { getPuzzleInput, logChallenge } from "../utils.js";
 
 const template = async () => {
-  const puzzleInput = getPuzzleInput(import.meta.url);
+  const puzzleInput = await getPuzzleInput(import.meta.url);
 
   logChallenge({
     name: "Day 0: Template",

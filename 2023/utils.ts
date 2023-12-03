@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 type Part = {
-  run: () => string | number;
+  run: () => string | number | void;
   expected?: string | number;
 };
 
@@ -32,18 +32,16 @@ const part = (number: 1 | 2, part: Part | undefined) => {
   const result = run();
   const timeTaken = performance.now() - start;
 
-  const correct = result.toString() === expected?.toString();
+  const correct = result?.toString() === expected?.toString();
 
   const partOutput = `${expected ? `${correct ? "✅" : "❌"} ` : ""}${chalk.red(`Part ${number}:`)} ${chalk.green(
-    result,
+    result ?? "TODO",
   )}`;
   const timeTakenMessage = chalk.dim(`${timeTaken.toFixed(2)}ms`);
   const expectedMessage = expected && !correct ? chalk.dim(`\nExpected > ${expected}`) : "";
 
   return partOutput + chalk.dim(" | ") + timeTakenMessage + expectedMessage;
 };
-
-const todo = { run: () => "TODO" } satisfies Part;
 
 export const logChallenge = ({ name, part1, part2 }: { name: string; part1?: Part; part2?: Part }) => {
   console.log(border());
