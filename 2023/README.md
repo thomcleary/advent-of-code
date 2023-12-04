@@ -7,7 +7,7 @@
 |  1  | Trebuchet?!    | ⭐️⭐️ |
 |  2  | Cube Conundrum | ⭐️⭐️ |
 |  3  | Gear Ratios    | ⭐️⭐️ |
-|  4  | Scratchcards   |  ⭐️   |
+|  4  | Scratchcards   | ⭐️⭐️ |
 |  5  |                |        |
 |  6  |                |        |
 |  7  |                |        |
