@@ -5,7 +5,7 @@ type Range = { destStart: number; sourceStart: number; length: number };
 type CategoryMap = { to: string; ranges: Range[] };
 type AlmanacMaps = Record<string, CategoryMap>;
 
-const almanac = (await getPuzzleInput(import.meta.url)).split("\n\n");
+const almanac = getPuzzleInput(import.meta.url).split("\n\n");
 
 const seeds = almanac[0]
   ?.split(":")[1]

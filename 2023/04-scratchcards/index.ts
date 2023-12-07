@@ -2,7 +2,7 @@ import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
 
 type Scratchcard = [winning: string[], scratched: string[]];
 
-const cards = toLines(await getPuzzleInput(import.meta.url))
+const cards = toLines(getPuzzleInput(import.meta.url))
   .map((line) => line.split("|"))
   .map((card) => [
     card[0]!.split(":")[1]?.trim().replace("  ", " ").split(" "),

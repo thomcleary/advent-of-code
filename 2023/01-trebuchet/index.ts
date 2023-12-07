@@ -1,6 +1,6 @@
 import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
 
-const calibrationDocumentLines = toLines(await getPuzzleInput(import.meta.url));
+const calibrationDocumentLines = toLines(getPuzzleInput(import.meta.url));
 
 const wordsToDigits: Record<string, number> = {
   one: 1,
@@ -42,11 +42,11 @@ const part2 = () =>
     })
     .reduce(sum, 0);
 
-const trebuchet = async () =>
+const trebuchet = () =>
   logChallenge({
     name: "Day 1: Trebuchet?!",
     part1: { run: part1, expected: 57346 },
     part2: { run: part2, expected: 57345 },
   });
 
-await trebuchet();
+trebuchet();

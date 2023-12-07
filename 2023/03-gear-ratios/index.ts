@@ -2,7 +2,7 @@ import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
 
 type Location = [col: number, row: number];
 
-const engineSchematicLines = toLines(await getPuzzleInput(import.meta.url));
+const engineSchematicLines = toLines(getPuzzleInput(import.meta.url));
 const colMax = engineSchematicLines[0]?.length! - 1;
 const rowMax = engineSchematicLines.length - 1;
 

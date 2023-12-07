@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import gradient from "gradient-string";
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -9,13 +9,13 @@ type Part = {
   expected?: string | number;
 };
 
-export const getPuzzleInput = async (moduleUrl: string) => {
+export const getPuzzleInput = (moduleUrl: string) => {
   const fileName = "puzzle-input.txt";
   const dirPath = path.dirname(fileURLToPath(moduleUrl));
 
   const filePath = path.join(dirPath, fileName);
 
-  return (await readFile(filePath)).toString().trim();
+  return readFileSync(filePath).toString().trim();
 };
 
 export const toLines = (fileContents: string) => fileContents.split("\n").map((l) => l.trim());

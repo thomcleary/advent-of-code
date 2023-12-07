@@ -4,25 +4,23 @@ type Game = {
   id: number;
   sets: [cubeCount: number, cubeColour: keyof typeof bag][][];
 };
-
 type CubeCounts = [red: number, green: number, blue: number];
 
 const bag = { red: 12, green: 13, blue: 14 } as const;
 
-const toGames = (lines: string[]) =>
-  lines
-    .map((line) => line.split(":") as [string, string])
-    .map(([id, sets]) => ({
-      id: Number.parseInt(id.replaceAll(/\D/g, "")),
-      sets: sets.split(";").map((set) =>
-        set
-          .split(",")
-          .map((cubeCount) => cubeCount.trim().split(" ") as [string, keyof typeof bag])
-          .map(([count, colour]) => [Number.parseInt(count), colour]),
-      ),
-    })) satisfies Game[];
+const games = toLines(getPuzzleInput(import.meta.url))
+  .map((line) => line.split(":") as [string, string])
+  .map(([id, sets]) => ({
+    id: Number.parseInt(id.replaceAll(/\D/g, "")),
+    sets: sets.split(";").map((set) =>
+      set
+        .split(",")
+        .map((cubeCount) => cubeCount.trim().split(" ") as [string, keyof typeof bag])
+        .map(([count, colour]) => [Number.parseInt(count), colour]),
+    ),
+  })) satisfies Game[];
 
-const part1 = (games: Game[]) =>
+const part1 = () =>
   games
     .map((game) => ({
       ...game,
@@ -32,7 +30,7 @@ const part1 = (games: Game[]) =>
     }))
     .reduce((prev, { id, valid }) => (valid ? id + prev : prev), 0);
 
-const part2 = (games: Game[]) =>
+const part2 = () =>
   games
     .map((game) => ({
       ...game,
@@ -53,14 +51,11 @@ const part2 = (games: Game[]) =>
     }))
     .reduce((prev, { power }) => prev + power, 0);
 
-const cubeConundrum = async () => {
-  const games = toGames(toLines(await getPuzzleInput(import.meta.url)));
-
+const cubeConundrum = () =>
   logChallenge({
     name: "Day 2: Cube Conundrum",
-    part1: { run: () => part1(games), expected: 2685 },
-    part2: { run: () => part2(games), expected: 83707 },
+    part1: { run: part1, expected: 2685 },
+    part2: { run: part2, expected: 83707 },
   });
-};
 
-await cubeConundrum();
+cubeConundrum();
