@@ -1,4 +1,4 @@
-# 🎄👨‍💻 2023
+# 🎄 👨‍💻 2023
 
 [Advent of Code - 2023](https://adventofcode.com/2023)
 
@@ -8,7 +8,7 @@
 |  2  | Cube Conundrum                  | ⭐️⭐️ |
 |  3  | Gear Ratios                     | ⭐️⭐️ |
 |  4  | Scratchcards                    | ⭐️⭐️ |
-|  5  | If You Give A Seed A Fertilizer |  ⭐️   |
+|  5  | If You Give A Seed A Fertilizer | ⭐️⭐️ |
 |  6  |                                 |        |
 |  7  |                                 |        |
 |  8  |                                 |        |

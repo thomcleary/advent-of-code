@@ -1,8 +1,8 @@
-# 🎄👨‍💻 advent-of-code
+# 🎄 👨‍💻 advent-of-code
 
 [Advent of Code](https://adventofcode.com)
 
 | Year | Language      |  ⭐️  |
 | :--: | ------------- | :---: |
 | 2022 | 🐍 Python     | 20/50 |
-| 2023 | 🟦 TypeScript | 9/50  |
+| 2023 | 🟦 TypeScript | 10/50 |
