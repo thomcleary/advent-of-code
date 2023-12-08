@@ -10,6 +10,7 @@ type HandType =
   | "Five of a Kind";
 type CamelCard = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | "T" | "J" | "Q" | "K" | "A";
 type Hand = [CamelCard, CamelCard, CamelCard, CamelCard, CamelCard];
+type HandInfo = ReturnType<typeof getHands>[number];
 
 const handPriority = {
   "High Card": 1,
@@ -38,6 +39,32 @@ const camelCardPriority = {
   A: 14,
 } satisfies Record<CamelCard, number>;
 
+const jokerUpgrade: Record<Exclude<HandType, "Five of a Kind">, Record<number, HandType>> = {
+  "Four of a Kind": {
+    1: "Five of a Kind", // AAAAJ
+    4: "Five of a Kind", // AJJJJ
+  },
+  "Full House": {
+    2: "Five of a Kind", // AAAJJ
+    3: "Five of a Kind", // AAJJJ
+  },
+  "Three of a Kind": {
+    1: "Four of a Kind", // 1AAAJ
+    3: "Four of a Kind", // 1AJJJ
+  },
+  "Two Pair": {
+    1: "Full House", // 11AAJ
+    2: "Four of a Kind", // 1AAJJ
+  },
+  "One Pair": {
+    1: "Three of a Kind", // 12AAJ
+    2: "Three of a Kind", // 12AJJ
+  },
+  "High Card": {
+    1: "One Pair", // 123AJ
+  },
+};
+
 const getHandType = (hand: Hand): HandType => {
   const uniqueCards = [...new Set(hand).values()];
 
@@ -58,44 +85,56 @@ const getHandType = (hand: Hand): HandType => {
   }
 };
 
-const hands = toLines(getPuzzleInput(import.meta.url))
-  .map((line) => line.split(" "))
-  .map(([hand, bid]) => ({ hand: hand!.split("") as Hand, bid: Number.parseInt(bid!) }))
-  .map((hand) => ({ ...hand, type: getHandType(hand.hand) }));
+const getHands = () =>
+  toLines(getPuzzleInput(import.meta.url))
+    .map((line) => line.split(" "))
+    .map(([hand, bid]) => ({ hand: hand!.split("") as Hand, bid: Number.parseInt(bid!) }))
+    .map((hand) => ({ ...hand, type: getHandType(hand.hand) }));
 
-const part1 = () =>
-  hands
-    .sort((a, b) => {
-      const aHandPriority = handPriority[a.type];
-      const bHandPriority = handPriority[b.type];
+const compareHands = (cardPriority: typeof camelCardPriority) => (a: HandInfo, b: HandInfo) => {
+  const aHandPriority = handPriority[a.type];
+  const bHandPriority = handPriority[b.type];
 
-      if (aHandPriority > bHandPriority) {
-        return 1;
-      } else if (bHandPriority > aHandPriority) {
-        return -1;
-      } else {
-        let currentCard = 0;
-        let aCardPriority = camelCardPriority[a.hand[currentCard]!];
-        let bCardPriority = camelCardPriority[b.hand[currentCard]!];
+  if (aHandPriority > bHandPriority) {
+    return 1;
+  } else if (bHandPriority > aHandPriority) {
+    return -1;
+  } else {
+    let currentCard = 0;
+    let aCardPriority = cardPriority[a.hand[currentCard]!];
+    let bCardPriority = cardPriority[b.hand[currentCard]!];
 
-        while (aCardPriority === bCardPriority) {
-          currentCard += 1;
-          aCardPriority = camelCardPriority[a.hand[currentCard]!];
-          bCardPriority = camelCardPriority[b.hand[currentCard]!];
-        }
+    while (aCardPriority === bCardPriority) {
+      currentCard += 1;
+      aCardPriority = cardPriority[a.hand[currentCard]!];
+      bCardPriority = cardPriority[b.hand[currentCard]!];
+    }
 
-        return aCardPriority > bCardPriority ? 1 : -1;
-      }
-    })
-    .reduce((prev, curr, index) => prev + curr.bid * (index + 1), 0);
+    return aCardPriority > bCardPriority ? 1 : -1;
+  }
+};
 
-const part2 = () => {};
+const totalWinnings = (hands: HandInfo[]) => hands.reduce((prev, curr, index) => prev + curr.bid * (index + 1), 0);
+
+const part1 = () => totalWinnings(getHands().sort(compareHands(camelCardPriority)));
+
+const part2 = () =>
+  totalWinnings(
+    getHands()
+      .map((hand) => {
+        const numberOfJokers = hand.hand.filter((card) => card === "J").length;
+        return numberOfJokers === 0 || hand.type === "Five of a Kind"
+          ? hand
+          : { ...hand, type: jokerUpgrade[hand.type][numberOfJokers]! };
+      })
+      .sort(compareHands({ ...camelCardPriority, J: 0 })),
+  );
 
 const camelCards = () =>
   logChallenge({
     name: "Day 7: Camel Cards",
     part1: { run: part1, expected: 250474325 },
-    part2: { run: part2, expected: undefined },
+    part2: { run: part2, expected: 248909434 },
   });
 
 camelCards();
