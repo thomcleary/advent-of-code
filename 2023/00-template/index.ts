@@ -1,6 +1,6 @@
 import { getPuzzleInput, logChallenge } from "../utils.js";
 
-const puzzleInput = await getPuzzleInput(import.meta.url);
+const puzzleInput = getPuzzleInput(import.meta.url);
 
 const part1 = () => {};
 
