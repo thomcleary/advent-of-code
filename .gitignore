@@ -1,3 +1,5 @@
 .mypy_cache
 .DS_Store
 **/node_modules
+**/puzzle-input.txt
+**/description.md

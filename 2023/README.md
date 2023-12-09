@@ -12,7 +12,7 @@
 |  6  | Wait For It                     | ⭐️⭐️ |
 |  7  | Camel Cards                     | ⭐️⭐️ |
 |  8  | Haunted Wasteland               | ⭐️⭐️ |
-|  9  | Mirage Maintenance              |  ⭐️   |
+|  9  | Mirage Maintenance              | ⭐️⭐️ |
 | 10  |                                 |        |
 | 11  |                                 |        |
 | 12  |                                 |        |
