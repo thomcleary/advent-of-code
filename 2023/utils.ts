@@ -9,8 +9,8 @@ type Part = {
   expected?: string | number;
 };
 
-export const getPuzzleInput = (moduleUrl: string) => {
-  const fileName = "puzzle-input.txt";
+export const getPuzzleInput = (moduleUrl: string, { useExample }: { useExample?: boolean } = {}) => {
+  const fileName = `${useExample ? "example" : "puzzle"}-input.txt`;
   const dirPath = path.dirname(fileURLToPath(moduleUrl));
 
   const filePath = path.join(dirPath, fileName);
