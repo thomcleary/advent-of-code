@@ -1,6 +1,8 @@
 import { getPuzzleInput, logChallenge } from "../utils.js";
 
-const getMap = () => {
+type Node = { id: string; left: string; right: string };
+
+const { instructions, nodes } = (() => {
   const [instructions, network] = getPuzzleInput(import.meta.url).split("\n\n") as [string, string];
   const nodes = network
     .split("\n")
@@ -10,21 +12,16 @@ const getMap = () => {
       const [left, right] = node[1]?.replaceAll(/[\(\)]/g, "").split(", ") as [string, string];
       return { id, left, right };
     })
-    .reduce<Record<string, { id: string; left: string; right: string }>>(
-      (prev, curr) => ({ ...prev, [curr.id!]: curr }),
-      {},
-    );
+    .reduce<Record<string, Node>>((prev, curr) => ({ ...prev, [curr.id!]: curr }), {});
 
   return { instructions: instructions.trim().split(""), nodes };
-};
+})();
 
-const part1 = () => {
-  const { instructions, nodes } = getMap();
-
+const steps = ({ from, to }: { from: string; to: RegExp }) => {
   let steps = 0;
-  let currentNode = nodes["AAA"]!;
+  let currentNode = nodes[from]!;
 
-  while (currentNode.id !== "ZZZ") {
+  while (!currentNode.id.match(to)) {
     currentNode = nodes[instructions[steps % instructions.length] === "L" ? currentNode.left : currentNode.right]!;
     steps++;
   }
@@ -32,13 +29,23 @@ const part1 = () => {
   return steps;
 };
 
-const part2 = () => {};
+const gcd = (m: number, n: number): number => (n === 0 ? m : gcd(n, m % n));
+
+const lcm = (a: number, b: number) => (a * b) / gcd(a, b);
+
+const part1 = () => steps({ from: "AAA", to: /ZZZ/ });
+
+const part2 = () =>
+  Object.keys(nodes)
+    .filter((key) => key.endsWith("A"))
+    .map((key) => steps({ from: nodes[key]!.id, to: /[A-Z]{2}Z/ }))
+    .reduce((prev, curr) => lcm(prev, curr));
 
 const hauntedWasteland = () =>
   logChallenge({
     name: "Day 8: Haunted Wasteland",
     part1: { run: part1, expected: 24253 },
-    part2: { run: part2, expected: undefined },
+    part2: { run: part2, expected: 12357789728873 },
   });
 
 hauntedWasteland();
