@@ -4,8 +4,10 @@ type Tile = "|" | "-" | "L" | "J" | "7" | "F" | "." | "S";
 type Direction = "Up" | "Down" | "Left" | "Right" | "Stationary";
 type Point = [row: number, col: number];
 
+const useExample = false;
+
 const { maze, startPoint } = (() => {
-  const maze = toLines(getPuzzleInput(import.meta.url)).map((line) => line.split("")) as Tile[][];
+  const maze = toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) => line.split("")) as Tile[][];
   const startRow = maze.map((row, rowNum) => ({ row, rowNum })).find((row) => row.row.includes("S"))!;
   return { maze, startPoint: [startRow.rowNum, startRow.row.indexOf("S")!] as Point };
 })();
@@ -74,28 +76,48 @@ const getNextPoint = ({ currentPoint, previousPoint }: { currentPoint: Point; pr
   }
 };
 
-const part1 = () => {
+const getLoop = () => {
   let previousPoint = startPoint;
   let currentPoint = getInitialPoint();
-  let steps = 1;
+  let points: Point[] = [currentPoint];
 
   while (currentPoint[0] !== startPoint[0] || currentPoint[1] !== startPoint[1]) {
     const nextPoint = getNextPoint({ currentPoint, previousPoint });
     previousPoint = currentPoint;
     currentPoint = nextPoint;
-    steps++;
+    points.push(currentPoint);
   }
 
-  return steps / 2;
+  return points;
 };
 
-const part2 = () => {};
+// https://en.wikipedia.org/wiki/Shoelace_formula
+const getLoopArea = (loop: Point[]) => {
+  let currentPoint = 0;
+  let total = 0;
+
+  while (currentPoint < loop.length - 1) {
+    total += loop[currentPoint]![0] * loop[currentPoint + 1]![1] - loop[currentPoint]![1] * loop[currentPoint + 1]![0];
+    currentPoint++;
+  }
+
+  total += loop[currentPoint]![0] * loop[0]![1] - loop[currentPoint]![1] * loop[0]![0];
+
+  return total / 2;
+};
+
+// https://en.wikipedia.org/wiki/Pick%27s_theorem
+const getPointsWithinLoop = (loop: Point[]) => getLoopArea(loop) + 1 - loop.length / 2;
+
+const part1 = () => getLoop().length / 2;
+
+const part2 = () => getPointsWithinLoop(getLoop());
 
 const pipeMaze = () =>
   logChallenge({
     name: "Day 10: Pipe Maze",
-    part1: { run: part1, expected: 6931 },
-    part2: { run: part2, expected: undefined },
+    part1: { run: part1, expected: useExample ? 23 : 6931 },
+    part2: { run: part2, expected: useExample ? 4 : 357 },
   });
 
 pipeMaze();
