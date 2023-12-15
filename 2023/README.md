@@ -14,7 +14,7 @@
 |  8  | Haunted Wasteland               | ⭐️⭐️ |
 |  9  | Mirage Maintenance              | ⭐️⭐️ |
 | 10  | Pipe Maze                       | ⭐️⭐️ |
-| 11  |                                 |        |
+| 11  | Cosmic Expansion                |  ⭐️   |
 | 12  |                                 |        |
 | 13  |                                 |        |
 | 14  |                                 |        |
