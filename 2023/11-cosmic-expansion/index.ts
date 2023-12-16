@@ -1,36 +1,17 @@
-import chalk from "chalk";
 import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
 
 type Galaxy = { number: number; row: number; column: number };
 
 const GALAXY = "#";
-const EMPTY_SPACE = ".";
 
-const getImage = () => toLines(getPuzzleInput(import.meta.url, { useExample: false })).map((line) => line.split(""));
+const useExample = false;
 
-const logImage = (image: string[][]) => {
-  const border = chalk.dim("~").repeat(image[0]!.length + 2);
-  console.log(border);
-  image.forEach((row) => {
-    const colouredRow = row.map((pixel) => (pixel === "." ? chalk.blue(pixel) : chalk.yellow(pixel)));
-    process.stdout.write(" " + colouredRow.join("") + "\n");
-  });
-  console.log(border);
-};
+const getImage = () => toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) => line.split(""));
 
 const transpose = <T>(array: T[][]) => array[0]!.map((_, colIndex) => array.map((row) => row[colIndex]!));
 
 const getRowsToExpand = (image: string[][]) =>
   image.map((row, index) => (!row.includes(GALAXY) ? index : undefined)).filter((i): i is number => i !== undefined);
-
-const expandImage = (image: string[][]) => {
-  getRowsToExpand(image).forEach((rowIndex, index) =>
-    image.splice(rowIndex + 1 + index, 0, EMPTY_SPACE.repeat(image[0]!.length).split("")),
-  );
-  getRowsToExpand(transpose(image)).forEach((columnIndex, index) => {
-    image.forEach((row) => row.splice(columnIndex + 1 + index, 0, EMPTY_SPACE));
-  });
-};
 
 const getGalaxyPairs = (image: string[][]) => {
   const galaxies: Galaxy[] = [];
@@ -51,22 +32,41 @@ const getGalaxyPairs = (image: string[][]) => {
   );
 };
 
-const part1 = () => {
+const galaxyPairsDistanceSum = (expansion: number) => {
   const image = getImage();
-  expandImage(image);
-  return getGalaxyPairs(image).reduce(
-    (prev, [from, to]) => prev + Math.abs(from.row - to.row) + Math.abs(from.column - to.column),
-    0,
-  );
+  const rowsToExpand = getRowsToExpand(image);
+  const columnsToExpand = getRowsToExpand(transpose(image));
+
+  return getGalaxyPairs(image).reduce((prev, [from, to]) => {
+    let distance = Math.abs(from.row - to.row) + Math.abs(from.column - to.column);
+
+    rowsToExpand.forEach((row) => {
+      if (row > from.row && row < to.row) {
+        distance += expansion;
+      }
+    });
+
+    columnsToExpand.forEach((column) => {
+      const betweenLeftToRight = from.column < to.column && column > from.column && column < to.column;
+      const betweenRightToLeft = from.column > to.column && column < from.column && column > to.column;
+      if (betweenLeftToRight || betweenRightToLeft) {
+        distance += expansion;
+      }
+    });
+
+    return prev + distance;
+  }, 0);
 };
 
-const part2 = () => {};
+const part1 = () => galaxyPairsDistanceSum(1);
+
+const part2 = () => galaxyPairsDistanceSum(useExample ? 99 : 999_999);
 
 const cosmicExpansion = () =>
   logChallenge({
     name: "Day 11: Cosmic Expansion",
-    part1: { run: part1, expected: 9648398 },
-    part2: { run: part2, expected: undefined },
+    part1: { run: part1, expected: useExample ? 374 : 9648398 },
+    part2: { run: part2, expected: useExample ? 8410 : 618800410814 },
   });
 
 cosmicExpansion();
