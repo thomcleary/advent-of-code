@@ -15,7 +15,7 @@
 |  9  | Mirage Maintenance              | ⭐️⭐️ |
 | 10  | Pipe Maze                       | ⭐️⭐️ |
 | 11  | Cosmic Expansion                | ⭐️⭐️ |
-| 12  |                                 |        |
+| 12  | Hot Springs                     |  ⭐️   |
 | 13  |                                 |        |
 | 14  |                                 |        |
 | 15  |                                 |        |
