@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, logChallenge, toLines, transpose } from "../utils.js";
 
 type Galaxy = { number: number; row: number; column: number };
 
@@ -7,8 +7,6 @@ const GALAXY = "#";
 const useExample = false;
 
 const getImage = () => toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) => line.split(""));
-
-const transpose = <T>(array: T[][]) => array[0]!.map((_, colIndex) => array.map((row) => row[colIndex]!));
 
 const getRowsToExpand = (image: string[][]) =>
   image.map((row, index) => (!row.includes(GALAXY) ? index : undefined)).filter((i): i is number => i !== undefined);

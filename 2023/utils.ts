@@ -52,3 +52,12 @@ export const logChallenge = ({ name, part1, part2 }: { name: string; part1?: Par
   console.log(part(2, part2));
   console.log(border());
 };
+
+export const transpose = <T>(array: T[][]) => {
+  return array[0]!.map((_, colIndex) => array.map((row) => row[colIndex]!));
+};
+
+// TODO: move into /shared folder and split exports into separate files by use case
+// logging.ts
+// matrix.ts
+// parsing.ts
