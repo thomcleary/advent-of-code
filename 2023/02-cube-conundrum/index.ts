@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type Game = {
   id: number;
@@ -25,7 +25,9 @@ const part1 = () =>
     .map((game) => ({
       ...game,
       valid: game.sets
-        .map((set) => set.reduce((prev, [cubeCount, cubeColour]) => prev && cubeCount <= bag[cubeColour], true))
+        .map((set) =>
+          set.reduce((prev, [cubeCount, cubeColour]) => prev && cubeCount <= bag[cubeColour], true),
+        )
         .every((isSetValid) => isSetValid),
     }))
     .reduce((prev, { id, valid }) => (valid ? id + prev : prev), 0);
@@ -44,18 +46,23 @@ const part2 = () =>
         )
         .reduce(
           ([prevRed, prevGreen, prevBlue], { red, green, blue }) =>
-            [Math.max(prevRed, red), Math.max(prevGreen, green), Math.max(prevBlue, blue)] satisfies CubeCounts,
+            [
+              Math.max(prevRed, red),
+              Math.max(prevGreen, green),
+              Math.max(prevBlue, blue),
+            ] satisfies CubeCounts,
           [0, 0, 0] satisfies CubeCounts,
         )
         .reduce((prev, curr) => prev * curr),
     }))
     .reduce((prev, { power }) => prev + power, 0);
 
-const cubeConundrum = () =>
-  logChallenge({
-    name: "Day 2: Cube Conundrum",
-    part1: { run: part1, expected: 2685 },
-    part2: { run: part2, expected: 83707 },
-  });
-
-cubeConundrum();
+/**
+ * @description https://adventofcode.com/2023/day/2
+ */
+runPuzzle({
+  day: 2,
+  name: "Cube Conundrum",
+  part1: { run: part1, expected: 2685 },
+  part2: { run: part2, expected: 83707 },
+});

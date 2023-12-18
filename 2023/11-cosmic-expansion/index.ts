@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines, transpose } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines, transpose } from "../utils.js";
 
 type Galaxy = { number: number; row: number; column: number };
 
@@ -6,10 +6,13 @@ const GALAXY = "#";
 
 const useExample = false;
 
-const getImage = () => toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) => line.split(""));
+const getImage = () =>
+  toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) => line.split(""));
 
 const getRowsToExpand = (image: string[][]) =>
-  image.map((row, index) => (!row.includes(GALAXY) ? index : undefined)).filter((i): i is number => i !== undefined);
+  image
+    .map((row, index) => (!row.includes(GALAXY) ? index : undefined))
+    .filter((i): i is number => i !== undefined);
 
 const getGalaxyPairs = (image: string[][]) => {
   const galaxies: Galaxy[] = [];
@@ -45,8 +48,10 @@ const galaxyPairsDistanceSum = (expansion: number) => {
     });
 
     columnsToExpand.forEach((column) => {
-      const betweenLeftToRight = from.column < to.column && column > from.column && column < to.column;
-      const betweenRightToLeft = from.column > to.column && column < from.column && column > to.column;
+      const betweenLeftToRight =
+        from.column < to.column && column > from.column && column < to.column;
+      const betweenRightToLeft =
+        from.column > to.column && column < from.column && column > to.column;
       if (betweenLeftToRight || betweenRightToLeft) {
         distance += expansion;
       }
@@ -60,11 +65,12 @@ const part1 = () => galaxyPairsDistanceSum(1);
 
 const part2 = () => galaxyPairsDistanceSum(useExample ? 99 : 999_999);
 
-const cosmicExpansion = () =>
-  logChallenge({
-    name: "Day 11: Cosmic Expansion",
-    part1: { run: part1, expected: useExample ? 374 : 9648398 },
-    part2: { run: part2, expected: useExample ? 8410 : 618800410814 },
-  });
-
-cosmicExpansion();
+/**
+ * @description https://adventofcode.com/2023/day/11
+ */
+runPuzzle({
+  day: 11,
+  name: "Cosmic Expansion",
+  part1: { run: part1, expected: useExample ? 374 : 9648398 },
+  part2: { run: part2, expected: useExample ? 8410 : 618800410814 },
+});

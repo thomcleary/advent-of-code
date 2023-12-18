@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge } from "../utils.js";
+import { getPuzzleInput, runPuzzle } from "../utils.js";
 
 type Node = { id: string; left: string; right: string };
 
@@ -22,7 +22,10 @@ const steps = ({ from, to }: { from: string; to: RegExp }) => {
   let currentNode = nodes[from]!;
 
   while (!currentNode.id.match(to)) {
-    currentNode = nodes[instructions[steps % instructions.length] === "L" ? currentNode.left : currentNode.right]!;
+    currentNode =
+      nodes[
+        instructions[steps % instructions.length] === "L" ? currentNode.left : currentNode.right
+      ]!;
     steps++;
   }
 
@@ -41,11 +44,12 @@ const part2 = () =>
     .map((key) => steps({ from: nodes[key]!.id, to: /[A-Z]{2}Z/ }))
     .reduce((prev, curr) => lcm(prev, curr));
 
-const hauntedWasteland = () =>
-  logChallenge({
-    name: "Day 8: Haunted Wasteland",
-    part1: { run: part1, expected: 24253 },
-    part2: { run: part2, expected: 12357789728873 },
-  });
-
-hauntedWasteland();
+/**
+ * @description https://adventofcode.com/2023/day/8
+ */
+runPuzzle({
+  day: 8,
+  name: "Haunted Wasteland",
+  part1: { run: part1, expected: 24253 },
+  part2: { run: part2, expected: 12357789728873 },
+});

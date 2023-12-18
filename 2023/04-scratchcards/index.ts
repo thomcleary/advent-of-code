@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type Scratchcard = [winning: string[], scratched: string[]];
 
@@ -28,11 +28,12 @@ const part2 = () =>
       return prev + count;
     }, 0);
 
-const scratchcards = () =>
-  logChallenge({
-    name: "Day 4 Scratchcards",
-    part1: { run: part1, expected: 18519 },
-    part2: { run: part2, expected: 11787590 },
-  });
-
-scratchcards();
+/**
+ * @description https://adventofcode.com/2023/day/4
+ */
+runPuzzle({
+  day: 4,
+  name: "Scratchcards",
+  part1: { run: part1, expected: 18519 },
+  part2: { run: part2, expected: 11787590 },
+});

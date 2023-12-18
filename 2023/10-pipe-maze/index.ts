@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type Tile = "|" | "-" | "L" | "J" | "7" | "F" | "." | "S";
 type Direction = "Up" | "Down" | "Left" | "Right" | "Stationary";
@@ -7,8 +7,12 @@ type Point = [row: number, col: number];
 const useExample = false;
 
 const { maze, startPoint } = (() => {
-  const maze = toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) => line.split("")) as Tile[][];
-  const startRow = maze.map((row, rowNum) => ({ row, rowNum })).find((row) => row.row.includes("S"))!;
+  const maze = toLines(getPuzzleInput(import.meta.url, { useExample })).map((line) =>
+    line.split(""),
+  ) as Tile[][];
+  const startRow = maze
+    .map((row, rowNum) => ({ row, rowNum }))
+    .find((row) => row.row.includes("S"))!;
   return { maze, startPoint: [startRow.rowNum, startRow.row.indexOf("S")!] as Point };
 })();
 
@@ -22,7 +26,11 @@ const getDirection = ({
   const verticalDirection: Direction =
     currentRow > previousRow ? "Down" : currentRow < previousRow ? "Up" : "Stationary";
   const horizontalDirection: Direction =
-    currentColumn > previousColumn ? "Right" : currentColumn < previousColumn ? "Left" : "Stationary";
+    currentColumn > previousColumn
+      ? "Right"
+      : currentColumn < previousColumn
+        ? "Left"
+        : "Stationary";
 
   return verticalDirection !== "Stationary" ? verticalDirection : horizontalDirection;
 };
@@ -52,7 +60,13 @@ const getInitialPoint = (): Point => {
   }
 };
 
-const getNextPoint = ({ currentPoint, previousPoint }: { currentPoint: Point; previousPoint: Point }): Point => {
+const getNextPoint = ({
+  currentPoint,
+  previousPoint,
+}: {
+  currentPoint: Point;
+  previousPoint: Point;
+}): Point => {
   const direction = getDirection({ currentPoint, previousPoint });
   const currentTile = maze[currentPoint[0]]![currentPoint[1]];
 
@@ -97,7 +111,9 @@ const getLoopArea = (loop: Point[]) => {
   let total = 0;
 
   while (currentPoint < loop.length - 1) {
-    total += loop[currentPoint]![0] * loop[currentPoint + 1]![1] - loop[currentPoint]![1] * loop[currentPoint + 1]![0];
+    total +=
+      loop[currentPoint]![0] * loop[currentPoint + 1]![1] -
+      loop[currentPoint]![1] * loop[currentPoint + 1]![0];
     currentPoint++;
   }
 
@@ -113,11 +129,12 @@ const part1 = () => getLoop().length / 2;
 
 const part2 = () => getPointsWithinLoop(getLoop());
 
-const pipeMaze = () =>
-  logChallenge({
-    name: "Day 10: Pipe Maze",
-    part1: { run: part1, expected: useExample ? 23 : 6931 },
-    part2: { run: part2, expected: useExample ? 4 : 357 },
-  });
-
-pipeMaze();
+/**
+ * @description https://adventofcode.com/2023/day/10
+ */
+runPuzzle({
+  day: 10,
+  name: "Pipe Maze",
+  part1: { run: part1, expected: useExample ? 23 : 6931 },
+  part2: { run: part2, expected: useExample ? 4 : 357 },
+});

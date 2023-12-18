@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type Race = [time: number, distance: number];
 
@@ -15,7 +15,10 @@ const getTimesAndDistances = () =>
 
 const getRaces = () => {
   const timesAndDistances = getTimesAndDistances();
-  return timesAndDistances[0].map((time, index) => [time, timesAndDistances[1][index]!]) satisfies Race[];
+  return timesAndDistances[0].map((time, index) => [
+    time,
+    timesAndDistances[1][index]!,
+  ]) satisfies Race[];
 };
 
 const fixKerning = (races: ReturnType<typeof getTimesAndDistances>) =>
@@ -34,11 +37,12 @@ const part1 = () => getRaces().reduce((prev, curr) => prev * getWins(curr), 1);
 
 const part2 = () => getWins(fixKerning(getTimesAndDistances()));
 
-const waitForIt = () =>
-  logChallenge({
-    name: "Day 6: Wait For It",
-    part1: { run: part1, expected: 220320 },
-    part2: { run: part2, expected: 34454850 },
-  });
-
-waitForIt();
+/**
+ * @description https://adventofcode.com/2023/day/6
+ */
+runPuzzle({
+  day: 6,
+  name: "Wait For It",
+  part1: { run: part1, expected: 220320 },
+  part2: { run: part2, expected: 34454850 },
+});

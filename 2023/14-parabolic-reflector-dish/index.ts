@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines, transpose } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines, transpose } from "../utils.js";
 
 const useExample = false;
 
@@ -36,7 +36,12 @@ const tiltSouth = (platform: string[]) => platformTranspose(tiltEast(platformTra
 const cycle = (platform: string[]) => tiltEast(tiltSouth(tiltWest(tiltNorth(platform))));
 
 const northLoad = (platform: string[]) =>
-  platform.reverse().reduce((prev, curr, index) => prev + curr.replaceAll(notRoundRegex, "").length * (index + 1), 0);
+  platform
+    .reverse()
+    .reduce(
+      (prev, curr, index) => prev + curr.replaceAll(notRoundRegex, "").length * (index + 1),
+      0,
+    );
 
 const part1 = () => northLoad(tiltNorth(platform));
 
@@ -69,11 +74,12 @@ const part2 = () => {
   return northLoad(p);
 };
 
-const parabolicReflectorDish = () =>
-  logChallenge({
-    name: "Day 14: Parabolic Reflector Dish",
-    part1: { run: part1, expected: useExample ? 136 : 105003 },
-    part2: { run: part2, expected: useExample ? 64 : 93742 },
-  });
-
-parabolicReflectorDish();
+/**
+ * @description https://adventofcode.com/2023/day/14
+ */
+runPuzzle({
+  day: 14,
+  name: "Parabolic Reflector Dish",
+  part1: { run: part1, expected: useExample ? 136 : 105003 },
+  part2: { run: part2, expected: useExample ? 64 : 93742 },
+});

@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, transpose } from "../utils.js";
+import { getPuzzleInput, runPuzzle, transpose } from "../utils.js";
 
 const useExample = false;
 
@@ -81,11 +81,12 @@ const part1 = () => reflectionSum();
 
 const part2 = () => reflectionSum({ withSmudge: true });
 
-const pointOfIncidence = () =>
-  logChallenge({
-    name: "Day 13: Point of Incidence",
-    part1: { run: part1, expected: useExample ? 405 : 35521 },
-    part2: { run: part2, expected: useExample ? 400 : 34795 },
-  });
-
-pointOfIncidence();
+/**
+ * @description https://adventofcode.com/2023/day/13
+ */
+runPuzzle({
+  day: 13,
+  name: "Point of Incidence",
+  part1: { run: part1, expected: useExample ? 405 : 35521 },
+  part2: { run: part2, expected: useExample ? 400 : 34795 },
+});

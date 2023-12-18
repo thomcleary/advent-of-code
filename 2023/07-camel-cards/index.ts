@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type HandType =
   | "High Card"
@@ -75,7 +75,8 @@ const getHandType = (hand: Hand): HandType => {
       const firstCardCount = hand.filter((card) => card === hand[0]).length;
       return firstCardCount === 1 || firstCardCount === 4 ? "Four of a Kind" : "Full House";
     case 3:
-      const hasThree = (camelCard: CamelCard) => hand.filter((card) => card === camelCard).length === 3;
+      const hasThree = (camelCard: CamelCard) =>
+        hand.filter((card) => card === camelCard).length === 3;
       const threeOfAKind = uniqueCards.map(hasThree).reduce((prev, curr) => prev || curr, false);
       return threeOfAKind ? "Three of a Kind" : "Two Pair";
     case 4:
@@ -114,7 +115,8 @@ const compareHands = (cardPriority: typeof camelCardPriority) => (a: HandInfo, b
   }
 };
 
-const totalWinnings = (hands: HandInfo[]) => hands.reduce((prev, curr, index) => prev + curr.bid * (index + 1), 0);
+const totalWinnings = (hands: HandInfo[]) =>
+  hands.reduce((prev, curr, index) => prev + curr.bid * (index + 1), 0);
 
 const part1 = () => totalWinnings(getHands().sort(compareHands(camelCardPriority)));
 
@@ -130,11 +132,12 @@ const part2 = () =>
       .sort(compareHands({ ...camelCardPriority, J: 0 })),
   );
 
-const camelCards = () =>
-  logChallenge({
-    name: "Day 7: Camel Cards",
-    part1: { run: part1, expected: 250474325 },
-    part2: { run: part2, expected: 248909434 },
-  });
-
-camelCards();
+/**
+ * @description https://adventofcode.com/2023/day/7
+ */
+runPuzzle({
+  day: 7,
+  name: "Camel Cards",
+  part1: { run: part1, expected: 250474325 },
+  part2: { run: part2, expected: 248909434 },
+});

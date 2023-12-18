@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type Location = [col: number, row: number];
 
@@ -15,11 +15,20 @@ const getDigits = ({ groups, index }: RegExpExecArray) => ({
   col: !!groups?.left ? index : index + 1,
 });
 
-const getLocationsToCheck = ({ digits, col, row }: { digits: string; col: number; row: number }) => {
+const getLocationsToCheck = ({
+  digits,
+  col,
+  row,
+}: {
+  digits: string;
+  col: number;
+  row: number;
+}) => {
   const colsToCheck = Array.from({ length: digits.length + 2 }, (_, i) => i + (col - 1));
 
   const top = row === 0 ? [] : (colsToCheck.map((col) => [col, row - 1]) satisfies Location[]);
-  const bottom = row === rowMax ? [] : (colsToCheck.map((col) => [col, row + 1]) satisfies Location[]);
+  const bottom =
+    row === rowMax ? [] : (colsToCheck.map((col) => [col, row + 1]) satisfies Location[]);
   const left = [col - 1, row] satisfies Location;
   const right = [col + digits.length, row] satisfies Location;
 
@@ -68,11 +77,12 @@ const part2 = () => {
     .reduce((prev, curr) => prev + curr, 0);
 };
 
-const gearRatios = () =>
-  logChallenge({
-    name: "Day 3: Gear Ratios",
-    part1: { run: part1, expected: 507214 },
-    part2: { run: part2, expected: 72553319 },
-  });
-
-gearRatios();
+/**
+ * @description https://adventofcode.com/2023/day/3
+ */
+runPuzzle({
+  day: 3,
+  name: "Gear Ratios",
+  part1: { run: part1, expected: 507214 },
+  part2: { run: part2, expected: 72553319 },
+});

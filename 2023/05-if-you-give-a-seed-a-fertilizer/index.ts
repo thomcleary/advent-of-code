@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge } from "../utils.js";
+import { getPuzzleInput, runPuzzle } from "../utils.js";
 
 type NumberRange = [number, number];
 type Range = { destStart: number; sourceStart: number; length: number };
@@ -49,7 +49,13 @@ const locationForSeed = (seed: number) => {
   return number;
 };
 
-const getDestinationRanges = ({ source, numberRange }: { source: string; numberRange: NumberRange }): NumberRange[] => {
+const getDestinationRanges = ({
+  source,
+  numberRange,
+}: {
+  source: string;
+  numberRange: NumberRange;
+}): NumberRange[] => {
   const [min, range] = numberRange;
   const max = min + range - 1;
 
@@ -69,7 +75,10 @@ const getDestinationRanges = ({ source, numberRange }: { source: string; numberR
       const validRange = sourceRangeMax - min + 1;
       validRanges = [
         [destinationRangeMin, validRange],
-        ...getDestinationRanges({ source, numberRange: [sourceRangeMax + 1, range - validRange - 1 - 1] }),
+        ...getDestinationRanges({
+          source,
+          numberRange: [sourceRangeMax + 1, range - validRange - 1 - 1],
+        }),
       ];
       break;
     }
@@ -106,11 +115,12 @@ const part2 = () =>
       );
     }, Infinity);
 
-const ifYouGiveASeedAFertilizer = () =>
-  logChallenge({
-    name: "Day 5: If You Give A Seed A Fertilizer",
-    part1: { run: part1, expected: 579439039 },
-    part2: { run: part2, expected: 7873084 },
-  });
-
-ifYouGiveASeedAFertilizer();
+/**
+ * @description https://adventofcode.com/2023/day/5
+ */
+runPuzzle({
+  day: 5,
+  name: "If You Give A Seed A Fertilizer",
+  part1: { run: part1, expected: 579439039 },
+  part2: { run: part2, expected: 7873084 },
+});

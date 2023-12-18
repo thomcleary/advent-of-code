@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 const calibrationDocumentLines = toLines(getPuzzleInput(import.meta.url));
 
@@ -37,16 +37,19 @@ const part2 = () =>
       const first = line.match(forwards)![0];
       const last = reverseString(line).match(backwards)?.[0] ?? first;
       return Number.parseInt(
-        [first, reverseString(last)].map((digit) => wordsToDigits[digit]?.toString() ?? digit).join(""),
+        [first, reverseString(last)]
+          .map((digit) => wordsToDigits[digit]?.toString() ?? digit)
+          .join(""),
       );
     })
     .reduce(sum, 0);
 
-const trebuchet = () =>
-  logChallenge({
-    name: "Day 1: Trebuchet?!",
-    part1: { run: part1, expected: 57346 },
-    part2: { run: part2, expected: 57345 },
-  });
-
-trebuchet();
+/**
+ * @description https://adventofcode.com/2023/day/1
+ */
+runPuzzle({
+  day: 1,
+  name: "Trebuchet?!",
+  part1: { run: part1, expected: 57346 },
+  part2: { run: part2, expected: 57345 },
+});

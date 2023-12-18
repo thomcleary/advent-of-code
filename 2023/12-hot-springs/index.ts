@@ -1,4 +1,4 @@
-import { getPuzzleInput, logChallenge, toLines } from "../utils.js";
+import { getPuzzleInput, runPuzzle, toLines } from "../utils.js";
 
 type ConditionRecord = { record: string; groups: number[] };
 
@@ -28,7 +28,10 @@ const unfoldRecords = (records: ConditionRecord[]): ConditionRecord[] =>
       .flatMap((g) => g),
   }));
 
-const numberOfCombinations = ({ record, groups }: ConditionRecord, counting: boolean = false): number => {
+const numberOfCombinations = (
+  { record, groups }: ConditionRecord,
+  counting: boolean = false,
+): number => {
   const cacheKey = `record:${record};groups:${groups.join(",")};counting:${counting.toString()}`;
 
   if (cache.has(cacheKey)) {
@@ -55,7 +58,9 @@ const numberOfCombinations = ({ record, groups }: ConditionRecord, counting: boo
       combinations = numberOfCombinations({ record: record.slice(1), groups: groupsCopy }, true);
     }
   } else {
-    const operationalNext = counting ? 0 : numberOfCombinations({ record: record.slice(1), groups: groupsCopy }, false);
+    const operationalNext = counting
+      ? 0
+      : numberOfCombinations({ record: record.slice(1), groups: groupsCopy }, false);
 
     if (groupsCopy[0] === 1) {
       combinations =
@@ -65,7 +70,9 @@ const numberOfCombinations = ({ record, groups }: ConditionRecord, counting: boo
           : numberOfCombinations({ record: record.slice(2), groups: groupsCopy.slice(1) }, false));
     } else {
       groupsCopy[0]--;
-      combinations = operationalNext + numberOfCombinations({ record: record.slice(1), groups: groupsCopy }, true);
+      combinations =
+        operationalNext +
+        numberOfCombinations({ record: record.slice(1), groups: groupsCopy }, true);
     }
   }
 
@@ -80,11 +87,12 @@ const part1 = () => combinationSum(conditionRecords());
 
 const part2 = () => combinationSum(unfoldRecords(conditionRecords()));
 
-const hotSprings = () =>
-  logChallenge({
-    name: "Day 12: Hot Springs",
-    part1: { run: part1, expected: useExample ? 21 : 6488 },
-    part2: { run: part2, expected: useExample ? 525152 : 815364548481 },
-  });
-
-hotSprings();
+/**
+ * @description https://adventofcode.com/2023/day/12
+ */
+runPuzzle({
+  day: 12,
+  name: "Hot Springs",
+  part1: { run: part1, expected: useExample ? 21 : 6488 },
+  part2: { run: part2, expected: useExample ? 525152 : 815364548481 },
+});

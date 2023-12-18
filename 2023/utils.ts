@@ -9,7 +9,10 @@ type Part = {
   expected?: string | number;
 };
 
-export const getPuzzleInput = (moduleUrl: string, { useExample }: { useExample?: boolean } = {}) => {
+export const getPuzzleInput = (
+  moduleUrl: string,
+  { useExample }: { useExample?: boolean } = {},
+) => {
   const fileName = `${useExample ? "example" : "puzzle"}-input.txt`;
   const dirPath = path.dirname(fileURLToPath(moduleUrl));
 
@@ -20,7 +23,9 @@ export const getPuzzleInput = (moduleUrl: string, { useExample }: { useExample?:
 
 export const toLines = (fileContents: string) => fileContents.split("\n").map((l) => l.trim());
 
-const border = () => gradient("red", "green")("-".repeat(process.stdout.columns));
+const xmasGradient = gradient("red", "green");
+
+const border = () => xmasGradient("-".repeat(process.stdout.columns));
 
 const part = (number: 1 | 2, part: Part | undefined) => {
   if (!part) {
@@ -34,8 +39,10 @@ const part = (number: 1 | 2, part: Part | undefined) => {
 
   const correct = result?.toString() === expected?.toString();
 
-  const partOutput = `${expected ? `${correct ? "✅" : "❌"} ` : ""}${chalk.red(`Part ${number}:`)} ${chalk.green(
-    result ?? "TODO",
+  const partOutput = `${
+    expected ? `${correct ? chalk.green("✔️") : chalk.red("x")} ` : ""
+  }${`Part ${number}:`} ${chalk.green(
+    result ? (correct ? chalk.green(result) : chalk.red(result)) : chalk.yellow("TODO"),
   )}`;
   const timeTakenMessage = chalk.dim(`${timeTaken.toFixed(2)}ms`);
   const expectedMessage = expected && !correct ? chalk.dim(`\nExpected > ${expected}`) : "";
@@ -43,14 +50,25 @@ const part = (number: 1 | 2, part: Part | undefined) => {
   return partOutput + chalk.dim(" | ") + timeTakenMessage + expectedMessage;
 };
 
-export const logChallenge = ({ name, part1, part2 }: { name: string; part1?: Part; part2?: Part }) => {
-  console.log(border());
-  console.log(`🎄 ${name}`);
+export const runPuzzle = ({
+  day,
+  name,
+  part1,
+  part2,
+}: {
+  day: number;
+  name: string;
+  part1?: Part;
+  part2?: Part;
+}) => {
+  console.log();
+  console.log(xmasGradient(`🎄 Day ${day}: ${name}`));
   console.log(border());
   console.log(part(1, part1));
   console.log(border());
   console.log(part(2, part2));
   console.log(border());
+  console.log();
 };
 
 export const transpose = <T>(array: T[][]) => {
