@@ -69,16 +69,18 @@ export const runPuzzle = async ({
   part1?: Part;
   part2?: Part;
 }) => {
-  const p1 = await part(1, part1);
-  const p2 = await part(2, part2);
-
   console.log();
   console.log(xmasGradient(`🎄 Day ${day}: ${name}`));
   console.log(border());
+
+  const p1 = await part(1, part1);
   console.log(p1);
   console.log(border());
+
+  const p2 = await part(2, part2);
   console.log(p2);
   console.log(border());
+
   console.log();
 };
 

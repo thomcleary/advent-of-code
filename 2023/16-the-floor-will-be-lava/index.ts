@@ -1,10 +1,9 @@
-import chalk, { ChalkInstance } from "chalk";
-import { getPuzzleInput, runPuzzle, wait } from "../utils.js";
+import { getPuzzleInput, runPuzzle } from "../utils.js";
 
-const useExample = true;
+const useExample = false;
 
 type Tile = "." | "\\" | "/" | "-" | "|";
-type Direction = "up" | "down" | "left" | "right";
+type Direction = "^" | "v" | "<" | ">";
 
 type Beam = {
   row: number;
@@ -12,171 +11,110 @@ type Beam = {
   direction: Direction;
 };
 
-type TileState = { tile: Tile; visitedBy: Direction[] };
-
-const tiles = {
-  ".": chalk.dim,
-  "\\": chalk.red,
-  "/": chalk.red,
-  "-": chalk.yellow,
-  "|": chalk.yellow,
-} as const satisfies Record<Tile, ChalkInstance>;
+type TileState = { type: Tile; visitedBy: Direction[] };
 
 const getContraption = () =>
   getPuzzleInput(import.meta.url, { useExample })
     .split("\n")
-    .map((row) => (row.split("") as Tile[]).map((tile) => ({ tile, visitedBy: [] }) as TileState));
+    .map((row) =>
+      (row.split("") as Tile[]).map((tile) => ({ type: tile, visitedBy: [] }) as TileState),
+    );
 
-const logContraption = (
-  part: 1 | 2,
-  contraption: ReturnType<typeof getContraption>,
-  beams: Beam[],
-) => {
-  const beamLocations = beams.map(({ row, col }) => `${row},${col}`);
-  const colouredContraption = contraption.map((row, rowIndex) =>
-    row
-      .map(({ tile, visitedBy }, colIndex) => {
-        const colour = tiles[tile];
-        return beamLocations.includes(`${rowIndex},${colIndex}`)
-          ? visitedBy.length > 0
-            ? chalk.bold.bgGreen(" " + tile + " ")
-            : chalk.bold.greenBright(" " + tile + " ")
-          : visitedBy.length > 0
-            ? colour.bgGreen(" " + tile + " ")
-            : colour(" " + tile + " ");
-      })
-      .join(" "),
-  );
-
-  console.log(chalk.dim.underline(`Part ${part}`));
-  console.log();
-  colouredContraption.forEach((row) => console.log(row + "\n"));
-  console.log();
+const emptySpace = ({ row, col, direction }: Beam) => {
+  switch (direction) {
+    case "^":
+      return [{ row: row - 1, col, direction }];
+    case "v":
+      return [{ row: row + 1, col, direction }];
+    case "<":
+      return [{ row, col: col - 1, direction }];
+    case ">":
+      return [{ row, col: col + 1, direction }];
+  }
 };
 
-const part1 = async () => {
+const verticalSplitter = ({ row, col, direction }: Beam): Beam[] => {
+  const newBeam: Beam = {
+    row: row + (direction === "^" ? -1 : 1),
+    col,
+    direction: direction === "^" ? direction : "v",
+  };
+
+  return direction === "^" || direction === "v"
+    ? [newBeam]
+    : [newBeam, { row: row - 1, col, direction: "^" }];
+};
+
+const horizontalSplitter = ({ row, col, direction }: Beam): Beam[] => {
+  const newBeam: Beam = {
+    row,
+    col: col + (direction === ">" ? 1 : -1),
+    direction: direction === ">" ? direction : "<",
+  };
+
+  return direction === "<" || direction === ">"
+    ? [newBeam]
+    : [newBeam, { row, col: col + 1, direction: ">" }];
+};
+
+const mirror = ({
+  mirror,
+  beam: { row, col, direction },
+}: {
+  mirror: Extract<Tile, "/" | "\\">;
+  beam: Beam;
+}): Beam[] => {
+  switch (`${mirror}${direction}` as const) {
+    case "/^":
+    case "\\v":
+      return [{ row, col: col + 1, direction: ">" }];
+    case "/v":
+    case "\\^":
+      return [{ row, col: col - 1, direction: "<" }];
+    case "/>":
+    case "\\<":
+      return [{ row: row - 1, col, direction: "^" }];
+    case "/<":
+    case "\\>":
+      return [{ row: row + 1, col, direction: "v" }];
+  }
+};
+
+const nextBeams = ({ tile, beam }: { tile: Tile; beam: Beam }): Beam[] => {
+  switch (tile) {
+    case ".":
+      return emptySpace(beam);
+    case "|":
+      return verticalSplitter(beam);
+    case "-":
+      return horizontalSplitter(beam);
+    case "/":
+    case "\\":
+      return mirror({ mirror: tile, beam });
+  }
+};
+
+const numTilesEnergized = (initialBeam: Beam) => {
   const contraption = getContraption();
 
-  let beams: Beam[] = [{ row: 0, col: 0, direction: "right" }];
+  let beams: Beam[] = [initialBeam];
 
   while (beams.length > 0) {
-    if (useExample) {
-      console.clear();
-      logContraption(1, contraption, beams);
-    }
+    let next: Beam[] = [];
 
-    let nextBeams: Beam[] = [];
-    beams.forEach((b) => {
-      const row = contraption[b.row];
-      const tile = row?.[b.col];
+    beams.forEach((beam) => {
+      const row = contraption[beam.row];
+      const tile = row?.[beam.col];
 
-      if (!row || !tile) {
+      if (!tile || tile.visitedBy.includes(beam.direction)) {
         return;
-      } else {
-        row[b.col]!.visitedBy.push(b.direction);
       }
 
-      if (tile.tile === ".") {
-        switch (b.direction) {
-          case "up":
-            b.row--;
-            break;
-          case "down":
-            b.row++;
-            break;
-          case "left":
-            b.col--;
-            break;
-          case "right":
-            b.col++;
-            break;
-        }
-      } else if (tile.tile === "|") {
-        if (b.direction === "up") {
-          b.row--;
-        } else {
-          b.row++;
-
-          if (b.direction === "left" || b.direction === "right") {
-            nextBeams.push({
-              row: b.row - 2,
-              col: b.col,
-              direction: "up",
-            });
-          }
-
-          b.direction = "down";
-        }
-      } else if (tile.tile === "-") {
-        if (b.direction === "right") {
-          b.col++;
-        } else {
-          b.col--;
-
-          if (b.direction === "up" || b.direction === "down") {
-            nextBeams.push({
-              row: b.row,
-              col: b.col + 2,
-              direction: "right",
-            });
-          }
-
-          b.direction = "left";
-        }
-      } else if (tile.tile === "/") {
-        switch (b.direction) {
-          case "up":
-            b.col++;
-            b.direction = "right";
-            break;
-          case "down":
-            b.col--;
-            b.direction = "left";
-            break;
-          case "left":
-            b.row++;
-            b.direction = "down";
-            break;
-          case "right":
-            b.row--;
-            b.direction = "up";
-        }
-      } else {
-        switch (b.direction) {
-          case "up":
-            b.col--;
-            b.direction = "left";
-            break;
-          case "down":
-            b.col++;
-            b.direction = "right";
-            break;
-          case "left":
-            b.row--;
-            b.direction = "up";
-            break;
-          case "right":
-            b.row++;
-            b.direction = "down";
-        }
-      }
-
-      nextBeams.push(b);
+      tile.visitedBy.push(beam.direction);
+      next.push(...nextBeams({ tile: tile.type, beam }));
     });
 
-    beams = nextBeams.filter((b) => {
-      const row = contraption[b.row];
-      const tile = row?.[b.col];
-      const cycle = row && tile && tile.visitedBy.includes(b.direction);
-      return !!row && !!tile && !cycle;
-    });
-
-    useExample && (await wait(33));
-  }
-
-  if (useExample) {
-    console.clear();
-    logContraption(1, contraption, beams);
+    beams = next;
   }
 
   return contraption.reduce(
@@ -186,7 +124,44 @@ const part1 = async () => {
   );
 };
 
-const part2 = async () => {};
+const part1 = () => numTilesEnergized({ row: 0, col: 0, direction: ">" });
+
+const part2 = () => {
+  const contraption = getContraption();
+
+  const horizontalStarts = (direction: Extract<Direction, "<" | ">">) =>
+    Array(contraption.length)
+      .fill(0)
+      .map(
+        (item, index) =>
+          ({
+            row: item + index,
+            col: direction === ">" ? 0 : contraption.length - 1,
+            direction,
+          }) satisfies Beam,
+      );
+
+  const verticalStarts = (direction: Extract<Direction, "^" | "v">) =>
+    Array(contraption[0]?.length)
+      .fill(0)
+      .map(
+        (item, index) =>
+          ({
+            row: direction === "v" ? 0 : contraption.length - 1,
+            col: item + index,
+            direction,
+          }) satisfies Beam,
+      );
+
+  return Math.max(
+    ...[
+      ...horizontalStarts("<"),
+      ...verticalStarts("^"),
+      ...horizontalStarts(">"),
+      ...verticalStarts("v"),
+    ].map(numTilesEnergized),
+  );
+};
 
 /**
  * @description https://adventofcode.com/2023/day/16
@@ -195,5 +170,5 @@ runPuzzle({
   day: 16,
   name: "The Floor Will Be Lava",
   part1: { run: part1, expected: useExample ? 46 : 7884 },
-  part2: { run: part2, expected: useExample ? undefined : undefined },
+  part2: { run: part2, expected: useExample ? 51 : 8185 },
 });

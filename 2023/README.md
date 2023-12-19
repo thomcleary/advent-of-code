@@ -19,11 +19,11 @@
 | 13  | Point of Incidence              | ⭐️⭐️ |
 | 14  | Parabolic Reflector Dish        | ⭐️⭐️ |
 | 15  | Lens Library                    | ⭐️⭐️ |
-| 16  | The Floor Will Be Lava          |  ⭐️   |
+| 16  | The Floor Will Be Lava          | ⭐️⭐️ |
 | 17  | Clumsy Crucible                 |        |
 | 18  | Lavaduct Lagoon                 |        |
 | 19  | Aplenty                         |        |
-| 20  |                                 |        |
+| 20  | Pulse Propagation               |        |
 | 21  |                                 |        |
 | 22  |                                 |        |
 | 23  |                                 |        |
