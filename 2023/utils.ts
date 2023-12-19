@@ -4,8 +4,10 @@ import { readFileSync } from "node:fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+type Answer = string | number | void;
+
 type Part = {
-  run: () => string | number | void;
+  run: (() => Answer) | (() => Promise<Answer>);
   expected?: string | number;
 };
 
@@ -23,18 +25,18 @@ export const getPuzzleInput = (
 
 export const toLines = (fileContents: string) => fileContents.split("\n").map((l) => l.trim());
 
-const xmasGradient = gradient("red", "green");
+export const xmasGradient = gradient("red", "green");
 
 const border = () => xmasGradient("-".repeat(process.stdout.columns));
 
-const part = (number: 1 | 2, part: Part | undefined) => {
+const part = async (number: 1 | 2, part: Part | undefined) => {
   if (!part) {
     return chalk.dim(`Part ${number}: TODO`);
   }
 
   const { run, expected } = part;
   const start = performance.now();
-  const result = run();
+  const result = await run();
   const timeTaken = performance.now() - start;
 
   const correct = result?.toString() === expected?.toString();
@@ -42,7 +44,13 @@ const part = (number: 1 | 2, part: Part | undefined) => {
   const partOutput = `${
     expected ? `${correct ? chalk.green("✔️") : chalk.red("x")} ` : ""
   }${`Part ${number}:`} ${chalk.green(
-    result ? (correct ? chalk.green(result) : chalk.red(result)) : chalk.yellow("TODO"),
+    result
+      ? correct
+        ? chalk.green(result)
+        : !!expected
+          ? chalk.red(result)
+          : chalk.yellow(result)
+      : chalk.yellow("TODO"),
   )}`;
   const timeTakenMessage = chalk.dim(`${timeTaken.toFixed(2)}ms`);
   const expectedMessage = expected && !correct ? chalk.dim(`\nExpected > ${expected}`) : "";
@@ -50,7 +58,7 @@ const part = (number: 1 | 2, part: Part | undefined) => {
   return partOutput + chalk.dim(" | ") + timeTakenMessage + expectedMessage;
 };
 
-export const runPuzzle = ({
+export const runPuzzle = async ({
   day,
   name,
   part1,
@@ -61,12 +69,15 @@ export const runPuzzle = ({
   part1?: Part;
   part2?: Part;
 }) => {
+  const p1 = await part(1, part1);
+  const p2 = await part(2, part2);
+
   console.log();
   console.log(xmasGradient(`🎄 Day ${day}: ${name}`));
   console.log(border());
-  console.log(part(1, part1));
+  console.log(p1);
   console.log(border());
-  console.log(part(2, part2));
+  console.log(p2);
   console.log(border());
   console.log();
 };
@@ -74,3 +85,5 @@ export const runPuzzle = ({
 export const transpose = <T>(array: T[][]) => {
   return array[0]!.map((_, colIndex) => array.map((row) => row[colIndex]!));
 };
+
+export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
