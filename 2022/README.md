@@ -2,6 +2,8 @@
 
 [Advent of Code - 2022](https://adventofcode.com/2022)
 
+Solved with [🐍 Python](https://www.python.org/)
+
 | Day | Challenge                | Stars  |
 | :-: | ------------------------ | :----: |
 |  1  | Calorie Counting         | ⭐️⭐️ |

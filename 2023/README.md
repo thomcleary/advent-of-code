@@ -2,6 +2,8 @@
 
 [Advent of Code - 2023](https://adventofcode.com/2023)
 
+Solved with [🟦 TypeScript](https://www.typescriptlang.org/)
+
 | Day | Challenge                       | Stars  |
 | :-: | ------------------------------- | :----: |
 |  1  | Trebuchet?!                     | ⭐️⭐️ |
@@ -24,8 +26,8 @@
 | 18  | Lavaduct Lagoon                 |        |
 | 19  | Aplenty                         |        |
 | 20  | Pulse Propagation               |        |
-| 21  |                                 |        |
-| 22  |                                 |        |
-| 23  |                                 |        |
-| 24  |                                 |        |
-| 25  |                                 |        |
+| 21  | Step Counter                    |        |
+| 22  | Sand Slabs                      |        |
+| 23  | A Long Walk                     |        |
+| 24  | Never Tell Me The Odds          |        |
+| 25  | Snowverload                     |        |
