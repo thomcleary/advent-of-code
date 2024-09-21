@@ -1,0 +1,14 @@
+# Ignore everything
+*
+
+# Do not ignore .gitignore itself
+!.gitignore
+
+# Do not ignore .md, .c, and .txt files
+!*.md
+!*.c
+!*.h
+!*example.txt
+
+# Unignore directories (necessary for recursive unignoring)
+!*/
