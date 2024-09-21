@@ -1,5 +1,5 @@
 /*
-Day 3: Perfectly Spherical Houses in a Vacuum (Part 1)
+Day 3: Perfectly Spherical Houses in a Vacuum (Part 2)
 https://adventofcode.com/2015/day/3
 */
 
@@ -16,59 +16,70 @@ int main(void)
     bool delivered_to[ROWS][COLS] = {false};
 
     char move;
+    int move_count = 0;
     int houses_delivered_to = 1;
 
-    int row = ROWS / 2;
-    int col = COLS / 2;
+    int santa_row = ROWS / 2;
+    int santa_col = COLS / 2;
 
-    delivered_to[row][col] = true;
+    int robot_row = santa_row;
+    int robot_col = santa_col;
+
+    delivered_to[santa_row][santa_col] = true;
 
     while ((move = getchar()) != EOF)
     {
+        bool is_santas_turn = move_count % 2 == 0;
+
+        int *row = is_santas_turn ? &santa_row : &robot_row;
+        int *col = is_santas_turn ? &santa_col : &robot_col;
+
         switch (move)
         {
         case '^':
-            if (row == 0)
+            if (*row == 0)
             {
                 printf("House grid row lower bound exceeded.\n");
                 exit(EXIT_FAILURE);
             }
-            row--;
+            (*row)--;
             break;
         case '>':
-            if (col == COLS - 1)
+            if (*col == COLS - 1)
             {
                 printf("House grid column upper bound exceeded.\n");
                 exit(EXIT_FAILURE);
             }
-            col++;
+            (*col)++;
             break;
         case 'v':
-            if (row == ROWS - 1)
+            if (*row == ROWS - 1)
             {
                 printf("House grid row upper bound exceeded.\n");
                 exit(EXIT_FAILURE);
             }
-            row++;
+            (*row)++;
             break;
         case '<':
-            if (col == 0)
+            if (*col == 0)
             {
                 printf("House grid column lower bound exceeded.\n");
                 exit(EXIT_FAILURE);
             }
-            col--;
+            (*col)--;
             break;
         default:
             printf("Invalid move: %c\n", move);
             exit(EXIT_FAILURE);
         }
 
-        if (!delivered_to[row][col])
+        if (!delivered_to[*row][*col])
         {
-            delivered_to[row][col] = true;
+            delivered_to[*row][*col] = true;
             houses_delivered_to++;
         }
+
+        move_count++;
     }
 
     printf("Houses that recieved at least 1 present: %d\n", houses_delivered_to);

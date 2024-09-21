@@ -6,8 +6,8 @@
 | :-: | -------------------------------------- | :----: |
 |  1  | Not Quite Lisp                         | ⭐️⭐️ |
 |  2  | I Was Told There Would Be No Math      | ⭐️⭐️ |
-|  3  | Perfectly Spherical Houses in a Vacuum |  ⭐️   |
-|  4  |                                        |        |
+|  3  | Perfectly Spherical Houses in a Vacuum | ⭐️⭐️ |
+|  4  | The Ideal Stocking Stuffer             |        |
 |  5  |                                        |        |
 |  6  |                                        |        |
 |  7  |                                        |        |
