@@ -9,7 +9,7 @@
 |  3  | Perfectly Spherical Houses in a Vacuum | ⭐️⭐️ |
 |  4  | The Ideal Stocking Stuffer             |        |
 |  5  | Doesn't He Have Intern-Elves For This? | ⭐️⭐️ |
-|  6  |                                        |        |
+|  6  | Probably a Fire Hazard                 |  ⭐️   |
 |  7  |                                        |        |
 |  8  |                                        |        |
 |  9  |                                        |        |
