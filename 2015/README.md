@@ -7,10 +7,10 @@
 |  1  | Not Quite Lisp                         | ⭐️⭐️ |
 |  2  | I Was Told There Would Be No Math      | ⭐️⭐️ |
 |  3  | Perfectly Spherical Houses in a Vacuum | ⭐️⭐️ |
-|  4  | The Ideal Stocking Stuffer             |  ⭐️   |
+|  4  | The Ideal Stocking Stuffer             | ⭐️⭐️ |
 |  5  | Doesn't He Have Intern-Elves For This? | ⭐️⭐️ |
 |  6  | Probably a Fire Hazard                 | ⭐️⭐️ |
-|  7  |                                        |        |
+|  7  | Some Assembly Required                 |        |
 |  8  |                                        |        |
 |  9  |                                        |        |
 | 10  |                                        |        |
