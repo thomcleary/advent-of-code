@@ -8,7 +8,7 @@
 !*.md
 !*.c
 !*.h
-!*example.txt
+!*example.*txt
 
 # Unignore directories (necessary for recursive unignoring)
 !*/
