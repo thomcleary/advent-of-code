@@ -4,10 +4,11 @@
 # Do not ignore .gitignore itself
 !.gitignore
 
-# Do not ignore .md, .c, and .txt files
+# Do not ignore .md, .c, Makefile and .txt files
 !*.md
 !*.c
 !*.h
+!Makefile
 !*example.*txt
 
 # Unignore directories (necessary for recursive unignoring)

@@ -1,5 +1,5 @@
 /*
-Day 6: Probably a Fire Hazard (Part 1)
+Day 6: Probably a Fire Hazard (Part 2)
 https://adventofcode.com/2015/day/6
 */
 
