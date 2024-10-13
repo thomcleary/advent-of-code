@@ -3,12 +3,15 @@ Day 4: The Ideal Stocking Stuffer (Part 1)
 https://adventofcode.com/2015/day/4
 */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+
+#define ANSWER 117946
 
 int main(void)
 {
@@ -66,6 +69,8 @@ int main(void)
     }
 
     printf("Answer: %d\n", i);
+
+    assert(i == ANSWER);
 
     return 0;
 }

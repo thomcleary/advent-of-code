@@ -3,9 +3,12 @@ Day 5: Doesn't He Have Intern-Elves For This? (Part 1)
 https://adventofcode.com/2015/day/5
 */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
+
+#define ANSWER 236
 
 #define MAX_STR_LEN 16
 
@@ -25,6 +28,8 @@ int main(void)
     }
 
     printf("Nice strings: %d\n", nice);
+
+    assert(nice == ANSWER);
 
     return 0;
 }

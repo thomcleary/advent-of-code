@@ -3,9 +3,12 @@ Day 3: Perfectly Spherical Houses in a Vacuum (Part 2)
 https://adventofcode.com/2015/day/3
 */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#define ANSWER 2631
 
 #define ROWS 1024
 #define COLS 1024
@@ -83,6 +86,8 @@ int main(void)
     }
 
     printf("Houses that recieved at least 1 present: %d\n", houses_delivered_to);
+
+    assert(houses_delivered_to == ANSWER);
 
     return 0;
 }

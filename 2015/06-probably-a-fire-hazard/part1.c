@@ -3,9 +3,12 @@ Day 6: Probably a Fire Hazard (Part 1)
 https://adventofcode.com/2015/day/6
 */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+
+#define ANSWER 377891
 
 #define GRID_SIZE 1000
 
@@ -54,6 +57,8 @@ int main(void)
     }
 
     printf("Lights on: %d\n", lights_on);
+
+    assert(lights_on == ANSWER);
 
     return 0;
 }

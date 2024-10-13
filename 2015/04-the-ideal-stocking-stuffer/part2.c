@@ -3,10 +3,13 @@ Day 4: The Ideal Stocking Stuffer (Part 2)
 https://adventofcode.com/2015/day/4
 */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <CommonCrypto/CommonDigest.h>
+
+#define ANSWER 3938038
 
 void md5_hash(char *data, char *hash);
 
@@ -38,6 +41,8 @@ int main(void)
     }
 
     printf("Answer: %d\n", i);
+
+    assert(i == ANSWER);
 
     return 0;
 }

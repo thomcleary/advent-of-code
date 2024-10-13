@@ -3,8 +3,11 @@ Day 1: Not Quite Lisp (Part 1)
 https://adventofcode.com/2015/day/1
 */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#define ANSWER 74
 
 int main(void)
 {
@@ -29,6 +32,8 @@ int main(void)
     }
 
     printf("Floor: %d\n", floor);
+
+    assert(floor == ANSWER);
 
     return 0;
 }

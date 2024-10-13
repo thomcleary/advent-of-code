@@ -3,8 +3,11 @@ Day 6: Probably a Fire Hazard (Part 2)
 https://adventofcode.com/2015/day/6
 */
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
+
+#define ANSWER 14110788
 
 #define GRID_SIZE 1000
 
@@ -50,6 +53,8 @@ int main(void)
     }
 
     printf("Brightness: %d\n", brightness);
+
+    assert(brightness == ANSWER);
 
     return 0;
 }

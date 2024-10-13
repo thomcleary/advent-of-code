@@ -5,7 +5,7 @@ TARGET = main
 OBJS = instruction.o hashtable.o
 HEADERS = instruction.h hashtable.h
 
-$(TARGET)1: $(TARGET).o $(OBJS)
+$(TARGET): $(TARGET).o $(OBJS)
 	$(CC) $(CC_FLAGS) -o $(TARGET) $(TARGET).o $(OBJS)
 
 instruction.o: instruction.c instruction.h

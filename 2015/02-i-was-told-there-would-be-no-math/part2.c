@@ -3,8 +3,11 @@ Day 2: I Was Told There Would Be No Math (Part 2)
 https://adventofcode.com/2015/day/2
 */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#define ANSWER 3812909
 
 int smallest_perimeter(int x, int y, int z);
 int min(int x, int y);
@@ -24,6 +27,8 @@ int main(void)
     }
 
     printf("Ribbon required (feet): %ld\n", ribbon_feet);
+
+    assert(ribbon_feet == ANSWER);
 
     return 0;
 }

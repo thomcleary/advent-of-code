@@ -1,5 +1,5 @@
 /*
-Day 7: Some Assembly Required (Part 1)
+Day 7: Some Assembly Required
 https://adventofcode.com/2015/day/7
 */
 
@@ -11,6 +11,9 @@ https://adventofcode.com/2015/day/7
 #include "hashtable.h"
 #include "instruction.h"
 
+#define PART1_ANSWER 956
+#define PART2_ANSWER 40149
+
 static unsigned short get_signal(const char *wire, struct hashtable *instruction_ht);
 static unsigned short get_gate_signal(struct gate *gate, struct hashtable *instruction_ht);
 
@@ -18,27 +21,55 @@ int main(void)
 {
     char line[BUFSIZ];
 
-    struct hashtable *ht = hashtable_create();
-    assert(ht != NULL);
+    struct hashtable *ht_part1 = hashtable_create();
+    struct hashtable *ht_part2 = hashtable_create();
+
+    assert(ht_part1 != NULL);
+    assert(ht_part2 != NULL);
 
     while (fgets(line, BUFSIZ, stdin) != NULL)
     {
         line[strcspn(line, "\n")] = '\0';
 
-        struct instruction *instruction = to_instruction(line);
-        assert(instruction != NULL);
+        struct instruction *instruction_part1 = to_instruction(line);
+        assert(instruction_part1 != NULL);
+        void *result_part1 = hashtable_set(ht_part1, instruction_part1->wire, instruction_part1);
+        assert(result_part1 != NULL);
 
-        void *result = hashtable_set(ht, instruction->wire, instruction);
-        assert(result != NULL);
+        struct instruction *instruction_part2 = malloc(sizeof(struct instruction));
+        assert(instruction_part2 != NULL);
+        memcpy(instruction_part2, instruction_part1, sizeof(struct instruction));
+        void *result_part2 = hashtable_set(ht_part2, instruction_part2->wire, instruction_part2);
+        assert(result_part2 != NULL);
     }
 
-    const char *wire = "a";
+    const char *target_wire = "a";
+    unsigned short target_wire_signal = get_signal(target_wire, ht_part1);
+
     printf("----------------------------------------\n");
     printf("Part 1\n");
     printf("----------------------------------------\n");
-    printf("Wire [%s]'s signal: %hu\n", wire, get_signal(wire, ht));
+    printf("- Wire [%s]'s signal: %hu\n\n", target_wire, target_wire_signal);
 
-    hashtable_destroy(ht);
+    const char *override_wire = "b";
+    struct instruction *override_instruction = hashtable_get(ht_part2, override_wire);
+    assert(override_instruction != NULL);
+    override_instruction->source_kind = SIGNAL;
+    override_instruction->source.signal = target_wire_signal;
+    unsigned short recomputed_target_wire_signal = get_signal(target_wire, ht_part2);
+
+    printf("----------------------------------------\n");
+    printf("Part 2\n");
+    printf("----------------------------------------\n");
+    printf("- Overriding [%s]'s signal to [%hu].\n", override_instruction->wire, target_wire_signal);
+    printf("- Recomputing wire [%s]'s signal.\n", target_wire);
+    printf("- Wire [%s]'s signal: %hu\n\n", target_wire, recomputed_target_wire_signal);
+
+    hashtable_destroy(ht_part1);
+    hashtable_destroy(ht_part2);
+
+    assert(target_wire_signal == PART1_ANSWER);
+    assert(recomputed_target_wire_signal == PART2_ANSWER);
 
     return 0;
 }
