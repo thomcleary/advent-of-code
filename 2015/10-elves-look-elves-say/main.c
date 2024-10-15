@@ -8,37 +8,24 @@ https://adventofcode.com/2015/day/10
 #include <stdlib.h>
 #include <string.h>
 
-// #define USE_EXAMPLE
-
-#ifdef USE_EXAMPLE
-#define INPUT "1"
-#define ITERATIONS 5
-#define PART1_ANSWER 6
-#define PART2_ANSWER 0
-#else
 #define INPUT "1113122113"
-#define ITERATIONS 40
+#define PART1_ITERATIONS 40
 #define PART1_ANSWER 360154
-#define PART2_ANSWER 0
-#endif
+#define PART2_ITERATIONS 50
+#define PART2_ANSWER 5103798
 
-void concat_n_chars(char *str, int n, char ch)
+char *look_and_say(char *input, unsigned int iterations)
 {
-    size_t str_len = strlen(str);
-    str[str_len] = '0' + n;
-    str[str_len + 1] = ch;
-    str[str_len + 2] = '\0';
-}
-
-int main(void)
-{
-    char *sequence = strdup(INPUT);
+    char *sequence = strdup(input);
     assert(sequence != NULL);
 
-    for (int i = 0; i < ITERATIONS; i++)
+    for (int i = 0; i < iterations; i++)
     {
         char *next_sequence = malloc((strlen(sequence) * 2) + 1);
         assert(next_sequence != NULL);
+
+        next_sequence[0] = '\0';
+        int next_sequence_len = 0; // Manually keep track of strlen, calling strlen is slow
 
         char *curr = sequence;
         char prev = *sequence;
@@ -48,7 +35,9 @@ int main(void)
         {
             if (*curr != prev)
             {
-                concat_n_chars(next_sequence, consecutive, prev);
+                next_sequence[next_sequence_len++] = '0' + consecutive;
+                next_sequence[next_sequence_len++] = prev;
+                next_sequence[next_sequence_len] = '\0';
                 consecutive = 1;
             }
             else
@@ -58,17 +47,31 @@ int main(void)
             prev = *curr;
             curr++;
         }
-        concat_n_chars(next_sequence, consecutive, prev);
+        next_sequence[next_sequence_len++] = '0' + consecutive;
+        next_sequence[next_sequence_len++] = prev;
+        next_sequence[next_sequence_len] = '\0';
 
         free(sequence);
         sequence = next_sequence;
     }
 
-    size_t sequence_len = strlen(sequence);
-    printf("Length of sequence after %d iterations: %lu\n", ITERATIONS, sequence_len);
+    return sequence;
+}
+
+int main(void)
+{
+    char *part1_sequence = look_and_say(INPUT, PART1_ITERATIONS);
+    size_t sequence_len = strlen(part1_sequence);
+    printf("Length of sequence after %d iterations: %lu\n", PART1_ITERATIONS, sequence_len);
     assert(sequence_len == PART1_ANSWER);
 
-    free(sequence);
+    char *part2_sequence = look_and_say(INPUT, PART2_ITERATIONS);
+    sequence_len = strlen(part2_sequence);
+    printf("Length of sequence after %d iterations: %lu\n", PART2_ITERATIONS, sequence_len);
+    assert(sequence_len == PART2_ANSWER);
+
+    free(part1_sequence);
+    free(part2_sequence);
 
     return 0;
 }
