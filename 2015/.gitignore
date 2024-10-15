@@ -10,6 +10,7 @@
 !*.h
 !Makefile
 !*example.*txt
+!*example.*json
 
 # Unignore directories (necessary for recursive unignoring)
 !*/
