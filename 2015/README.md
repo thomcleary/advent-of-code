@@ -13,7 +13,7 @@
 |  7  | Some Assembly Required                 | ⭐️⭐️ |
 |  8  | Matchsticks                            | ⭐️⭐️ |
 |  9  | All in a Single Night                  | ⭐️⭐️ |
-| 10  |                                        |        |
+| 10  | Elves Look, Elves Say                  |  ⭐️   |
 | 11  |                                        |        |
 | 12  |                                        |        |
 | 13  |                                        |        |
