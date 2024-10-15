@@ -8,7 +8,7 @@ https://adventofcode.com/2015/day/7
 #include <stdlib.h>
 #include <string.h>
 
-#include "hashtable.h"
+#include "../lib/hashtable.h"
 #include "instruction.h"
 
 #define PART1_ANSWER 956
@@ -21,8 +21,8 @@ int main(void)
 {
     char line[BUFSIZ];
 
-    struct hashtable *ht_part1 = hashtable_create();
-    struct hashtable *ht_part2 = hashtable_create();
+    struct hashtable *ht_part1 = hashtable_new();
+    struct hashtable *ht_part2 = hashtable_new();
 
     assert(ht_part1 != NULL);
     assert(ht_part2 != NULL);
@@ -65,8 +65,8 @@ int main(void)
     printf("- Recomputing wire [%s]'s signal.\n", target_wire);
     printf("- Wire [%s]'s signal: %hu\n\n", target_wire, recomputed_target_wire_signal);
 
-    hashtable_destroy(ht_part1);
-    hashtable_destroy(ht_part2);
+    hashtable_free(ht_part1);
+    hashtable_free(ht_part2);
 
     assert(target_wire_signal == PART1_ANSWER);
     assert(recomputed_target_wire_signal == PART2_ANSWER);

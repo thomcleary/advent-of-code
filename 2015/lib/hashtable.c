@@ -66,7 +66,7 @@ static uint64_t hash_key(const char *key)
     return hash;
 }
 
-struct hashtable *hashtable_create(void)
+struct hashtable *hashtable_new(void)
 {
     struct hashtable *ht = malloc(sizeof(struct hashtable));
     assert(ht != NULL);
@@ -76,7 +76,7 @@ struct hashtable *hashtable_create(void)
     return ht;
 }
 
-void hashtable_destroy(struct hashtable *ht)
+void hashtable_free(struct hashtable *ht)
 {
     if (ht == NULL)
     {
