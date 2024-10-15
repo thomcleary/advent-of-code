@@ -11,7 +11,7 @@ https://adventofcode.com/2015/day/11
 
 #define INPUT "vzbxkghb"
 #define PART1_ANSWER "vzbxxyzz"
-#define PART2_ANSWER ""
+#define PART2_ANSWER "vzcaabcc"
 
 bool is_illegal_char(char ch)
 {
@@ -144,7 +144,13 @@ int main(void)
     printf("Next password: %s\n", next_password);
     assert(strcmp(next_password, PART1_ANSWER) == 0);
 
+    increment_password(next_password);
+    char *next_next_password = get_next_password(next_password);
+    printf("Next next password: %s\n", next_next_password);
+    assert(strcmp(next_next_password, PART2_ANSWER) == 0);
+
     free(next_password);
+    free(next_next_password);
 
     return 0;
 }
