@@ -16,10 +16,10 @@ https://adventofcode.com/2015/day/9
 
 #ifdef USE_EXAMPLE
 #define PART1_ANSWER 605
-#define PART2_ANSWER 0
+#define PART2_ANSWER 982
 #else
 #define PART1_ANSWER 207
-#define PART2_ANSWER 0
+#define PART2_ANSWER 804
 #endif
 
 bool str_array_contains(char **array, size_t length, char *str);
@@ -30,12 +30,12 @@ int compare_locations(const void *a, const void *b);
  * see: https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
  */
 bool next_permutation(char **strings, size_t num_strings);
-
 int get_route_distance(char **locations, size_t num_locations, struct hashtable *distances_ht);
 
 int main(void)
 {
-    struct distance *distances[BUFSIZ];
+    // Hashtable value needs a pointer to int
+    int distances[BUFSIZ];
     size_t num_distances = 0;
 
     char *locations[BUFSIZ];
@@ -50,29 +50,39 @@ int main(void)
         line[strcspn(line, "\n")] = '\0'; // trim the trailing newline
 
         struct distance *distance = distance_new(line);
-        distances[num_distances++] = distance;
 
         if (!str_array_contains(locations, num_locations, distance->from))
         {
-            locations[num_locations++] = distance->from;
+            char *from = strdup(distance->from);
+            assert(from != NULL);
+            locations[num_locations++] = from;
         }
         if (!str_array_contains(locations, num_locations, distance->to))
         {
-            locations[num_locations++] = distance->to;
+            char *to = strdup(distance->to);
+            assert(to != NULL);
+            locations[num_locations++] = to;
         }
 
+        distances[num_distances] = distance->distance;
+
         char *key = get_distances_key(distance->from, distance->to);
-        hashtable_set(distances_ht, key, &(distance->distance));
+        hashtable_set(distances_ht, key, &(distances[num_distances]));
         free(key);
 
         key = get_distances_key(distance->to, distance->from);
-        hashtable_set(distances_ht, key, &(distance->distance));
+        hashtable_set(distances_ht, key, &(distances[num_distances]));
         free(key);
+
+        num_distances++;
+
+        distance_free(distance);
     }
 
     qsort(locations, num_locations, sizeof(char *), compare_locations);
 
     int shortest_route_distance = get_route_distance(locations, num_locations, distances_ht);
+    int longest_route_distance = shortest_route_distance;
 
     while (next_permutation(locations, num_locations))
     {
@@ -82,17 +92,23 @@ int main(void)
         {
             shortest_route_distance = route_distance;
         }
+        else if (route_distance > longest_route_distance)
+        {
+            longest_route_distance = route_distance;
+        }
     }
 
-    printf("Distance of shortest route: %d\n", shortest_route_distance);
+    hashtable_free(distances_ht);
+    for (size_t i = 0; i < num_locations; i++)
+    {
+        free(locations[i]);
+    }
+
+    printf("Shortest route: %d\n", shortest_route_distance);
+    printf("Longest route: %d\n", longest_route_distance);
 
     assert(shortest_route_distance == PART1_ANSWER);
-
-    for (size_t i = 0; i < num_distances; i++)
-    {
-        distance_free(distances[i]);
-    }
-    hashtable_free(distances_ht);
+    assert(longest_route_distance == PART2_ANSWER);
 
     return 0;
 }
