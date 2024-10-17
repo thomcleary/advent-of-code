@@ -11,6 +11,7 @@ https://adventofcode.com/2015/day/9
 
 #include "distance.h"
 #include "../lib/hashtable.h"
+#include "../lib/permutation.h"
 
 // #define USE_EXAMPLE
 
@@ -25,11 +26,6 @@ https://adventofcode.com/2015/day/9
 bool str_array_contains(char **array, size_t length, char *str);
 char *get_distances_key(char *from, char *to);
 int compare_locations(const void *a, const void *b);
-
-/**
- * see: https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
- */
-bool next_permutation(char **strings, size_t num_strings);
 int get_route_distance(char **locations, size_t num_locations, struct hashtable *distances_ht);
 
 int main(void)
@@ -145,59 +141,6 @@ char *get_distances_key(char *from, char *to)
 int compare_locations(const void *a, const void *b)
 {
     return strcmp(*(char **)a, *(char **)b);
-}
-
-bool next_permutation(char **strings, size_t num_strings)
-{
-    // 1. Find the largest index k such that a[k] < a[k + 1]. If no such index exists,
-    // the permutation is the last permutation.
-    int k = num_strings - 2;
-    while (k >= 0 && strcmp(strings[k], strings[k + 1]) >= 0)
-    {
-        k--;
-    }
-
-    if (k < 0)
-    {
-        return false;
-    }
-
-    // 2. Find the largest index l greater than k such that a[k] < a[l].
-    int l = k + 1;
-    int largest_l = -1;
-
-    while (l < num_strings)
-    {
-        if (strcmp(strings[k], strings[l]) < 0)
-        {
-            largest_l = l;
-        }
-
-        l++;
-    }
-
-    assert(largest_l != -1);
-
-    // 3. Swap the value of a[k] with that of a[l].
-    char *tmp = strings[k];
-    strings[k] = strings[largest_l];
-    strings[largest_l] = tmp;
-
-    // 4. Reverse the sequence from a[k + 1] up to and including the final element a[n].
-    int left = k + 1;
-    int right = num_strings - 1;
-
-    while (left < right)
-    {
-        char *tmp = strings[left];
-        strings[left] = strings[right];
-        strings[right] = tmp;
-
-        left++;
-        right--;
-    }
-
-    return true;
 }
 
 int get_route_distance(char **locations, size_t num_locations, struct hashtable *distances_ht)
