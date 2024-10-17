@@ -16,26 +16,29 @@ https://adventofcode.com/2015/day/13
 
 #ifdef USE_EXAMPLE
 #define PART1_ANSWER 330
-#define PART2_ANSWER 0
+#define PART2_ANSWER -1 // Not provided
 #else
 #define PART1_ANSWER 618
-#define PART2_ANSWER 0
+#define PART2_ANSWER 601
 #endif
 
 char *get_seated_name(const char *line);
 char *get_next_to_name(const char *line);
 int get_happiness_change(const char *line);
 bool str_array_contains(char **array, size_t length, char *str);
-char *get_pair_key(char *seated, char *next_to);
+char *get_pair_key(const char *seated, const char *next_to);
 int compare_names(const void *a, const void *b);
-void print_arrangement(char **names, size_t num_names);
 int get_arrangement_happiness(char **names, size_t num_names, struct hashtable *happiness_ht);
 
 int main(void)
 {
+    char *me = strdup("Thomas Cleary");
+    assert(me != NULL);
+
     // Hashtable value needs a pointer to int
     int values[BUFSIZ];
-    size_t num_values = 0;
+    values[0] = 0;
+    size_t num_values = 1;
 
     char *names[BUFSIZ];
     size_t num_names = 0;
@@ -51,7 +54,9 @@ int main(void)
         char *seated = get_seated_name(line);
         char *next_to = get_next_to_name(line);
         int happiness = get_happiness_change(line);
-        char *key = get_pair_key(seated, next_to);
+        char *seated_next_to_key = get_pair_key(seated, next_to);
+        char *me_seated_key = get_pair_key(me, seated);
+        char *seated_me_key = get_pair_key(seated, me);
 
         if (!str_array_contains(names, num_names, seated))
         {
@@ -76,8 +81,13 @@ int main(void)
 
         values[num_values] = happiness;
 
-        hashtable_set(happiness_ht, key, &(values[num_values]));
-        free(key);
+        hashtable_set(happiness_ht, seated_next_to_key, &(values[num_values]));
+        hashtable_set(happiness_ht, me_seated_key, &(values[0]));
+        hashtable_set(happiness_ht, seated_me_key, &(values[0]));
+        free(seated_next_to_key);
+        free(me_seated_key);
+        free(seated_me_key);
+
         num_values++;
     }
 
@@ -95,14 +105,32 @@ int main(void)
         }
     }
 
+    printf("Part 1: %d\n", optimal_happiness);
+    assert(optimal_happiness == PART1_ANSWER);
+
+    names[num_names++] = me;
+    qsort(names, num_names, sizeof(char *), compare_names);
+
+    optimal_happiness = get_arrangement_happiness(names, num_names, happiness_ht);
+
+    while (next_permutation(names, num_names))
+    {
+        int arrangement_happiness = get_arrangement_happiness(names, num_names, happiness_ht);
+
+        if (optimal_happiness < arrangement_happiness)
+        {
+            optimal_happiness = arrangement_happiness;
+        }
+    }
+
+    printf("Part 2: %d\n", optimal_happiness);
+    assert(optimal_happiness == PART2_ANSWER);
+
     hashtable_free(happiness_ht);
-    for (size_t i = 0; i < num_names; i++)
+    for (size_t i = 0; i < (num_names - 1); i++)
     {
         free(names[i]);
     }
-
-    printf("Part 1: %d\n", optimal_happiness);
-    assert(optimal_happiness == PART1_ANSWER);
 
     return 0;
 }
@@ -171,7 +199,7 @@ bool str_array_contains(char **array, size_t length, char *str)
     return false;
 }
 
-char *get_pair_key(char *seated, char *next_to)
+char *get_pair_key(const char *seated, const char *next_to)
 {
     assert(seated != NULL);
     assert(next_to != NULL);
@@ -192,26 +220,12 @@ int compare_names(const void *a, const void *b)
     return strcmp(*(char **)a, *(char **)b);
 }
 
-void print_arrangement(char **names, size_t num_names)
-{
-    for (size_t i = 0; i < num_names; i++)
-    {
-        printf("[%s]", names[i]);
-        if (i + 1 < num_names)
-        {
-            printf("->");
-        }
-    }
-    printf("\n");
-}
-
 int get_arrangement_happiness(char **names, size_t num_names, struct hashtable *happiness_ht)
 {
     assert(num_names > 1);
 
     int total_happiness = 0;
 
-    // TODO Need to loop back on the last and first
     for (size_t i = 0; i < num_names; i++)
     {
         char *seated = names[i];

@@ -16,7 +16,7 @@
 | 10  | Elves Look, Elves Say                  | ⭐️⭐️ |
 | 11  | Corporate Policy                       | ⭐️⭐️ |
 | 12  | JSAbacusFramework.io                   |  ⭐️   |
-| 13  | Knights of the Dinner Table            |  ⭐️   |
+| 13  | Knights of the Dinner Table            | ⭐️⭐️ |
 | 14  |                                        |        |
 | 15  |                                        |        |
 | 16  |                                        |        |
