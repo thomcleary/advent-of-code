@@ -2,6 +2,8 @@
 
 [Advent of Code - 2015](https://adventofcode.com/2015)
 
+**NOTE:** Doing 2024 in C, will redo this year in a different language in future...
+
 | Day | Challenge                              | Stars  |
 | :-: | -------------------------------------- | :----: |
 |  1  | Not Quite Lisp                         | ⭐️⭐️ |

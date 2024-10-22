@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-xc, -std=c17, -Wall, -Werror]  # -xc sets language to C

@@ -1,0 +1,19 @@
+# Ignore everything
+*
+
+# Do not ignore .gitignore itself
+!.gitignore
+
+# Do not ignore .md, .c, Makefile and .txt files
+!.clangd
+!*.md
+!*.c
+!*.h
+!.dockerignore
+!compose.yaml
+!Dockerfile
+!Makefile
+!*example-input.*txt
+
+# Unignore directories (necessary for recursive unignoring)
+!*/

@@ -1,0 +1,7 @@
+services:
+  aoc:
+    build: .
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/2024
