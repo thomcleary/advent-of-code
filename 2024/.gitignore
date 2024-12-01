@@ -6,6 +6,7 @@
 
 # Do not ignore .md, .c, Makefile and .txt files
 !.clangd
+!.clang-format
 !*.md
 !*.c
 !*.h
