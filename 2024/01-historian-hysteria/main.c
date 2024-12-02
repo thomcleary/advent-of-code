@@ -3,7 +3,7 @@ Day 1: Hystorian Hysteria
 https://adventofcode.com/2024/day/1
 */
 
-#define _POSIX_C_SOURCE 200809L
+#define _DEFAULT_SOURCE
 #include <assert.h>
 #include <errno.h>
 #include <math.h>
@@ -111,6 +111,7 @@ int main(void) {
   print_day(1, "Hystorian Hysteria");
   printf("Part 1: %ld\n", total_distance);
   printf("Part 2: %ld\n", similarity_score);
+
   assert(total_distance == PART1_ANSWER);
   assert(similarity_score == PART2_ANSWER);
 

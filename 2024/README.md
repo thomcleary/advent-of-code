@@ -13,7 +13,7 @@ docker compose run --rm aoc
 | Day | Challenge          | Stars  |
 | :-: | ------------------ | :----: |
 |  1  | Hystorian Hysteria | ⭐️⭐️ |
-|  2  |                    |        |
+|  2  | Red-Nosed Reports  |   ⭐   |
 |  3  |                    |        |
 |  4  |                    |        |
 |  5  |                    |        |

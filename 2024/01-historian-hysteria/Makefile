@@ -2,20 +2,17 @@ CC = gcc
 CC_FLAGS = -std=c17 -Wall -Werror
 
 TARGET = main
-OBJS = ../lib/aoc.o ../lib/hashtable.o
-HEADERS = $(TARGET).h ../lib/aoc.h ../lib/hashtable.h
+OBJS = ../lib/aoc.o ../lib/hashtable.o $(TARGET).o
 
-$(TARGET): $(TARGET).o $(OBJS)
-	$(CC) $(CC_FLAGS) -o $(TARGET) $(TARGET).o $(OBJS)
+$(TARGET): $(OBJS)
+	$(CC) $(CC_FLAGS) -o $@ $^
 
-../lib/aoc.o: ../lib/aoc.c ../lib/aoc.h
+%.o: %.c %.h
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-../lib/hashtable.o: ../lib/hashtable.c ../lib/hashtable.h
+../lib/%.o: ../lib/%.c ../lib/%.h
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CC_FLAGS) -c $<
-
+# Clean up
 clean:
-	rm $(TARGET) $(OBJS) *.o
+	rm -f $(TARGET) $(OBJS)
