@@ -13,6 +13,5 @@ $(TARGET): $(OBJS)
 ../lib/%.o: ../lib/%.c ../lib/%.h
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-# Clean up
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm $(TARGET) $(OBJS)

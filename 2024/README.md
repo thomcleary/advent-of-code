@@ -14,7 +14,7 @@ docker compose run --rm aoc
 | :-: | ------------------ | :----: |
 |  1  | Hystorian Hysteria | ⭐️⭐️ |
 |  2  | Red-Nosed Reports  |  ⭐⭐  |
-|  3  |                    |        |
+|  3  | Mull It Over       |   ⭐   |
 |  4  |                    |        |
 |  5  |                    |        |
 |  6  |                    |        |
