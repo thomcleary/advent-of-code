@@ -3,47 +3,119 @@ Day 3: Mull It Over
 https://adventofcode.com/2024/day/3
 */
 
+// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// #define USE_EXAMPLE
 #include "../lib/aoc.h"
 #include "main.h"
 
-bool find_m(void) {
-  int ch;
-  while ((ch = getchar()) != 'm' && ch != EOF) {
-    ;
+typedef struct MemoryState {
+  char *memory;
+  char *pos;
+  bool do_mul;
+  long result;
+} MemoryState;
+
+void free_memory_state(MemoryState *state) {
+  free(state->memory);
+  free(state);
+}
+
+MemoryState *read_memory(void) {
+  size_t size = BUFSIZ;
+  size_t length = 0;
+  char *memory = malloc(size);
+  assert(memory != NULL && "malloc failed");
+
+  size_t bytes_read;
+  while ((bytes_read = fread(memory + length, 1, BUFSIZ, stdin)) == BUFSIZ) {
+    size += BUFSIZ;
+    length += BUFSIZ;
+    memory = realloc(memory, size);
+    assert(memory != NULL && "realloc failed");
+  }
+  assert(ferror(stdin) == 0 && "fread failed");
+
+  length += bytes_read;
+  memory[length] = '\0';
+
+  MemoryState *state = malloc(sizeof(*state));
+  assert(state != NULL && "malloc failed");
+  state->memory = memory;
+  state->pos = state->memory;
+  state->do_mul = true;
+  state->result = 0;
+
+  return state;
+}
+
+bool next_mul(MemoryState *state) {
+  assert(state != NULL && "state is NULL");
+
+  while (*state->pos && *state->pos != 'm') {
+    if (*state->pos == 'd') {
+      const char *dont = "don't()";
+      size_t dont_len = strlen(dont);
+      const char *doo = "do()";
+      size_t doo_len = strlen(doo);
+
+      if (strncmp(state->pos, dont, dont_len) == 0) {
+        state->do_mul = false;
+        state->pos = state->pos + dont_len - 1;
+      } else if (strncmp(state->pos, doo, strlen(doo)) == 0) {
+        state->do_mul = true;
+        state->pos = state->pos + doo_len - 1;
+      }
+    }
+
+    state->pos++;
   }
 
-  if (ch == 'm') {
-    ungetc(ch, stdin);
-    return true;
+  if (*state->pos != 'm') {
+    return false;
   }
 
-  return false;
+  long x, y;
+  char closing;
+  int matched = sscanf(state->pos, "mul(%ld,%ld%c", &x, &y, &closing);
+
+  state->pos++;
+
+  if (!(matched == 3 && closing == ')')) {
+    return next_mul(state);
+  }
+
+  state->result = x * y;
+  return true;
 }
 
 int main(void) {
-  long total = 0;
+  MemoryState *state = read_memory();
+  long unconditional_total = 0;
+  long conditional_total = 0;
 
-  while (find_m()) {
-    long x, y;
-    char closing;
-    int matched = scanf("mul(%ld,%ld%c", &x, &y, &closing);
+  while (next_mul(state)) {
+    unconditional_total += state->result;
 
-    if (matched == 3 && closing == ')') {
-      total += x * y;
+    if (state->do_mul) {
+      conditional_total += state->result;
     }
   }
 
-  print_day(0, "Template");
-  printf("Part 1: %ld\n", total);
+  free_memory_state(state);
 
-  assert(total == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  print_day(3, "Mull It Over");
+  printf("Part 1: %ld\n", unconditional_total);
+  printf("Part 2: %ld\n", conditional_total);
+
+  assert(unconditional_total == PART1_ANSWER);
+  assert(conditional_total == PART2_ANSWER);
 
   return 0;
 }

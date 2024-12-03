@@ -3,10 +3,11 @@ Day 0: Template
 https://adventofcode.com/2024/day/0
 */
 
+#define USE_EXAMPLE
 #define _DEFAULT_SOURCE
+
 #include <assert.h>
 
-#define USE_EXAMPLE
 #include "../lib/aoc.h"
 #include "main.h"
 

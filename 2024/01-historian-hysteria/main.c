@@ -3,14 +3,15 @@ Day 1: Hystorian Hysteria
 https://adventofcode.com/2024/day/1
 */
 
+// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
+
 #include <assert.h>
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// #define USE_EXAMPLE
 #include "../lib/aoc.h"
 #include "../lib/hashtable.h"
 #include "main.h"

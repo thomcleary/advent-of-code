@@ -3,7 +3,9 @@ Day 2: Red-Nosed Reports
 https://adventofcode.com/2024/day/2
 */
 
+// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
+
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -11,7 +13,6 @@ https://adventofcode.com/2024/day/2
 #include <stdlib.h>
 #include <string.h>
 
-// #define USE_EXAMPLE
 #include "../lib/aoc.h"
 #include "main.h"
 
