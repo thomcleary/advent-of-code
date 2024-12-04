@@ -2,7 +2,7 @@ CC = gcc
 CC_FLAGS = -std=c17 -Wall -Werror
 
 TARGET = main
-OBJS = ../lib/aoc.o $(TARGET).o
+OBJS = ../lib/aoc.o ../lib/txt.o ../lib/strutils.o $(TARGET).o
 
 $(TARGET): $(OBJS)
 	$(CC) $(CC_FLAGS) -o $@ $^

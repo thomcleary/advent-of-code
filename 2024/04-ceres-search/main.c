@@ -8,249 +8,192 @@ https://adventofcode.com/2024/day/4
 
 #include <assert.h>
 #include <errno.h>
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../lib/aoc.h"
+#include "../lib/strutils.h"
+#include "../lib/txt.h"
 #include "main.h"
 
-typedef struct WordSearch {
-  char **lines;
-  size_t num_lines;
-} WordSearch;
-
-WordSearch *wordsearch_new(void) {
-  WordSearch *ws = malloc(sizeof(*ws));
-  assert(ws != NULL && "malloc failed");
-
-  ws->lines = NULL;
-  ws->num_lines = 0;
-
-  return ws;
-}
-
-void wordsearch_free(WordSearch *ws) {
-  for (int i = 0; i < ws->num_lines; i++) {
-    free(ws->lines[i]);
-  }
-  free(ws->lines);
-  free(ws);
-}
-
-WordSearch *wordsearch_transpose(const WordSearch *ws) {
-  assert(ws->lines != NULL && "ws->lines is NULL");
-  assert(ws->lines > 0 && "ws->num_lines less than 1");
-
-  WordSearch *ws_transpose = wordsearch_new();
-  size_t num_columns = strlen(ws->lines[0]);
+Txt *transpose(const Txt *txt) {
+  size_t num_columns = strlen(txt->lines[0]);
+  Txt *txt_transpose = txt_new(num_columns);
 
   for (int col = 0; col < num_columns; col++) {
-    ws_transpose->lines =
-        realloc(ws_transpose->lines,
-                sizeof(*ws_transpose->lines) * ws_transpose->num_lines + 1);
-    assert(ws_transpose->lines != NULL);
+    char *transposed_line = malloc(txt->num_lines + 1);
+    assert(transposed_line != NULL && "malloc failed");
 
-    char *transposed_line = malloc(ws->num_lines + 1);
-    assert(transposed_line != NULL);
-
-    for (int row = 0; row < ws->num_lines; row++) {
-      transposed_line[row] = ws->lines[row][col];
+    for (int row = 0; row < txt->num_lines; row++) {
+      transposed_line[row] = txt->lines[row][col];
     }
-    transposed_line[ws->num_lines] = '\0';
-    ws_transpose->lines[ws_transpose->num_lines] = transposed_line;
-    ws_transpose->num_lines++;
+
+    transposed_line[txt->num_lines] = '\0';
+    txt_transpose->lines[col] = transposed_line;
   }
 
-  return ws_transpose;
+  return txt_transpose;
 }
 
-WordSearch *wordsearch_diagonals(const WordSearch *ws) {
-  assert(ws->lines != NULL && "ws->lines is NULL");
-  assert(ws->lines > 0 && "ws->num_lines less than 1");
+Txt *diagonals(const Txt *txt) {
+  size_t num_columns = strlen(txt->lines[0]);
+  size_t num_diagonals = num_columns + txt->num_lines - 1;
+  Txt *txt_diagonals = txt_new(num_diagonals);
 
-  WordSearch *ws_diagonals = wordsearch_new();
-  size_t num_columns = strlen(ws->lines[0]);
+  size_t diag = 0;
 
   for (int col = 0; col < num_columns; col++) {
-    ws_diagonals->lines =
-        realloc(ws_diagonals->lines,
-                sizeof(*ws_diagonals->lines) * ws_diagonals->num_lines + 1);
-    assert(ws_diagonals->lines != NULL);
-
     int cols_left = num_columns - col;
-    size_t line_size = cols_left < ws->num_lines ? cols_left : ws->num_lines;
+    size_t line_size = cols_left < txt->num_lines ? cols_left : txt->num_lines;
 
     char *diagonal_line = malloc(line_size + 1);
-    assert(diagonal_line != NULL);
+    assert(diagonal_line != NULL && "malloc failed");
 
     for (int row = 0; col + row < num_columns; row++) {
-      diagonal_line[row] = ws->lines[row][col + row];
+      diagonal_line[row] = txt->lines[row][col + row];
     }
     diagonal_line[line_size] = '\0';
-    ws_diagonals->lines[ws_diagonals->num_lines] = diagonal_line;
-    ws_diagonals->num_lines++;
+    txt_diagonals->lines[diag++] = diagonal_line;
   }
 
-  for (int row = 1; row < ws->num_lines; row++) {
-    ws_diagonals->lines =
-        realloc(ws_diagonals->lines,
-                sizeof(*ws_diagonals->lines) * ws_diagonals->num_lines + 1);
-    assert(ws_diagonals->lines != NULL);
-
-    int rows_left = ws->num_lines - row;
+  for (int row = 1; row < txt->num_lines; row++) {
+    int rows_left = txt->num_lines - row;
     size_t line_size = rows_left < num_columns ? rows_left : num_columns;
 
     char *diagonal_line = malloc(line_size + 1);
-    assert(diagonal_line != NULL);
+    assert(diagonal_line != NULL && "malloc failed");
 
-    for (int col = 0; col + row < ws->num_lines; col++) {
-      diagonal_line[col] = ws->lines[row + col][col];
+    for (int col = 0; col + row < txt->num_lines; col++) {
+      diagonal_line[col] = txt->lines[row + col][col];
     }
+
     diagonal_line[line_size] = '\0';
-    ws_diagonals->lines[ws_diagonals->num_lines] = diagonal_line;
-    ws_diagonals->num_lines++;
+    txt_diagonals->lines[diag++] = diagonal_line;
   }
 
-  return ws_diagonals;
+  return txt_diagonals;
 }
 
-WordSearch *wordsearch_antidiagonals(const WordSearch *ws) {
-  assert(ws->lines != NULL && "ws->lines is NULL");
-  assert(ws->lines > 0 && "ws->num_lines less than 1");
-
+Txt *antidiagonals(const Txt *txt) {
   /* Transpose -> Mirror Horizontally = Rotate 90 Clockwise
   1,2,3    1,4,7    7,4,1
   4,5,6 -> 2,5,8 -> 8,5,2
   7,8,9    3,6,9    9,6,3
   */
-
-  WordSearch *ws_rotated = wordsearch_transpose(ws);
-  for (int row = 0; row < ws_rotated->num_lines; row++) {
-    char *line = ws_rotated->lines[row];
+  Txt *txt_rotated = transpose(txt);
+  for (int row = 0; row < txt_rotated->num_lines; row++) {
+    char *line = txt_rotated->lines[row];
     size_t left = 0;
     size_t right = strlen(line) - 1;
 
     while (left < right) {
       char tmp = line[left];
-      line[left] = line[right];
-      line[right] = tmp;
-      left++;
-      right--;
+      line[left++] = line[right];
+      line[right--] = tmp;
     }
   }
 
-  WordSearch *ws_antidiagonals = wordsearch_diagonals(ws_rotated);
-  wordsearch_free(ws_rotated);
+  Txt *txt_antidiagonals = diagonals(txt_rotated);
+  txt_free(txt_rotated);
 
-  return ws_antidiagonals;
+  return txt_antidiagonals;
 }
 
-// TODO: move to /lib?
-char *str_reverse(const char *str) {
-  if (str == NULL) {
-    return NULL;
-  }
-
-  size_t len = strlen(str);
-  char *reversed = malloc(len + 1);
-  assert(reversed != NULL);
-
-  for (int i = 0; i < len; i++) {
-    reversed[i] = str[len - 1 - i];
-  }
-  reversed[len] = '\0';
-
-  return reversed;
-}
-
-// TODO: move to /lib?
-long occurences(const char *word, char *line) {
-  assert(word != NULL && "word is NULL");
-  assert(*word && "word is empty string");
-  assert(line != NULL && "line is NULL");
-
-  size_t word_len = strlen(word);
-  long count = 0;
-  char *occurence = NULL;
-
-  while ((occurence = strstr(line, word)) != NULL) {
-    count++;
-    line = occurence + word_len;
-  }
-
-  return count;
-}
-
-long wordsearch_occurences(const WordSearch *ws, const char *word) {
-  const char *word_reverse = str_reverse(word);
+long occurences(const Txt *txt, const char *word) {
+  char *word_rev = str_rev(word);
   long count = 0;
 
-  for (int i = 0; i < ws->num_lines; i++) {
-    char *line = ws->lines[i];
-    count += occurences(word, line);
-    count += occurences(word_reverse, line);
+  for (int i = 0; i < txt->num_lines; i++) {
+    char *line = txt->lines[i];
+    count += str_cntocc(word, line);
+    count += str_cntocc(word_rev, line);
   }
+
+  free(word_rev);
 
   return count;
 }
 
-long wordsearch_count(const WordSearch *ws, const char *word) {
-  assert(ws != NULL && "ws is NULL");
-  assert(ws->lines != NULL && "ws->lines is NULL");
-  assert(word != NULL && "word is NULL");
-  assert(*word && "word is empty string");
+long wordsearch_count(const Txt *ws, const char *word) {
+  long count = occurences(ws, word);
 
-  long count = wordsearch_occurences(ws, word);
+  Txt *ws_transpose = transpose(ws);
+  count += occurences(ws_transpose, word);
+  txt_free(ws_transpose);
 
-  WordSearch *ws_transpose = wordsearch_transpose(ws);
-  count += wordsearch_occurences(ws_transpose, word);
-  wordsearch_free(ws_transpose);
+  Txt *ws_diagonals = diagonals(ws);
+  count += occurences(ws_diagonals, word);
+  txt_free(ws_diagonals);
 
-  WordSearch *ws_diagonals = wordsearch_diagonals(ws);
-  count += wordsearch_occurences(ws_diagonals, word);
-  wordsearch_free(ws_diagonals);
-
-  WordSearch *ws_antidiagonals = wordsearch_antidiagonals(ws);
-  count += wordsearch_occurences(ws_antidiagonals, word);
-  wordsearch_free(ws_antidiagonals);
+  Txt *ws_antidiagonals = antidiagonals(ws);
+  count += occurences(ws_antidiagonals, word);
+  txt_free(ws_antidiagonals);
 
   return count;
 }
 
-// TODO: add `char **read_lines(FILE *stream)` to /lib?
-WordSearch *read_wordsearch(void) {
-  WordSearch *ws = wordsearch_new();
-  char *line = NULL;
-  size_t buf_len = 0;
+bool is_x(const char *word, char tl, char tr, char bl, char br) {
+  char left = word[0];
+  char right = word[2];
 
-  errno = 0;
-  while (getline(&line, &buf_len, stdin) != -1) {
-    ws->lines = realloc(ws->lines, sizeof(*ws->lines) * ws->num_lines + 1);
-    assert(ws->lines != NULL && "realloc failed");
+  bool tl_match = tl == left || tl == right;
+  bool tr_match = tr == left || tr == right;
+  bool bl_match = bl == left || bl == right;
+  bool br_match = br == left || br == right;
 
-    line[strcspn(line, "\n")] = '\0';
-    ws->lines[ws->num_lines] = strdup(line);
-    ws->num_lines++;
+  bool diagonal_match = tl_match && br_match && tl != br;
+  bool antidiagonal_match = tr_match && bl_match && tr != bl;
+
+  return diagonal_match && antidiagonal_match;
+}
+
+long wordsearch_xcount(const Txt *ws, const char *word) {
+  assert(strlen(word) == 3 && "strlen(word) is not 3");
+  char centre = word[1];
+
+  size_t num_columns = strlen(ws->lines[0]);
+  long xcount = 0;
+
+  for (int row = 1; row < ws->num_lines - 1; row++) {
+    for (int col = 1; col < num_columns - 1; col++) {
+      char ch = ws->lines[row][col];
+      if (ch != centre) {
+        continue;
+      }
+
+      char *line_above = ws->lines[row - 1];
+      char *line_below = ws->lines[row + 1];
+
+      char top_left = line_above[col - 1];
+      char top_right = line_above[col + 1];
+      char bottom_left = line_below[col - 1];
+      char bottom_right = line_below[col + 1];
+
+      if (is_x(word, top_left, top_right, bottom_left, bottom_right)) {
+        xcount++;
+      }
+    }
   }
-  assert(errno == 0 && "getline failed");
 
-  free(line);
-
-  return ws;
+  return xcount;
 }
 
 int main(void) {
-  WordSearch *ws = read_wordsearch();
-  long word_count = wordsearch_count(ws, "XMAS");
-  wordsearch_free(ws);
+  Txt *ws = txt_read(stdin);
+
+  long xmas_count = wordsearch_count(ws, "XMAS");
+  long x_mas_count = wordsearch_xcount(ws, "MAS");
+
+  txt_free(ws);
 
   print_day(4, "Ceres Search");
-  printf("Part 1: %ld\n", word_count);
+  printf("Part 1: %ld\n", xmas_count);
+  printf("Part 2: %ld\n", x_mas_count);
 
-  assert(word_count == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  assert(xmas_count == PART1_ANSWER);
+  assert(x_mas_count == PART2_ANSWER);
 
   return 0;
 }
