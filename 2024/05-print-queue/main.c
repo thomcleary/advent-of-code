@@ -4,7 +4,7 @@ https://adventofcode.com/2024/day/5
 */
 
 // #define USE_EXAMPLE
-#define _DEFAULT_SOURCE
+#define _GNU_SOURCE // qsort_r
 
 #include <assert.h>
 #include <errno.h>
@@ -18,8 +18,6 @@ https://adventofcode.com/2024/day/5
 #include "../lib/txt.h"
 #include "main.h"
 
-// TODO: move pq types and functions to separate file
-// print-queue.c, print-queue.h
 typedef struct OrderingRule {
   int page;
   int depends_on;
@@ -30,23 +28,16 @@ typedef struct PageUpdate {
   size_t length;
 } PageUpdate;
 
-typedef struct ValidPageUpdates {
-  PageUpdate *updates;
-  size_t length;
-} ValidPageUpdates;
-
 typedef struct PrintQueue {
   OrderingRule *rules;
   size_t num_rules;
   PageUpdate *updates;
   size_t num_updates;
+  PageUpdate *valid_updates;
+  size_t num_valid_updates;
+  PageUpdate *invalid_updates;
+  size_t num_invalid_updates;
 } PrintQueue;
-
-void valid_page_updates_free(ValidPageUpdates *vpu) {
-  // Don't free each vpu->updates->pages, they are owned by pq
-  free(vpu->updates);
-  free(vpu);
-}
 
 void pq_free(PrintQueue *pq) {
   free(pq->rules);
@@ -54,6 +45,8 @@ void pq_free(PrintQueue *pq) {
     free(pq->updates[i].pages);
   }
   free(pq->updates);
+  free(pq->valid_updates);
+  free(pq->invalid_updates);
   free(pq);
 }
 
@@ -108,11 +101,15 @@ PrintQueue *pq_parse(Txt *txt) {
   pq->num_rules = num_rules;
   pq->updates = updates;
   pq->num_updates = num_updates;
+  pq->valid_updates = NULL;
+  pq->num_valid_updates = 0;
+  pq->invalid_updates = NULL;
+  pq->num_invalid_updates = 0;
 
   return pq;
 }
 
-bool pq_has_rule(PrintQueue *pq, int page, int depends_on) {
+bool pq_has_rule(PrintQueue *pq, int depends_on, int page) {
   for (int i = 0; i < pq->num_rules; i++) {
     OrderingRule rule = pq->rules[i];
     if (rule.page == page && rule.depends_on == depends_on) {
@@ -122,12 +119,13 @@ bool pq_has_rule(PrintQueue *pq, int page, int depends_on) {
   return false;
 }
 
-bool is_valid_update(PageUpdate update, PrintQueue *pq) {
-  for (int i = 0; i < update.length - 1; i++) {
-    int page = update.pages[i];
-    for (int j = i + 1; j < update.length; j++) {
-      int depends_on = update.pages[j];
-      if (pq_has_rule(pq, page, depends_on)) {
+bool is_valid_update(PageUpdate *update, PrintQueue *pq) {
+  for (int i = 0; i < update->length - 1; i++) {
+    int page = update->pages[i];
+    for (int j = i + 1; j < update->length; j++) {
+      int depends_on = update->pages[j];
+      if (pq_has_rule(pq, depends_on, page)) {
+        // A page has been printed before one of it's dependencies
         return false;
       }
     }
@@ -135,31 +133,78 @@ bool is_valid_update(PageUpdate update, PrintQueue *pq) {
   return true;
 }
 
-ValidPageUpdates *pq_validate(PrintQueue *pq) {
-  ValidPageUpdates *vpu = malloc(sizeof(*vpu));
-  assert(vpu != NULL && "malloc failed");
-  vpu->updates = malloc(sizeof(*vpu->updates) * pq->num_updates);
-  assert(vpu->updates != NULL && "malloc failed");
-  vpu->length = 0;
+void pq_validate(PrintQueue *pq) {
+  PageUpdate *valid_updates = malloc(sizeof(*valid_updates) * pq->num_updates);
+  assert(valid_updates != NULL && "malloc failed");
+  PageUpdate *invalid_updates =
+      malloc(sizeof(*invalid_updates) * pq->num_updates);
+  assert(invalid_updates != NULL && "malloc failed");
 
   for (int i = 0; i < pq->num_updates; i++) {
-    PageUpdate update = pq->updates[i];
+    PageUpdate *update = pq->updates + i;
 
     if (is_valid_update(update, pq)) {
-      vpu->updates[vpu->length++] = update;
+      valid_updates[pq->num_valid_updates++] = *update;
+    } else {
+      invalid_updates[pq->num_invalid_updates++] = *update;
     }
   }
 
-  return vpu;
+  valid_updates =
+      realloc(valid_updates, sizeof(*valid_updates) * pq->num_valid_updates);
+  assert(valid_updates != NULL);
+  invalid_updates = realloc(invalid_updates,
+                            sizeof(*invalid_updates) * pq->num_invalid_updates);
+  assert(invalid_updates != NULL);
+
+  pq->valid_updates = valid_updates;
+  pq->invalid_updates = invalid_updates;
 }
 
-long sum_middle_pages(ValidPageUpdates *vpu) {
+// qsort_r has different argument orders depending on the platform 🙃
+#ifdef __APPLE__
+int compare_pages(void *print_queue, const void *left_page,
+                  const void *right_page) {
+#else
+int compare_pages(const void *left_page, const void *right_page,
+                  void *print_queue) {
+#endif
+  PrintQueue *pq = (PrintQueue *)print_queue;
+  int left = *(int *)left_page;
+  int right = *(int *)right_page;
+
+  if (pq_has_rule(pq, right, left)) {
+    // Left depends on right being printed first
+    return -1;
+  } else if (pq_has_rule(pq, left, right)) {
+    // Right depends on left being printed first
+    return 1;
+  }
+  return 0;
+}
+
+void pq_fix(PrintQueue *pq) {
+  for (int i = 0; i < pq->num_invalid_updates; i++) {
+    PageUpdate *update = pq->invalid_updates + i;
+
+#ifdef __APPLE__ // Editor+LSP run on my Macbook, but I'm compiling and running
+                 // in an Ubuntu container
+    qsort_r(update->pages, update->length, sizeof(*update->pages), pq,
+            compare_pages);
+#else
+    qsort_r(update->pages, update->length, sizeof(*update->pages),
+            compare_pages, pq);
+#endif
+  }
+}
+
+long sum_middle_pages(PageUpdate *pu, size_t length) {
   long sum = 0;
 
-  for (int i = 0; i < vpu->length; i++) {
-    PageUpdate update = vpu->updates[i];
-    assert(update.length % 2 != 0 && "expected odd length (1 middle item)");
-    sum += update.pages[(update.length / 2)];
+  for (int i = 0; i < length; i++) {
+    PageUpdate *update = pu + i;
+    assert(update->length % 2 != 0 && "expected odd length (1 middle item)");
+    sum += update->pages[(update->length / 2)];
   }
 
   return sum;
@@ -168,19 +213,22 @@ long sum_middle_pages(ValidPageUpdates *vpu) {
 int main(void) {
   Txt *txt = txt_read(stdin);
   PrintQueue *pq = pq_parse(txt);
-  ValidPageUpdates *valid_updates = pq_validate(pq);
+  pq_validate(pq);
+  pq_fix(pq);
 
-  long middle_page_sum = sum_middle_pages(valid_updates);
+  long valid_sum = sum_middle_pages(pq->valid_updates, pq->num_valid_updates);
+  long invalid_sum =
+      sum_middle_pages(pq->invalid_updates, pq->num_invalid_updates);
 
-  valid_page_updates_free(valid_updates);
   pq_free(pq);
   txt_free(txt);
 
   print_day(5, "Print Queue");
-  printf("Part 1: %ld\n", middle_page_sum);
+  printf("Part 1: %ld\n", valid_sum);
+  printf("Part 2: %ld\n", invalid_sum);
 
-  assert(middle_page_sum == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  assert(valid_sum == PART1_ANSWER);
+  assert(invalid_sum == PART2_ANSWER);
 
   return 0;
 }
