@@ -2,7 +2,8 @@ CC = gcc
 CC_FLAGS = -std=c17 -Wall -Werror
 
 TARGET = main
-OBJS = ../lib/aoc.o ../lib/hashtable.o $(TARGET).o
+LIBS = aoc hashtable
+OBJS = $(addprefix ../lib/, $(addsuffix .o, $(LIBS))) $(TARGET).o
 
 $(TARGET): $(OBJS)
 	$(CC) $(CC_FLAGS) -o $@ $^

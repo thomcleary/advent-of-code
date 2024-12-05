@@ -16,7 +16,7 @@ docker compose run --rm aoc
 |  2  | Red-Nosed Reports  |  ⭐⭐  |
 |  3  | Mull It Over       |  ⭐⭐  |
 |  4  | Ceres Search       |  ⭐⭐  |
-|  5  |                    |        |
+|  5  | Print Queue        |   ⭐   |
 |  6  |                    |        |
 |  7  |                    |        |
 |  8  |                    |        |
