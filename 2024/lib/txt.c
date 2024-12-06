@@ -42,7 +42,7 @@ Txt *txt_read(FILE *stream) {
 }
 
 void txt_free(Txt *txt) {
-  for (int i = 0; i < txt->num_lines; i++) {
+  for (size_t i = 0; i < txt->num_lines; i++) {
     free(txt->lines[i]);
   }
   free(txt->lines);

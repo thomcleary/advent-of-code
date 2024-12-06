@@ -4,6 +4,7 @@ https://adventofcode.com/2024/day/2
 */
 
 // #define USE_EXAMPLE
+#include <stddef.h>
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
@@ -32,7 +33,7 @@ Report *get_report(void) {
   size_t line_len = 0;
 
   errno = 0;
-  int result = getline(&line, &line_len, stdin);
+  ssize_t result = getline(&line, &line_len, stdin);
   assert(errno == 0 && "getline failed");
 
   if (result == -1) {
@@ -91,7 +92,7 @@ bool is_report_safe(Report *report) {
   long prev_diff = 0;
   bool is_safe_report = true;
 
-  for (int i = 1; i < report->length && is_safe_report; i++) {
+  for (size_t i = 1; i < report->length && is_safe_report; i++) {
     long curr_level = report->levels[i];
     long curr_diff = curr_level - prev_level;
     is_safe_report = is_gradual_change(prev_diff, curr_diff);
@@ -114,9 +115,9 @@ bool is_report_safe_with_dampener(Report *report) {
 
   bool is_safe_report = false;
 
-  for (int skip_level = 0; skip_level < report->length && !is_safe_report;
+  for (size_t skip_level = 0; skip_level < report->length && !is_safe_report;
        skip_level++) {
-    for (int level = 0, i = 0; level < report->length; level++) {
+    for (size_t level = 0, i = 0; level < report->length; level++) {
       if (level != skip_level) {
         dampened_report->levels[i] = report->levels[level];
         i++;

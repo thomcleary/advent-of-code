@@ -1,5 +1,5 @@
 CC = gcc
-CC_FLAGS = -std=c17 -Wall -Werror
+CC_FLAGS = -std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wuninitialized -Wformat -Wconversion
 
 TARGET = main
 LIBS = aoc
@@ -14,5 +14,6 @@ $(TARGET): $(OBJS)
 ../lib/%.o: ../lib/%.c ../lib/%.h
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
+.PHONY: clean
 clean:
 	rm $(TARGET) $(OBJS)

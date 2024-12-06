@@ -4,6 +4,7 @@ https://adventofcode.com/2024/day/1
 */
 
 // #define USE_EXAMPLE
+#include <stddef.h>
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
@@ -16,8 +17,8 @@ https://adventofcode.com/2024/day/1
 #include "../lib/hashtable.h"
 #include "main.h"
 
-int get_ids(long left_ids[], long right_ids[]) {
-  int num_lines = 0;
+size_t get_ids(long left_ids[], long right_ids[]) {
+  size_t num_lines = 0;
   char *line = NULL;
   size_t line_len = 0;
   errno = 0;
@@ -53,7 +54,7 @@ char *get_key(long id) {
 }
 
 void free_hashtable(struct hashtable *ht, long keys[], size_t num_keys) {
-  for (int i = 0; i < num_keys; i++) {
+  for (size_t i = 0; i < num_keys; i++) {
     char *key = get_key(keys[i]);
     long *value = hashtable_get(ht, key);
     if (value != NULL) {
@@ -67,7 +68,7 @@ void free_hashtable(struct hashtable *ht, long keys[], size_t num_keys) {
 int main(void) {
   // There's only 1000 lines in the puzzle input, 1024 will do
   long left_ids[BUFSIZ], right_ids[BUFSIZ];
-  int num_ids = get_ids(left_ids, right_ids);
+  size_t num_ids = get_ids(left_ids, right_ids);
 
   qsort(left_ids, num_ids, sizeof(*left_ids), compare_int);
   qsort(right_ids, num_ids, sizeof(*right_ids), compare_int);
@@ -76,7 +77,7 @@ int main(void) {
   assert(right_counts_ht != NULL && "hashtable_new failed");
   long total_distance = 0;
 
-  for (int i = 0; i < num_ids; i++) {
+  for (size_t i = 0; i < num_ids; i++) {
     long right = right_ids[i];
 
     char *key = get_key(right);
@@ -97,7 +98,7 @@ int main(void) {
   }
 
   long similarity_score = 0;
-  for (int i = 0; i < num_ids; i++) {
+  for (size_t i = 0; i < num_ids; i++) {
     long left = left_ids[i];
 
     char *key = get_key(left);

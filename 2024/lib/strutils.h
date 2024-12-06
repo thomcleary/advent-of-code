@@ -10,6 +10,6 @@ char *str_rev(const char *str);
 /*
 Returns the count of occurences of `word` in `line`
 */
-long str_cntocc(const char *word, const char *line);
+unsigned long str_cntocc(const char *word, const char *line);
 
 #endif

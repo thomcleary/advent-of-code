@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,7 +12,7 @@ char *str_rev(const char *str) {
   char *reversed = malloc(len + 1);
   assert(reversed != NULL);
 
-  for (int i = 0; i < len; i++) {
+  for (size_t i = 0; i < len; i++) {
     reversed[i] = str[len - 1 - i];
   }
   reversed[len] = '\0';
@@ -19,17 +20,16 @@ char *str_rev(const char *str) {
   return reversed;
 }
 
-long str_cntocc(const char *word, const char *line) {
+unsigned long str_cntocc(const char *word, const char *line) {
   size_t word_len = strlen(word);
   long count = 0;
   char *occurence = NULL;
 
   while ((occurence = strstr(line, word)) != NULL) {
     count++;
+    assert(count >= 0 && "count overflowed");
     line = occurence + word_len;
   }
 
-  assert(count >= 0 && "count overflowed");
-
-  return count;
+  return (unsigned long)count;
 }

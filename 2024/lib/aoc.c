@@ -3,8 +3,8 @@
 
 #include "aoc.h"
 
-static void print_border(const unsigned int length) {
-  for (int i = 0; i < length; i++) {
+static void print_border(const size_t length) {
+  for (size_t i = 0; i < length; i++) {
     putchar('-');
   }
   putchar('\n');
