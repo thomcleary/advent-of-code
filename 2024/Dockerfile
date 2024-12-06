@@ -1,7 +1,15 @@
-FROM ubuntu
+FROM ubuntu:24.04
 
-RUN apt-get update && apt-get -y install unminimize && (echo "y"; echo "y") | unminimize
-RUN apt-get -y install gcc make man-db manpages curl bat less
+RUN apt-get update && \
+    apt-get -y install unminimize \
+    && (echo "y"; echo "y") | unminimize
+
+RUN apt-get -y install wget gcc make man-db manpages curl bat less
+
+# https://github.com/sharkdp/hyperfine?tab=readme-ov-file#on-ubuntu
+RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyperfine_1.18.0_amd64.deb && \
+    dpkg -i hyperfine_1.18.0_amd64.deb && \
+    rm hyperfine_1.18.0_amd64.deb
 
 WORKDIR /root
 

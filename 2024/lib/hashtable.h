@@ -1,13 +1,16 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
-struct hashtable;
+#include <stdbool.h>
+#include <stddef.h>
 
-struct hashtable *hashtable_new(void);
-void hashtable_free(struct hashtable *ht);
-void *hashtable_get(struct hashtable *ht, const char *key);
-struct hashtable *hashtable_set(struct hashtable *ht, const char *key,
-                                const void *value);
-unsigned long hashtable_size(struct hashtable *ht);
+typedef struct Hashtable Hashtable;
+
+Hashtable *hashtable_new(void);
+void hashtable_free(Hashtable *ht);
+bool hashtable_has(Hashtable *ht, const char *key);
+void *hashtable_get(Hashtable *ht, const char *key);
+Hashtable *hashtable_set(Hashtable *ht, const char *key, const void *value);
+size_t hashtable_size(Hashtable *ht);
 
 #endif

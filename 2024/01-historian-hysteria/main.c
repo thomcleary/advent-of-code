@@ -4,7 +4,6 @@ https://adventofcode.com/2024/day/1
 */
 
 // #define USE_EXAMPLE
-#include <stddef.h>
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
@@ -53,7 +52,7 @@ char *get_key(long id) {
   return key;
 }
 
-void free_hashtable(struct hashtable *ht, long keys[], size_t num_keys) {
+void free_hashtable(Hashtable *ht, long keys[], size_t num_keys) {
   for (size_t i = 0; i < num_keys; i++) {
     char *key = get_key(keys[i]);
     long *value = hashtable_get(ht, key);
@@ -73,7 +72,7 @@ int main(void) {
   qsort(left_ids, num_ids, sizeof(*left_ids), compare_int);
   qsort(right_ids, num_ids, sizeof(*right_ids), compare_int);
 
-  struct hashtable *right_counts_ht = hashtable_new();
+  Hashtable *right_counts_ht = hashtable_new();
   assert(right_counts_ht != NULL && "hashtable_new failed");
   long total_distance = 0;
 

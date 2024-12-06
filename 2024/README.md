@@ -17,7 +17,7 @@ docker compose run --rm aoc
 |  3  | Mull It Over       |  ⭐⭐  |
 |  4  | Ceres Search       |  ⭐⭐  |
 |  5  | Print Queue        |  ⭐⭐  |
-|  6  | Guard Gallivant    |   ⭐   |
+|  6  | Guard Gallivant    |  ⭐⭐  |
 |  7  |                    |        |
 |  8  |                    |        |
 |  9  |                    |        |

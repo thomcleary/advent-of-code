@@ -4,7 +4,6 @@ https://adventofcode.com/2024/day/5
 */
 
 // #define USE_EXAMPLE
-#include <stddef.h>
 #define _GNU_SOURCE // qsort_r
 
 #include <assert.h>

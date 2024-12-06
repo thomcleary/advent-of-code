@@ -5,7 +5,7 @@ Inspired by: https://github.com/benhoyt/ht
 I'll implement a separate-chained hashtable so I don't just copy and paste lol.
 */
 
-#define _POSIX_C_SOURCE 200809L
+#define _DEFAULT_SOURCE
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -22,18 +22,18 @@ I'll implement a separate-chained hashtable so I don't just copy and paste lol.
 #define FNV_OFFSET 14695981039346656037UL
 #define FNV_PRIME 1099511628211UL
 
-struct hashtable_entry {
+typedef struct HashtableEntry {
   const char *key;
   void *value;
-  struct hashtable_entry *next;
-};
+  struct HashtableEntry *next;
+} HashtableEntry;
 
-struct hashtable {
-  struct hashtable_entry *buckets[NUM_BUCKETS];
+typedef struct Hashtable {
+  HashtableEntry *buckets[NUM_BUCKETS];
   size_t size;
-};
+} Hashtable;
 
-static void free_entry(struct hashtable_entry *entry) {
+static void free_entry(HashtableEntry *entry) {
   if (entry == NULL) {
     return;
   }
@@ -61,8 +61,8 @@ static uint64_t hash_key(const char *key) {
   return hash;
 }
 
-struct hashtable *hashtable_new(void) {
-  struct hashtable *ht = malloc(sizeof(struct hashtable));
+Hashtable *hashtable_new(void) {
+  Hashtable *ht = malloc(sizeof(*ht));
   assert(ht != NULL);
 
   for (int i = 0; i < NUM_BUCKETS; i++) {
@@ -74,24 +74,37 @@ struct hashtable *hashtable_new(void) {
   return ht;
 }
 
-void hashtable_free(struct hashtable *ht) {
+void hashtable_free(Hashtable *ht) {
   if (ht == NULL) {
     return;
   }
 
   for (unsigned int bucket = 0; bucket < NUM_BUCKETS; bucket++) {
-    struct hashtable_entry *entry = ht->buckets[bucket];
+    HashtableEntry *entry = ht->buckets[bucket];
     free_entry(entry);
   }
 
   free(ht);
 }
 
-void *hashtable_get(struct hashtable *ht, const char *key) {
+bool hashtable_has(Hashtable *ht, const char *key) {
   assert(ht != NULL);
   assert(key != NULL);
 
-  struct hashtable_entry *entry = ht->buckets[hash_key(key) % NUM_BUCKETS];
+  HashtableEntry *entry = ht->buckets[hash_key(key) % NUM_BUCKETS];
+
+  while (entry != NULL && strcmp(entry->key, key) != 0) {
+    entry = entry->next;
+  }
+
+  return entry != NULL;
+}
+
+void *hashtable_get(Hashtable *ht, const char *key) {
+  assert(ht != NULL);
+  assert(key != NULL);
+
+  HashtableEntry *entry = ht->buckets[hash_key(key) % NUM_BUCKETS];
 
   while (entry != NULL && strcmp(entry->key, key) != 0) {
     entry = entry->next;
@@ -104,14 +117,13 @@ void *hashtable_get(struct hashtable *ht, const char *key) {
   return entry->value;
 }
 
-struct hashtable *hashtable_set(struct hashtable *ht, const char *key,
-                                const void *value) {
+Hashtable *hashtable_set(Hashtable *ht, const char *key, const void *value) {
   assert(ht != NULL);
   assert(key != NULL);
 
   uint64_t bucket = hash_key(key) % NUM_BUCKETS;
-  struct hashtable_entry *prev_entry = ht->buckets[bucket];
-  struct hashtable_entry *curr_entry = prev_entry;
+  HashtableEntry *prev_entry = ht->buckets[bucket];
+  HashtableEntry *curr_entry = prev_entry;
 
   while (curr_entry != NULL) {
     if (strcmp(curr_entry->key, key) == 0) {
@@ -123,13 +135,14 @@ struct hashtable *hashtable_set(struct hashtable *ht, const char *key,
     curr_entry = curr_entry->next;
   }
 
-  struct hashtable_entry *new_entry = malloc(sizeof(struct hashtable_entry));
+  HashtableEntry *new_entry = malloc(sizeof(*new_entry));
   assert(new_entry != NULL);
 
   new_entry->key = strdup(key);
   assert(new_entry->key != NULL);
 
   new_entry->value = (void *)value;
+  new_entry->next = NULL;
 
   if (prev_entry == NULL) {
     ht->buckets[bucket] = new_entry;
@@ -141,6 +154,6 @@ struct hashtable *hashtable_set(struct hashtable *ht, const char *key,
   return ht;
 }
 
-size_t hashtable_size(struct hashtable *ht) {
+size_t hashtable_size(Hashtable *ht) {
   return ht->size;
 }

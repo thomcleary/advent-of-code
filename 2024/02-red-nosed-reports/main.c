@@ -4,7 +4,6 @@ https://adventofcode.com/2024/day/2
 */
 
 // #define USE_EXAMPLE
-#include <stddef.h>
 #define _DEFAULT_SOURCE
 
 #include <assert.h>

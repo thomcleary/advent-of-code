@@ -3,8 +3,7 @@ Day 6: Guard Gallivant
 https://adventofcode.com/2024/day/6
 */
 
-#include <stddef.h>
-#define USE_EXAMPLE
+// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
@@ -103,6 +102,21 @@ LabMap *labmap_parse(Txt *txt) {
   return map;
 }
 
+void labmap_setpos(LabMap *map, Coord coord, Position pos) {
+  map->positions[coord.row][coord.column] = pos;
+}
+
+void labmap_reset(LabMap *map) {
+  for (size_t r = 0; r < map->rows; r++) {
+    for (size_t c = 0; c < map->columns; c++) {
+      Position pos = map->positions[r][c];
+      if (pos == POSITION_VISITED) {
+        labmap_setpos(map, (Coord){.row = r, .column = c}, POSITION_UNVISITED);
+      }
+    }
+  }
+}
+
 bool is_guard_exiting(LabMap *map, Coord coord, Direction direction) {
   assert(coord.row < map->rows && "coord.row is outside map");
   assert(coord.column < map->columns && "coord.column is outside map");
@@ -155,12 +169,25 @@ Direction turn_right(Direction direction) {
   }
 }
 
-void labmap_predict(LabMap *map) {
+bool labmap_predict(LabMap *map) {
+  const size_t num_directions = 4;
+
+  unsigned long *visits = calloc(map->rows * map->columns, sizeof(*visits));
+  assert(visits != NULL && "calloc failed");
+
   Coord guard_coord = map->guard_start;
   Direction current_dir = DIRECTION_UP;
 
   while (!is_guard_exiting(map, guard_coord, current_dir)) {
-    map->positions[guard_coord.row][guard_coord.column] = POSITION_VISITED;
+    labmap_setpos(map, guard_coord, POSITION_VISITED);
+
+    size_t visits_index = guard_coord.row * map->columns + guard_coord.column;
+
+    if (visits[visits_index] > num_directions) {
+      free(visits);
+      return true;
+    }
+
     Coord next_guard_coord = next_coord(guard_coord, current_dir);
     Position next_pos =
         map->positions[next_guard_coord.row][next_guard_coord.column];
@@ -169,10 +196,14 @@ void labmap_predict(LabMap *map) {
       current_dir = turn_right(current_dir);
     } else {
       guard_coord = next_guard_coord;
+      visits[visits_index] += 1;
     }
   }
 
-  map->positions[guard_coord.row][guard_coord.column] = POSITION_VISITED;
+  labmap_setpos(map, guard_coord, POSITION_VISITED);
+
+  free(visits);
+  return false; // No loop, guard exited
 }
 
 size_t labmap_positions_visited(LabMap *map) {
@@ -187,24 +218,54 @@ size_t labmap_positions_visited(LabMap *map) {
   return count;
 }
 
+size_t labmap_positions_loopable(LabMap *map, size_t positions_visited) {
+  Coord obstruction_coords[positions_visited];
+  size_t visited = 0;
+
+  for (size_t r = 0; r < map->rows; r++) {
+    for (size_t c = 0; c < map->columns; c++) {
+      bool is_start = map->guard_start.row == r && map->guard_start.column == c;
+      if (!is_start && map->positions[r][c] == POSITION_VISITED) {
+        obstruction_coords[visited++] = (Coord){.row = r, .column = c};
+      }
+    }
+  }
+  assert(visited == positions_visited - 1);
+
+  size_t count = 0;
+
+  for (size_t i = 0; i < visited; i++) {
+    Coord obstruction_coord = obstruction_coords[i];
+    labmap_reset(map);
+    labmap_setpos(map, obstruction_coord, POSITION_OBSTRUCTION);
+
+    if (labmap_predict(map)) {
+      count++;
+    }
+
+    labmap_setpos(map, obstruction_coord, POSITION_UNVISITED);
+  }
+
+  return count;
+}
+
 int main(void) {
   Txt *txt = txt_read(stdin);
   LabMap *map = labmap_parse(txt);
 
-  // labmap_print(map);
   labmap_predict(map);
-  // labmap_print(map);
   size_t positions_visited = labmap_positions_visited(map);
+  size_t positions_loopable = labmap_positions_loopable(map, positions_visited);
 
   labmap_free(map);
   txt_free(txt);
 
   print_day(6, "Guard Gallivant");
   printf("Part 1: %zu\n", positions_visited);
-  printf("Part 2: TODO\n");
+  printf("Part 2: %zu\n", positions_loopable);
 
   assert(positions_visited == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  assert(positions_loopable == PART2_ANSWER);
 
   return 0;
 }
