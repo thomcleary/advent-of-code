@@ -8,7 +8,9 @@ https://adventofcode.com/2024/day/4
 
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,14 +21,14 @@ https://adventofcode.com/2024/day/4
 #include "main.h"
 
 Txt *transpose(const Txt *txt) {
-  size_t num_columns = strlen(txt->lines[0]);
+  int64_t num_columns = (int64_t)strlen(txt->lines[0]);
   Txt *txt_transpose = txt_new(num_columns);
 
-  for (size_t col = 0; col < num_columns; col++) {
-    char *transposed_line = malloc(txt->num_lines + 1);
+  for (int64_t col = 0; col < num_columns; col++) {
+    char *transposed_line = malloc((size_t)txt->num_lines + 1);
     assert(transposed_line != NULL && "malloc failed");
 
-    for (size_t row = 0; row < txt->num_lines; row++) {
+    for (int64_t row = 0; row < txt->num_lines; row++) {
       transposed_line[row] = txt->lines[row][col];
     }
 
@@ -38,34 +40,34 @@ Txt *transpose(const Txt *txt) {
 }
 
 Txt *diagonals(const Txt *txt) {
-  size_t num_columns = strlen(txt->lines[0]);
-  size_t num_diagonals = num_columns + txt->num_lines - 1;
+  int64_t num_columns = (int64_t)strlen(txt->lines[0]);
+  int64_t num_diagonals = num_columns + txt->num_lines - 1;
   Txt *txt_diagonals = txt_new(num_diagonals);
 
-  size_t diag = 0;
+  int64_t diag = 0;
 
-  for (size_t col = 0; col < num_columns; col++) {
-    size_t cols_left = num_columns - col;
-    size_t line_size = cols_left < txt->num_lines ? cols_left : txt->num_lines;
+  for (int64_t col = 0; col < num_columns; col++) {
+    int64_t cols_left = num_columns - col;
+    int64_t line_size = cols_left < txt->num_lines ? cols_left : txt->num_lines;
 
-    char *diagonal_line = malloc(line_size + 1);
+    char *diagonal_line = malloc((size_t)line_size + 1);
     assert(diagonal_line != NULL && "malloc failed");
 
-    for (size_t row = 0; col + row < num_columns; row++) {
+    for (int64_t row = 0; col + row < num_columns; row++) {
       diagonal_line[row] = txt->lines[row][col + row];
     }
     diagonal_line[line_size] = '\0';
     txt_diagonals->lines[diag++] = diagonal_line;
   }
 
-  for (size_t row = 1; row < txt->num_lines; row++) {
-    size_t rows_left = txt->num_lines - row;
-    size_t line_size = rows_left < num_columns ? rows_left : num_columns;
+  for (int64_t row = 1; row < txt->num_lines; row++) {
+    int64_t rows_left = txt->num_lines - row;
+    int64_t line_size = rows_left < num_columns ? rows_left : num_columns;
 
-    char *diagonal_line = malloc(line_size + 1);
+    char *diagonal_line = malloc((size_t)line_size + 1);
     assert(diagonal_line != NULL && "malloc failed");
 
-    for (size_t col = 0; col + row < txt->num_lines; col++) {
+    for (int64_t col = 0; col + row < txt->num_lines; col++) {
       diagonal_line[col] = txt->lines[row + col][col];
     }
 
@@ -83,10 +85,10 @@ Txt *antidiagonals(const Txt *txt) {
   7,8,9    3,6,9    9,6,3
   */
   Txt *txt_rotated = transpose(txt);
-  for (size_t row = 0; row < txt_rotated->num_lines; row++) {
+  for (int64_t row = 0; row < txt_rotated->num_lines; row++) {
     char *line = txt_rotated->lines[row];
-    size_t left = 0;
-    size_t right = strlen(line) - 1;
+    int64_t left = 0;
+    int64_t right = (int64_t)strlen(line) - 1;
 
     while (left < right) {
       char tmp = line[left];
@@ -101,11 +103,11 @@ Txt *antidiagonals(const Txt *txt) {
   return txt_antidiagonals;
 }
 
-unsigned long occurences(const Txt *txt, const char *word) {
+int64_t occurences(const Txt *txt, const char *word) {
   char *word_rev = str_rev(word);
-  unsigned long count = 0;
+  int64_t count = 0;
 
-  for (size_t i = 0; i < txt->num_lines; i++) {
+  for (int64_t i = 0; i < txt->num_lines; i++) {
     char *line = txt->lines[i];
     count += str_cntocc(word, line);
     count += str_cntocc(word_rev, line);
@@ -116,8 +118,8 @@ unsigned long occurences(const Txt *txt, const char *word) {
   return count;
 }
 
-unsigned long wordsearch_count(const Txt *ws, const char *word) {
-  unsigned long count = occurences(ws, word);
+int64_t wordsearch_count(const Txt *ws, const char *word) {
+  int64_t count = occurences(ws, word);
 
   Txt *ws_transpose = transpose(ws);
   count += occurences(ws_transpose, word);
@@ -149,15 +151,15 @@ bool is_x(const char *word, char tl, char tr, char bl, char br) {
   return diagonal_match && antidiagonal_match;
 }
 
-unsigned long wordsearch_xcount(const Txt *ws, const char *word) {
+int64_t wordsearch_xcount(const Txt *ws, const char *word) {
   assert(strlen(word) == 3 && "strlen(word) is not 3");
   char centre = word[1];
 
-  size_t num_columns = strlen(ws->lines[0]);
-  long xcount = 0;
+  int64_t num_columns = (int64_t)strlen(ws->lines[0]);
+  int64_t xcount = 0;
 
-  for (size_t row = 1; row < ws->num_lines - 1; row++) {
-    for (size_t col = 1; col < num_columns - 1; col++) {
+  for (int64_t row = 1; row < ws->num_lines - 1; row++) {
+    for (int64_t col = 1; col < num_columns - 1; col++) {
       char ch = ws->lines[row][col];
       if (ch != centre) {
         continue;
@@ -178,20 +180,20 @@ unsigned long wordsearch_xcount(const Txt *ws, const char *word) {
     }
   }
 
-  return (unsigned long)xcount;
+  return xcount;
 }
 
 int main(void) {
   Txt *ws = txt_read(stdin);
 
-  unsigned long xmas_count = wordsearch_count(ws, "XMAS");
-  unsigned long x_mas_count = wordsearch_xcount(ws, "MAS");
+  int64_t xmas_count = wordsearch_count(ws, "XMAS");
+  int64_t x_mas_count = wordsearch_xcount(ws, "MAS");
 
   txt_free(ws);
 
   print_day(4, "Ceres Search");
-  printf("Part 1: %ld\n", xmas_count);
-  printf("Part 2: %ld\n", x_mas_count);
+  printf("Part 1: %" PRId64 "\n", xmas_count);
+  printf("Part 2: %" PRId64 "\n", x_mas_count);
 
   assert(xmas_count == PART1_ANSWER);
   assert(x_mas_count == PART2_ANSWER);

@@ -30,7 +30,7 @@ typedef struct HashtableEntry {
 
 typedef struct Hashtable {
   HashtableEntry *buckets[NUM_BUCKETS];
-  size_t size;
+  long size;
 } Hashtable;
 
 static void free_entry(HashtableEntry *entry) {
@@ -154,6 +154,6 @@ Hashtable *hashtable_set(Hashtable *ht, const char *key, const void *value) {
   return ht;
 }
 
-size_t hashtable_size(Hashtable *ht) {
+int64_t hashtable_size(Hashtable *ht) {
   return ht->size;
 }

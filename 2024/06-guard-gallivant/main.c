@@ -7,6 +7,7 @@ https://adventofcode.com/2024/day/6
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,17 +31,17 @@ typedef enum Position {
 } Position;
 
 typedef struct Coord {
-  size_t row, column;
+  int64_t row, column;
 } Coord;
 
 typedef struct LabMap {
   Position **positions;
-  size_t rows, columns;
+  int64_t rows, columns;
   Coord guard_start;
 } LabMap;
 
 void labmap_free(LabMap *map) {
-  for (size_t i = 0; i < map->rows; i++) {
+  for (int64_t i = 0; i < map->rows; i++) {
     free(map->positions[i]);
   }
   free(map->positions);
@@ -48,8 +49,8 @@ void labmap_free(LabMap *map) {
 }
 
 void labmap_print(LabMap *map) {
-  for (size_t r = 0; r < map->rows; r++) {
-    for (size_t c = 0; c < map->columns; c++) {
+  for (int64_t r = 0; r < map->rows; r++) {
+    for (int64_t c = 0; c < map->columns; c++) {
       Position pos = map->positions[r][c];
       char pos_ch;
       if (pos == POSITION_VISITED) {
@@ -70,20 +71,21 @@ LabMap *labmap_parse(Txt *txt) {
   LabMap *map = malloc(sizeof(*map));
   assert(map != NULL && "malloc failed");
   map->rows = txt->num_lines;
-  map->columns = strlen(txt->lines[0]);
-  map->positions = malloc(sizeof(*map->positions) * map->rows);
+  map->columns = (int64_t)strlen(txt->lines[0]);
+  map->positions = malloc(sizeof(*map->positions) * (size_t)map->rows);
   assert(map->positions != NULL && "malloc failed");
 
-  for (size_t i = 0; i < map->rows; i++) {
-    map->positions[i] = malloc(sizeof(map->positions[i]) * map->columns);
+  for (int64_t i = 0; i < map->rows; i++) {
+    map->positions[i] =
+        malloc(sizeof(map->positions[i]) * (size_t)map->columns);
     assert(map->positions[i] != NULL && "malloc failed");
   }
 
-  for (size_t r = 0; r < txt->num_lines; r++) {
+  for (int64_t r = 0; r < txt->num_lines; r++) {
     Position *row = map->positions[r];
     char *line = txt->lines[r];
 
-    for (size_t c = 0; c < map->columns; c++) {
+    for (int64_t c = 0; c < map->columns; c++) {
       char ch = line[c];
       assert((ch == '^' || ch == '.' || ch == '#') &&
              "invalid position character");
@@ -107,8 +109,8 @@ void labmap_setpos(LabMap *map, Coord coord, Position pos) {
 }
 
 void labmap_reset(LabMap *map) {
-  for (size_t r = 0; r < map->rows; r++) {
-    for (size_t c = 0; c < map->columns; c++) {
+  for (int64_t r = 0; r < map->rows; r++) {
+    for (int64_t c = 0; c < map->columns; c++) {
       Position pos = map->positions[r][c];
       if (pos == POSITION_VISITED) {
         labmap_setpos(map, (Coord){.row = r, .column = c}, POSITION_UNVISITED);
@@ -170,9 +172,9 @@ Direction turn_right(Direction direction) {
 }
 
 bool labmap_predict(LabMap *map) {
-  const size_t num_directions = 4;
+  const int64_t num_directions = 4;
 
-  unsigned long *visits = calloc(map->rows * map->columns, sizeof(*visits));
+  int64_t *visits = calloc((size_t)(map->rows * map->columns), sizeof(*visits));
   assert(visits != NULL && "calloc failed");
 
   Coord guard_coord = map->guard_start;
@@ -181,7 +183,7 @@ bool labmap_predict(LabMap *map) {
   while (!is_guard_exiting(map, guard_coord, current_dir)) {
     labmap_setpos(map, guard_coord, POSITION_VISITED);
 
-    size_t visits_index = guard_coord.row * map->columns + guard_coord.column;
+    int64_t visits_index = guard_coord.row * map->columns + guard_coord.column;
 
     if (visits[visits_index] > num_directions) {
       free(visits);
@@ -206,10 +208,10 @@ bool labmap_predict(LabMap *map) {
   return false; // No loop, guard exited
 }
 
-size_t labmap_positions_visited(LabMap *map) {
-  size_t count = 0;
-  for (size_t r = 0; r < map->rows; r++) {
-    for (size_t c = 0; c < map->columns; c++) {
+int64_t labmap_positions_visited(LabMap *map) {
+  int64_t count = 0;
+  for (int64_t r = 0; r < map->rows; r++) {
+    for (int64_t c = 0; c < map->columns; c++) {
       if (map->positions[r][c] == POSITION_VISITED) {
         count++;
       }
@@ -218,12 +220,12 @@ size_t labmap_positions_visited(LabMap *map) {
   return count;
 }
 
-size_t labmap_positions_loopable(LabMap *map, size_t positions_visited) {
+int64_t labmap_positions_loopable(LabMap *map, int64_t positions_visited) {
   Coord obstruction_coords[positions_visited];
-  size_t visited = 0;
+  int64_t visited = 0;
 
-  for (size_t r = 0; r < map->rows; r++) {
-    for (size_t c = 0; c < map->columns; c++) {
+  for (int64_t r = 0; r < map->rows; r++) {
+    for (int64_t c = 0; c < map->columns; c++) {
       bool is_start = map->guard_start.row == r && map->guard_start.column == c;
       if (!is_start && map->positions[r][c] == POSITION_VISITED) {
         obstruction_coords[visited++] = (Coord){.row = r, .column = c};
@@ -232,9 +234,9 @@ size_t labmap_positions_loopable(LabMap *map, size_t positions_visited) {
   }
   assert(visited == positions_visited - 1);
 
-  size_t count = 0;
+  int64_t count = 0;
 
-  for (size_t i = 0; i < visited; i++) {
+  for (int64_t i = 0; i < visited; i++) {
     Coord obstruction_coord = obstruction_coords[i];
     labmap_reset(map);
     labmap_setpos(map, obstruction_coord, POSITION_OBSTRUCTION);
@@ -254,15 +256,16 @@ int main(void) {
   LabMap *map = labmap_parse(txt);
 
   labmap_predict(map);
-  size_t positions_visited = labmap_positions_visited(map);
-  size_t positions_loopable = labmap_positions_loopable(map, positions_visited);
+  int64_t positions_visited = labmap_positions_visited(map);
+  int64_t positions_loopable =
+      labmap_positions_loopable(map, positions_visited);
 
   labmap_free(map);
   txt_free(txt);
 
   print_day(6, "Guard Gallivant");
-  printf("Part 1: %zu\n", positions_visited);
-  printf("Part 2: %zu\n", positions_loopable);
+  printf("Part 1: %" PRId64 "\n", positions_visited);
+  printf("Part 2: %" PRId64 "\n", positions_loopable);
 
   assert(positions_visited == PART1_ANSWER);
   assert(positions_loopable == PART2_ANSWER);

@@ -8,7 +8,9 @@ https://adventofcode.com/2024/day/1
 
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,8 +18,8 @@ https://adventofcode.com/2024/day/1
 #include "../lib/hashtable.h"
 #include "main.h"
 
-size_t get_ids(long left_ids[], long right_ids[]) {
-  size_t num_lines = 0;
+int64_t get_ids(int64_t left_ids[], int64_t right_ids[]) {
+  int64_t num_lines = 0;
   char *line = NULL;
   size_t line_len = 0;
   errno = 0;
@@ -42,18 +44,18 @@ int compare_int(const void *a, const void *b) {
   return *(int *)a - *(int *)b;
 }
 
-char *get_key(long id) {
+char *get_key(int64_t id) {
   char *key = malloc(sizeof(*key) * 8); // All IDs are only 5 chars long
   assert(key != NULL && "malloc failed");
 
-  int written = sprintf(key, "%ld", id);
+  int written = sprintf(key, "%" PRId64, id);
   assert(written != -1 && "sprintf failed");
 
   return key;
 }
 
-void free_hashtable(Hashtable *ht, long keys[], size_t num_keys) {
-  for (size_t i = 0; i < num_keys; i++) {
+void free_hashtable(Hashtable *ht, int64_t keys[], int64_t num_keys) {
+  for (int64_t i = 0; i < num_keys; i++) {
     char *key = get_key(keys[i]);
     long *value = hashtable_get(ht, key);
     if (value != NULL) {
@@ -66,17 +68,18 @@ void free_hashtable(Hashtable *ht, long keys[], size_t num_keys) {
 
 int main(void) {
   // There's only 1000 lines in the puzzle input, 1024 will do
-  long left_ids[BUFSIZ], right_ids[BUFSIZ];
-  size_t num_ids = get_ids(left_ids, right_ids);
+  int64_t left_ids[BUFSIZ], right_ids[BUFSIZ];
+  int64_t num_ids = get_ids(left_ids, right_ids);
 
-  qsort(left_ids, num_ids, sizeof(*left_ids), compare_int);
-  qsort(right_ids, num_ids, sizeof(*right_ids), compare_int);
+  assert(num_ids >= 0 && "cannot safely cast num_ids to size_t");
+  qsort(left_ids, (size_t)num_ids, sizeof(*left_ids), compare_int);
+  qsort(right_ids, (size_t)num_ids, sizeof(*right_ids), compare_int);
 
   Hashtable *right_counts_ht = hashtable_new();
   assert(right_counts_ht != NULL && "hashtable_new failed");
   long total_distance = 0;
 
-  for (size_t i = 0; i < num_ids; i++) {
+  for (int64_t i = 0; i < num_ids; i++) {
     long right = right_ids[i];
 
     char *key = get_key(right);
@@ -97,7 +100,7 @@ int main(void) {
   }
 
   long similarity_score = 0;
-  for (size_t i = 0; i < num_ids; i++) {
+  for (int64_t i = 0; i < num_ids; i++) {
     long left = left_ids[i];
 
     char *key = get_key(left);

@@ -23,16 +23,16 @@ https://adventofcode.com/2024/day/7
 typedef struct Equation {
   int64_t test_value;
   int64_t *operands;
-  size_t num_operands;
+  int64_t num_operands;
 } Equation;
 
 typedef struct Calibration {
   Equation *equations;
-  size_t num_equations;
+  int64_t num_equations;
 } Calibration;
 
 void calibration_free(Calibration *calibration) {
-  for (size_t i = 0; i < calibration->num_equations; i++) {
+  for (int64_t i = 0; i < calibration->num_equations; i++) {
     free(calibration->equations[i].operands);
   }
   free(calibration->equations);
@@ -40,10 +40,10 @@ void calibration_free(Calibration *calibration) {
 }
 
 void calibration_print(Calibration *calibration) {
-  for (size_t i = 0; i < calibration->num_equations; i++) {
+  for (int64_t i = 0; i < calibration->num_equations; i++) {
     Equation eq = calibration->equations[i];
     printf("%" PRId64 ": ", eq.test_value);
-    for (size_t j = 0; j < eq.num_operands; j++) {
+    for (int64_t j = 0; j < eq.num_operands; j++) {
       printf("%" PRId64 " ", eq.operands[j]);
     }
     printf("\n");
@@ -52,10 +52,10 @@ void calibration_print(Calibration *calibration) {
 }
 
 Calibration *calibration_parse(Txt *txt) {
-  Equation *equations = malloc(sizeof(*equations) * txt->num_lines);
+  Equation *equations = malloc(sizeof(*equations) * (size_t)txt->num_lines);
   assert(equations != NULL && "malloc failed");
 
-  for (size_t i = 0; i < txt->num_lines; i++) {
+  for (int64_t i = 0; i < txt->num_lines; i++) {
     char *line = txt->lines[i];
     char *token = strsep(&line, ":");
     line++; // Skip space between ':' and first operand
@@ -64,9 +64,9 @@ Calibration *calibration_parse(Txt *txt) {
     int64_t test_value = strtoll(token, NULL, 10);
     assert(errno == 0 && "strtoll failed");
 
-    size_t operands_size = 16; // puzzle input has 12 operands max
-    int64_t *operands = malloc(sizeof(*operands) * operands_size);
-    size_t num_operands = 0;
+    int64_t operands_size = 16; // puzzle input has 12 operands max
+    int64_t *operands = malloc(sizeof(*operands) * (size_t)operands_size);
+    int64_t num_operands = 0;
     while ((token = strsep(&line, " ")) != NULL) {
       errno = 0;
       int64_t operand = strtoll(token, NULL, 10);
@@ -74,7 +74,7 @@ Calibration *calibration_parse(Txt *txt) {
 
       if (num_operands == operands_size) {
         operands_size *= 2;
-        operands = realloc(operands, sizeof(*operands) * operands_size);
+        operands = realloc(operands, sizeof(*operands) * (size_t)operands_size);
         assert(operands != NULL && "realloc failed");
       }
 
@@ -94,8 +94,8 @@ Calibration *calibration_parse(Txt *txt) {
   return calibration;
 }
 
-bool equation_search(Equation eq, int64_t value, int64_t *rest, size_t num_rest,
-                     bool concat) {
+bool equation_search(Equation eq, int64_t value, int64_t *rest,
+                     int64_t num_rest, bool concat) {
   if (num_rest == 0) {
     return eq.test_value == value;
   }
@@ -114,7 +114,7 @@ bool equation_search(Equation eq, int64_t value, int64_t *rest, size_t num_rest,
   }
 
   if (concat) {
-    const size_t int64_decimal_max_len = 19;
+    const uint64_t int64_decimal_max_len = 19;
     const size_t concat_buf_len = (int64_decimal_max_len * 2) + 1;
     char concat_buf[concat_buf_len];
     snprintf(concat_buf, concat_buf_len, "%" PRId64 "%" PRId64, value, operand);
@@ -141,7 +141,7 @@ bool equation_search(Equation eq, int64_t value, int64_t *rest, size_t num_rest,
 int64_t calibration_search(Calibration *calibration, bool concat) {
   int64_t calibration_result = 0;
 
-  for (size_t i = 0; i < calibration->num_equations; i++) {
+  for (int64_t i = 0; i < calibration->num_equations; i++) {
     Equation eq = calibration->equations[i];
 
     if (equation_search(eq, 0, eq.operands, eq.num_operands, concat)) {
