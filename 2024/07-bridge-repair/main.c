@@ -94,8 +94,8 @@ Calibration *calibration_parse(Txt *txt) {
   return calibration;
 }
 
-bool equation_search(Equation eq, int64_t value, int64_t *rest,
-                     size_t num_rest) {
+bool equation_search(Equation eq, int64_t value, int64_t *rest, size_t num_rest,
+                     bool concat) {
   if (num_rest == 0) {
     return eq.test_value == value;
   }
@@ -104,27 +104,47 @@ bool equation_search(Equation eq, int64_t value, int64_t *rest,
     return false;
   }
 
-  if (!add_int64_ok(value, *rest)) {
-    return false; // mult will overflow if add overflows
-  }
-
   int64_t operand = *rest;
   rest++;
   num_rest--;
 
-  // Try mult before add, it'll probably find answer or fail faster
-  bool mult_result = (mult_int64_ok(value, operand) &&
-                      equation_search(eq, value * operand, rest, num_rest));
+  // mult and concat will also overflow if add overflows
+  if (!add_int64_ok(value, operand)) {
+    return false;
+  }
 
-  return mult_result || equation_search(eq, value + operand, rest, num_rest);
+  if (concat) {
+    const size_t int64_decimal_max_len = 19;
+    const size_t concat_buf_len = (int64_decimal_max_len * 2) + 1;
+    char concat_buf[concat_buf_len];
+    snprintf(concat_buf, concat_buf_len, "%" PRId64 "%" PRId64, value, operand);
+
+    errno = 0;
+    int64_t concat_value = strtoll(concat_buf, NULL, 10);
+    assert(errno != EINVAL && "strtoll failed");
+
+    if (errno != ERANGE &&
+        equation_search(eq, concat_value, rest, num_rest, concat)) {
+      return true;
+    }
+  }
+
+  // Try mult before add, it'll probably find answer or fail faster
+  bool mult_result =
+      (mult_int64_ok(value, operand) &&
+       equation_search(eq, value * operand, rest, num_rest, concat));
+
+  return mult_result ||
+         equation_search(eq, value + operand, rest, num_rest, concat);
 }
 
-int64_t calibration_search(Calibration *calibration) {
+int64_t calibration_search(Calibration *calibration, bool concat) {
   int64_t calibration_result = 0;
+
   for (size_t i = 0; i < calibration->num_equations; i++) {
     Equation eq = calibration->equations[i];
 
-    if (equation_search(eq, 0, eq.operands, eq.num_operands)) {
+    if (equation_search(eq, 0, eq.operands, eq.num_operands, concat)) {
       calibration_result += eq.test_value;
     }
   }
@@ -136,17 +156,18 @@ int main(void) {
   Txt *txt = txt_read(stdin);
   Calibration *calibration = calibration_parse(txt);
 
-  int64_t calibration_result = calibration_search(calibration);
+  int64_t add_mult_result = calibration_search(calibration, false);
+  int64_t add_mult_concat_result = calibration_search(calibration, true);
 
   calibration_free(calibration);
   txt_free(txt);
 
   print_day(7, "Bridge Repair");
-  printf("Part 1: %" PRId64 "\n", calibration_result);
-  printf("Part 2: TODO\n");
+  printf("Part 1: %" PRId64 "\n", add_mult_result);
+  printf("Part 2: %" PRId64 "\n", add_mult_concat_result);
 
-  assert(calibration_result == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  assert(add_mult_result == PART1_ANSWER);
+  assert(add_mult_concat_result == PART2_ANSWER);
 
   return 0;
 }
