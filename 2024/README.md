@@ -18,7 +18,7 @@ docker compose run --rm aoc
 |  4  | Ceres Search       |  ⭐⭐  |
 |  5  | Print Queue        |  ⭐⭐  |
 |  6  | Guard Gallivant    |  ⭐⭐  |
-|  7  |                    |        |
+|  7  | Bridge Repair      |   ⭐   |
 |  8  |                    |        |
 |  9  |                    |        |
 | 10  |                    |        |
