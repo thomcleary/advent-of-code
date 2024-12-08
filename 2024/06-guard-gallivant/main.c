@@ -7,6 +7,7 @@ https://adventofcode.com/2024/day/6
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +31,7 @@ typedef enum Position {
 } Position;
 
 typedef struct Coord {
-  size_t row, column;
+  uint64_t row, column;
 } Coord;
 
 typedef struct LabMap {
@@ -170,9 +171,9 @@ Direction turn_right(Direction direction) {
 }
 
 bool labmap_predict(LabMap *map) {
-  const size_t num_directions = 4;
+  const uint8_t num_directions = 4;
 
-  unsigned long *visits = calloc(map->rows * map->columns, sizeof(*visits));
+  uint8_t *visits = calloc((map->rows * map->columns), sizeof(*visits));
   assert(visits != NULL && "calloc failed");
 
   Coord guard_coord = map->guard_start;
@@ -206,8 +207,8 @@ bool labmap_predict(LabMap *map) {
   return false; // No loop, guard exited
 }
 
-size_t labmap_positions_visited(LabMap *map) {
-  size_t count = 0;
+uint64_t labmap_positions_visited(LabMap *map) {
+  uint64_t count = 0;
   for (size_t r = 0; r < map->rows; r++) {
     for (size_t c = 0; c < map->columns; c++) {
       if (map->positions[r][c] == POSITION_VISITED) {
@@ -218,9 +219,9 @@ size_t labmap_positions_visited(LabMap *map) {
   return count;
 }
 
-size_t labmap_positions_loopable(LabMap *map, size_t positions_visited) {
+uint64_t labmap_positions_loopable(LabMap *map, uint64_t positions_visited) {
   Coord obstruction_coords[positions_visited];
-  size_t visited = 0;
+  uint64_t visited = 0;
 
   for (size_t r = 0; r < map->rows; r++) {
     for (size_t c = 0; c < map->columns; c++) {
@@ -232,7 +233,7 @@ size_t labmap_positions_loopable(LabMap *map, size_t positions_visited) {
   }
   assert(visited == positions_visited - 1);
 
-  size_t count = 0;
+  uint64_t count = 0;
 
   for (size_t i = 0; i < visited; i++) {
     Coord obstruction_coord = obstruction_coords[i];
@@ -254,15 +255,16 @@ int main(void) {
   LabMap *map = labmap_parse(txt);
 
   labmap_predict(map);
-  size_t positions_visited = labmap_positions_visited(map);
-  size_t positions_loopable = labmap_positions_loopable(map, positions_visited);
+  uint64_t positions_visited = labmap_positions_visited(map);
+  uint64_t positions_loopable =
+      labmap_positions_loopable(map, positions_visited);
 
   labmap_free(map);
   txt_free(txt);
 
   print_day(6, "Guard Gallivant");
-  printf("Part 1: %zu\n", positions_visited);
-  printf("Part 2: %zu\n", positions_loopable);
+  printf("Part 1: %" PRId64 "\n", positions_visited);
+  printf("Part 2: %" PRId64 "\n", positions_loopable);
 
   assert(positions_visited == PART1_ANSWER);
   assert(positions_loopable == PART2_ANSWER);

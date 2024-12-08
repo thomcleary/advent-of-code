@@ -1,7 +1,6 @@
 #ifndef TXT_H
 #define TXT_H
 
-#include <stddef.h>
 #include <stdio.h>
 
 typedef struct Txt {

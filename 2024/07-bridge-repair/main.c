@@ -65,8 +65,9 @@ Calibration *calibration_parse(Txt *txt) {
     assert(errno == 0 && "strtoll failed");
 
     size_t operands_size = 16; // puzzle input has 12 operands max
-    int64_t *operands = malloc(sizeof(*operands) * operands_size);
     size_t num_operands = 0;
+    int64_t *operands = malloc(sizeof(*operands) * operands_size);
+
     while ((token = strsep(&line, " ")) != NULL) {
       errno = 0;
       int64_t operand = strtoll(token, NULL, 10);
@@ -114,8 +115,8 @@ bool equation_search(Equation eq, int64_t value, int64_t *rest, size_t num_rest,
   }
 
   if (concat) {
-    const size_t int64_decimal_max_len = 19;
-    const size_t concat_buf_len = (int64_decimal_max_len * 2) + 1;
+    const uint8_t int64_decimal_max_len = 19;
+    const size_t concat_buf_len = (size_t)((int64_decimal_max_len * 2) + 1);
     char concat_buf[concat_buf_len];
     snprintf(concat_buf, concat_buf_len, "%" PRId64 "%" PRId64, value, operand);
 

@@ -19,7 +19,7 @@ docker compose run --rm aoc
 |  5  | Print Queue           |  ⭐⭐  |
 |  6  | Guard Gallivant       |  ⭐⭐  |
 |  7  | Bridge Repair         |  ⭐⭐  |
-|  8  | Resonant Collinearity |   ⭐   |
+|  8  | Resonant Collinearity |  ⭐⭐  |
 |  9  |                       |        |
 | 10  |                       |        |
 | 11  |                       |        |

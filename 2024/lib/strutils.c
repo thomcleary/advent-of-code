@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,16 +19,16 @@ char *str_rev(const char *str) {
   return reversed;
 }
 
-unsigned long str_cntocc(const char *word, const char *line) {
+uint64_t str_cntocc(const char *word, const char *line) {
   size_t word_len = strlen(word);
-  long count = 0;
+  uint64_t count = 0;
   char *occurence = NULL;
 
   while ((occurence = strstr(line, word)) != NULL) {
+    assert(count != UINT64_MAX && "too many occurences");
     count++;
-    assert(count >= 0 && "count overflowed");
     line = occurence + word_len;
   }
 
-  return (unsigned long)count;
+  return count;
 }

@@ -8,8 +8,8 @@ https://adventofcode.com/2024/day/8
 
 #include <assert.h>
 #include <ctype.h>
+#include <inttypes.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +19,7 @@ https://adventofcode.com/2024/day/8
 #include "main.h"
 
 typedef struct Coord {
-  size_t row, column;
+  int64_t row, column;
 } Coord;
 
 typedef struct Frequency {
@@ -39,7 +39,7 @@ typedef struct AntennaMap {
 typedef struct AntinodeMap {
   size_t rows, columns;
   char **map;
-  size_t num_antinodes;
+  uint64_t num_antinodes;
 } AntinodeMap;
 
 typedef struct Antinodes {
@@ -78,14 +78,21 @@ void frequency_add_antenna(Frequency *frequency, Coord location) {
   frequency->antennas[frequency->num_antennas++] = location;
 }
 
-Antinodes frequency_antinodes(Frequency *frequency) {
+bool antinode_is_within_limits(Coord antinode, Coord limit) {
+  return antinode.row >= 0 && antinode.column >= 0 &&
+         antinode.row <= limit.row && antinode.column <= limit.column;
+}
+
+Antinodes frequency_antinodes(Frequency *frequency, Coord limit,
+                              bool resonant_harmonics) {
   assert(frequency->num_antennas > 1 && "frequency has less than 2 antinodes");
 
   size_t num_pairs =
       (frequency->num_antennas * (frequency->num_antennas - 1)) / 2;
 
+  size_t antinodes_size = num_pairs * 2;
   Antinodes antinodes = {.value =
-                             malloc(sizeof(*antinodes.value) * (num_pairs * 2)),
+                             malloc(sizeof(*antinodes.value) * antinodes_size),
                          antinodes.length = 0};
   assert(antinodes.value != NULL && "malloc failed");
 
@@ -98,11 +105,34 @@ Antinodes frequency_antinodes(Frequency *frequency) {
       }
 
       Coord second = frequency->antennas[j];
+
       Coord diff = {.row = first.row - second.row,
                     .column = first.column - second.column};
 
-      antinodes.value[antinodes.length++] = (Coord){
-          .row = first.row + diff.row, .column = first.column + diff.column};
+      if (!resonant_harmonics) {
+        Coord antinode = {.row = first.row + diff.row,
+                          .column = first.column + diff.column};
+
+        if (antinode_is_within_limits(antinode, limit)) {
+          antinodes.value[antinodes.length++] = antinode;
+        }
+      } else {
+        // The antenna's location will always have an antinode
+        Coord antinode = {.row = first.row, .column = first.column};
+
+        while (antinode_is_within_limits(antinode, limit)) {
+          if (antinodes.length == antinodes_size) {
+            antinodes_size *= 2;
+            antinodes.value = realloc(
+                antinodes.value, sizeof(*antinodes.value) * antinodes_size);
+            assert(antinodes.value != NULL && "realloc failed");
+          }
+
+          antinodes.value[antinodes.length++] = antinode;
+          antinode.row += diff.row;
+          antinode.column += diff.column;
+        }
+      }
     }
   }
 
@@ -124,7 +154,7 @@ void antenna_map_print(AntennaMap *map) {
     printf("-------------------\n");
     for (size_t j = 0; j < frequency->num_antennas; j++) {
       Coord antenna = frequency->antennas[j];
-      printf("(%zu, %zu)\n", antenna.row, antenna.column);
+      printf("(%" PRId64 ", %" PRId64 ")\n", antenna.row, antenna.column);
     }
     printf("\n");
   }
@@ -173,7 +203,10 @@ AntennaMap *antenna_map_parse(Txt *txt) {
 
       if (isalnum(ch)) {
         Frequency *frequency = antennamap_find_frequency(map, ch);
-        Coord location = {.row = row, .column = col};
+
+        assert(row <= INT64_MAX && "too many rows");
+        assert(col <= INT64_MAX && "too many columns");
+        Coord location = {.row = (int64_t)row, .column = (int64_t)col};
 
         if (frequency == NULL) {
           antennamap_add_frequency(map, frequency_new(ch, location));
@@ -224,21 +257,26 @@ AntinodeMap *antinode_map_new(size_t rows, size_t columns) {
   return antinode_map;
 }
 
-AntinodeMap *antinode_map_generate(AntennaMap *antenna_map) {
+AntinodeMap *antinode_map_generate(AntennaMap *antenna_map,
+                                   bool resonant_harmonics) {
   AntinodeMap *antinode_map =
       antinode_map_new(antenna_map->rows, antenna_map->columns);
 
+  assert(antenna_map->rows - 1 <= INT64_MAX && "too many rows");
+  assert(antenna_map->columns - 1 <= INT64_MAX && "too many columns");
+  int64_t row_limit = (int64_t)antenna_map->rows - 1;
+  int64_t column_limit = (int64_t)antenna_map->columns - 1;
+
+  Coord antinode_limit = {.row = row_limit, .column = column_limit};
+
   for (size_t i = 0; i < antenna_map->num_frequencies; i++) {
-    Antinodes antinodes = frequency_antinodes(antenna_map->frequencies[i]);
+    Antinodes antinodes = frequency_antinodes(
+        antenna_map->frequencies[i], antinode_limit, resonant_harmonics);
 
     for (size_t j = 0; j < antinodes.length; j++) {
       Coord antinode = antinodes.value[j];
 
-      bool is_inside_map = antinode.row < antenna_map->rows &&
-                           antinode.column < antenna_map->columns;
-
-      if (is_inside_map &&
-          antinode_map->map[antinode.row][antinode.column] != '#') {
+      if (antinode_map->map[antinode.row][antinode.column] != '#') {
         antinode_map->map[antinode.row][antinode.column] = '#';
         antinode_map->num_antinodes++;
       }
@@ -253,22 +291,26 @@ AntinodeMap *antinode_map_generate(AntennaMap *antenna_map) {
 int main(void) {
   Txt *txt = txt_read(stdin);
   AntennaMap *antenna_map = antenna_map_parse(txt);
-  AntinodeMap *antinode_map = antinode_map_generate(antenna_map);
 
-  size_t num_antinodes = antinode_map->num_antinodes;
-  // antenna_map_print(antenna_map);
-  // antinode_map_print(antinode_map);
+  AntinodeMap *antinode_map = antinode_map_generate(antenna_map, false);
+  uint64_t num_antinodes = antinode_map->num_antinodes;
 
-  antenna_map_free(antenna_map);
+  AntinodeMap *antinode_map_with_resonant_harmonics =
+      antinode_map_generate(antenna_map, true);
+  uint64_t num_antinodes_with_resonant_harmonics =
+      antinode_map_with_resonant_harmonics->num_antinodes;
+
   antinode_map_free(antinode_map);
+  antinode_map_free(antinode_map_with_resonant_harmonics);
+  antenna_map_free(antenna_map);
   txt_free(txt);
 
   print_day(8, "Resonant Collinearity");
-  printf("Part 1: %zu\n", num_antinodes);
-  // printf("Part 2: TODO\n");
+  printf("Part 1: %" PRIu64 "\n", num_antinodes);
+  printf("Part 2: %" PRIu64 "\n", num_antinodes_with_resonant_harmonics);
 
   assert(num_antinodes == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  assert(num_antinodes_with_resonant_harmonics == PART2_ANSWER);
 
   return 0;
 }

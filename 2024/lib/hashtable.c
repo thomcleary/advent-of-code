@@ -6,6 +6,7 @@ I'll implement a separate-chained hashtable so I don't just copy and paste lol.
 */
 
 #define _DEFAULT_SOURCE
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>

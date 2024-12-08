@@ -8,7 +8,9 @@ https://adventofcode.com/2024/day/5
 
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,22 +21,25 @@ https://adventofcode.com/2024/day/5
 #include "main.h"
 
 typedef struct OrderingRule {
-  long page;
-  long depends_on;
+  uint64_t page;
+  uint64_t depends_on;
 } OrderingRule;
 
 typedef struct PageUpdate {
-  long *pages;
+  uint64_t *pages;
   size_t length;
 } PageUpdate;
 
 typedef struct PrintQueue {
   OrderingRule *rules;
   size_t num_rules;
+
   PageUpdate *updates;
   size_t num_updates;
+
   PageUpdate *valid_updates;
   size_t num_valid_updates;
+
   PageUpdate *invalid_updates;
   size_t num_invalid_updates;
 } PrintQueue;
@@ -63,8 +68,9 @@ PrintQueue *pq_parse(Txt *txt) {
   assert(updates != NULL && "malloc failed");
 
   for (size_t i = 0; i < num_rules; i++) {
-    int depends_on, page;
-    int matched = sscanf(txt->lines[i], "%d|%d", &depends_on, &page);
+    uint64_t depends_on, page;
+    int matched =
+        sscanf(txt->lines[i], "%" PRIu64 "|%" PRIu64, &depends_on, &page);
     assert(matched == 2 && "sscanf failed");
     rules[i] = (OrderingRule){.depends_on = depends_on, .page = page};
   }
@@ -73,8 +79,8 @@ PrintQueue *pq_parse(Txt *txt) {
     char *update_str = strdup(*(txt->lines + (num_rules + 1) + i));
     assert(update_str != NULL && "strdup failed");
 
-    size_t num_pages = str_cntocc(",", update_str) + 1;
-    long *pages = malloc(sizeof(*pages) * num_pages);
+    uint64_t num_pages = str_cntocc(",", update_str) + 1;
+    uint64_t *pages = malloc(sizeof(*pages) * num_pages);
     assert(pages != NULL && "malloc failed");
     PageUpdate update = {.pages = pages, .length = num_pages};
 
@@ -84,8 +90,8 @@ PrintQueue *pq_parse(Txt *txt) {
     // TODO: lib function for reading list of numbers? (also used in day2)
     while ((token = strsep(&update_str, ",")) != NULL) {
       errno = 0;
-      long page = strtol(token, NULL, 10);
-      assert(errno == 0 && "strtol failed");
+      uint64_t page = strtoull(token, NULL, 10);
+      assert(errno == 0 && "strtoull failed");
       update.pages[page_num++] = page;
     }
     assert(page_num == num_pages && "invalid page count");
@@ -109,7 +115,7 @@ PrintQueue *pq_parse(Txt *txt) {
   return pq;
 }
 
-bool pq_has_rule(PrintQueue *pq, long depends_on, long page) {
+bool pq_has_rule(PrintQueue *pq, uint64_t depends_on, uint64_t page) {
   for (size_t i = 0; i < pq->num_rules; i++) {
     OrderingRule rule = pq->rules[i];
     if (rule.page == page && rule.depends_on == depends_on) {
@@ -121,9 +127,9 @@ bool pq_has_rule(PrintQueue *pq, long depends_on, long page) {
 
 bool is_valid_update(PageUpdate *update, PrintQueue *pq) {
   for (size_t i = 0; i < update->length - 1; i++) {
-    long page = update->pages[i];
+    uint64_t page = update->pages[i];
     for (size_t j = i + 1; j < update->length; j++) {
-      long depends_on = update->pages[j];
+      uint64_t depends_on = update->pages[j];
       if (pq_has_rule(pq, depends_on, page)) {
         // A page has been printed before one of it's dependencies
         return false;
@@ -170,8 +176,8 @@ int compare_pages(const void *left_page, const void *right_page,
                   void *print_queue) {
 #endif
   PrintQueue *pq = (PrintQueue *)print_queue;
-  long left = *(long *)left_page;
-  long right = *(long *)right_page;
+  uint64_t left = *(uint64_t *)left_page;
+  uint64_t right = *(uint64_t *)right_page;
 
   if (pq_has_rule(pq, right, left)) {
     // Left depends on right being printed first
@@ -198,8 +204,8 @@ void pq_fix(PrintQueue *pq) {
   }
 }
 
-long sum_middle_pages(PageUpdate *pu, size_t length) {
-  long sum = 0;
+uint64_t sum_middle_pages(PageUpdate *pu, size_t length) {
+  uint64_t sum = 0;
 
   for (size_t i = 0; i < length; i++) {
     PageUpdate *update = pu + i;
@@ -216,16 +222,17 @@ int main(void) {
   pq_validate(pq);
   pq_fix(pq);
 
-  long valid_sum = sum_middle_pages(pq->valid_updates, pq->num_valid_updates);
-  long invalid_sum =
+  uint64_t valid_sum =
+      sum_middle_pages(pq->valid_updates, pq->num_valid_updates);
+  uint64_t invalid_sum =
       sum_middle_pages(pq->invalid_updates, pq->num_invalid_updates);
 
   pq_free(pq);
   txt_free(txt);
 
   print_day(5, "Print Queue");
-  printf("Part 1: %ld\n", valid_sum);
-  printf("Part 2: %ld\n", invalid_sum);
+  printf("Part 1: %" PRIu64 "\n", valid_sum);
+  printf("Part 2: %" PRIu64 "\n", invalid_sum);
 
   assert(valid_sum == PART1_ANSWER);
   assert(invalid_sum == PART2_ANSWER);

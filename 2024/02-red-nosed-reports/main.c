@@ -8,7 +8,9 @@ https://adventofcode.com/2024/day/2
 
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +19,7 @@ https://adventofcode.com/2024/day/2
 #include "main.h"
 
 typedef struct Report {
-  long *levels;
+  int64_t *levels;
   size_t length;
   size_t size;
 } Report;
@@ -52,7 +54,7 @@ Report *get_report(void) {
   char *token;
   while ((token = strsep(&line, " ")) != NULL) {
     errno = 0;
-    long level = strtol(token, NULL, 10);
+    int64_t level = strtoll(token, NULL, 10);
     assert(errno == 0 && "strtol failed");
 
     if (report->length + 1 == report->size) {
@@ -71,7 +73,7 @@ Report *get_report(void) {
   return report;
 }
 
-bool is_gradual_change(long prev_diff, long curr_diff) {
+bool is_gradual_change(int64_t prev_diff, int64_t curr_diff) {
   if (curr_diff < -3 || curr_diff == 0 || curr_diff > 3) {
     return false; // Change is to big
   }
@@ -87,13 +89,13 @@ bool is_gradual_change(long prev_diff, long curr_diff) {
 }
 
 bool is_report_safe(Report *report) {
-  long prev_level = report->levels[0];
-  long prev_diff = 0;
+  int64_t prev_level = report->levels[0];
+  int64_t prev_diff = 0;
   bool is_safe_report = true;
 
   for (size_t i = 1; i < report->length && is_safe_report; i++) {
-    long curr_level = report->levels[i];
-    long curr_diff = curr_level - prev_level;
+    int64_t curr_level = report->levels[i];
+    int64_t curr_diff = curr_level - prev_level;
     is_safe_report = is_gradual_change(prev_diff, curr_diff);
     prev_level = curr_level;
     prev_diff = curr_diff;
@@ -133,8 +135,8 @@ bool is_report_safe_with_dampener(Report *report) {
 
 int main(void) {
   Report *report = NULL;
-  long safe_reports = 0;
-  long dampened_reports = 0;
+  uint64_t safe_reports = 0;
+  uint64_t dampened_reports = 0;
 
   while ((report = get_report()) != NULL) {
     if (is_report_safe(report)) {
@@ -147,8 +149,8 @@ int main(void) {
   }
 
   print_day(2, "Red-Nosed Reports");
-  printf("Part 1: %ld\n", safe_reports);
-  printf("Part 1: %ld\n", safe_reports + dampened_reports);
+  printf("Part 1: %" PRIu64 "\n", safe_reports);
+  printf("Part 2: %" PRIu64 "\n", safe_reports + dampened_reports);
 
   assert(safe_reports == PART1_ANSWER);
   assert((safe_reports + dampened_reports) == PART2_ANSWER);

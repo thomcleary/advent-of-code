@@ -8,7 +8,9 @@ https://adventofcode.com/2024/day/4
 
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,9 +103,9 @@ Txt *antidiagonals(const Txt *txt) {
   return txt_antidiagonals;
 }
 
-unsigned long occurences(const Txt *txt, const char *word) {
+uint64_t occurences(const Txt *txt, const char *word) {
   char *word_rev = str_rev(word);
-  unsigned long count = 0;
+  uint64_t count = 0;
 
   for (size_t i = 0; i < txt->num_lines; i++) {
     char *line = txt->lines[i];
@@ -116,8 +118,8 @@ unsigned long occurences(const Txt *txt, const char *word) {
   return count;
 }
 
-unsigned long wordsearch_count(const Txt *ws, const char *word) {
-  unsigned long count = occurences(ws, word);
+uint64_t wordsearch_count(const Txt *ws, const char *word) {
+  uint64_t count = occurences(ws, word);
 
   Txt *ws_transpose = transpose(ws);
   count += occurences(ws_transpose, word);
@@ -149,12 +151,12 @@ bool is_x(const char *word, char tl, char tr, char bl, char br) {
   return diagonal_match && antidiagonal_match;
 }
 
-unsigned long wordsearch_xcount(const Txt *ws, const char *word) {
+uint64_t wordsearch_xcount(const Txt *ws, const char *word) {
   assert(strlen(word) == 3 && "strlen(word) is not 3");
   char centre = word[1];
 
   size_t num_columns = strlen(ws->lines[0]);
-  long xcount = 0;
+  uint64_t xcount = 0;
 
   for (size_t row = 1; row < ws->num_lines - 1; row++) {
     for (size_t col = 1; col < num_columns - 1; col++) {
@@ -172,26 +174,26 @@ unsigned long wordsearch_xcount(const Txt *ws, const char *word) {
       char bottom_right = line_below[col + 1];
 
       if (is_x(word, top_left, top_right, bottom_left, bottom_right)) {
+        assert(xcount != UINT64_MAX && "xcount overflowed");
         xcount++;
-        assert(xcount >= 0 && "xcount overflowed");
       }
     }
   }
 
-  return (unsigned long)xcount;
+  return xcount;
 }
 
 int main(void) {
   Txt *ws = txt_read(stdin);
 
-  unsigned long xmas_count = wordsearch_count(ws, "XMAS");
-  unsigned long x_mas_count = wordsearch_xcount(ws, "MAS");
+  uint64_t xmas_count = wordsearch_count(ws, "XMAS");
+  uint64_t x_mas_count = wordsearch_xcount(ws, "MAS");
 
   txt_free(ws);
 
   print_day(4, "Ceres Search");
-  printf("Part 1: %ld\n", xmas_count);
-  printf("Part 2: %ld\n", x_mas_count);
+  printf("Part 1: %" PRIu64 "\n", xmas_count);
+  printf("Part 2: %" PRIu64 "\n", x_mas_count);
 
   assert(xmas_count == PART1_ANSWER);
   assert(x_mas_count == PART2_ANSWER);
