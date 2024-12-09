@@ -20,7 +20,7 @@ docker compose run --rm aoc
 |  6  | Guard Gallivant       |  ⭐⭐  |
 |  7  | Bridge Repair         |  ⭐⭐  |
 |  8  | Resonant Collinearity |  ⭐⭐  |
-|  9  | Disk Fragmenter       |   ⭐   |
+|  9  | Disk Fragmenter       |  ⭐⭐  |
 | 10  |                       |        |
 | 11  |                       |        |
 | 12  |                       |        |

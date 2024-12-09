@@ -173,24 +173,6 @@ size_t next_file_block(DiskBlock **nextp, DiskBlock *blocks,
   return 0;
 }
 
-void compact_print_state(DiskLayout *layout, size_t free_offset,
-                         size_t file_offset) {
-  disk_layout_print(layout);
-  for (size_t i = 0; i < layout->length; i++) {
-    if (i == free_offset) {
-      printf("L");
-    } else if (i == file_offset) {
-      printf("R");
-    } else {
-      printf(" ");
-    }
-  }
-  printf("\nfree_block_offset (L): %zu\n", free_offset);
-  printf("file_block: id=%" PRId64 "\n", layout->blocks[file_offset].id);
-  printf("file_block_offset (R): %zu\n", file_offset);
-  printf("\n");
-}
-
 void disk_layout_compact(DiskLayout *layout) {
   DiskBlock *free_block;
   DiskBlock *file_block;
@@ -203,19 +185,8 @@ void disk_layout_compact(DiskLayout *layout) {
       next_file_block(&file_block, layout->blocks, layout->length);
 
   while (free_block != NULL && file_block != NULL && file_block > free_block) {
-
-#ifdef USE_EXAMPLE
-    printf("Compact...\n");
-    compact_print_state(layout, free_block_offset, file_block_offset);
-#endif
-
     layout->blocks[free_block_offset] = *file_block;
     layout->blocks[file_block_offset] = FREE_BLOCK;
-
-#ifdef USE_EXAMPLE
-    printf("Moving file block...\n");
-    compact_print_state(layout, free_block_offset, file_block_offset);
-#endif
 
     free_block_offset++;
     free_block_offset +=
@@ -227,6 +198,53 @@ void disk_layout_compact(DiskLayout *layout) {
   }
 
   return;
+}
+
+void disk_layout_defrag(DiskLayout *layout, DiskMap *map) {
+  for (size_t i = map->length - 1; i > 0; i--) {
+    DiskItem item = map->items[i];
+    if (item.type == DISK_ITEM_TYPE_FREESPACE) {
+      continue;
+    }
+
+    for (size_t j = 0; j < i; j++) {
+      DiskItem *swap_item = &map->items[j];
+      bool swap_is_file = swap_item->type == DISK_ITEM_TYPE_FILE;
+      bool swap_is_too_small = swap_item->block_size < item.block_size;
+
+      if (swap_is_file || swap_is_too_small) {
+        continue;
+      }
+
+      DiskBlock *old_file_blocks = layout->blocks;
+      while (old_file_blocks->type != DISK_ITEM_TYPE_FILE ||
+             old_file_blocks->id != item.id) {
+        old_file_blocks++;
+      }
+
+      for (size_t k = 0; k < item.block_size; k++) {
+        old_file_blocks[k].type = DISK_ITEM_TYPE_FREESPACE;
+        // The IDs of these new FREESPACE blocks now have no meaning
+      }
+
+      DiskBlock *free_blocks = layout->blocks;
+      while (free_blocks->type != DISK_ITEM_TYPE_FREESPACE ||
+             free_blocks->id != swap_item->id) {
+        // Luckily disk_map_parse assigns an ID to each FREESPACE disk item
+        // It's the ID of the previous FILE seen, so is unique per FREESPACE
+        free_blocks++;
+      }
+
+      for (size_t k = 0; k < item.block_size; k++) {
+        free_blocks[k].type = DISK_ITEM_TYPE_FILE;
+        free_blocks[k].id = item.id;
+      }
+
+      // Mangles the map, but it isn't used again after this function is done
+      swap_item->block_size -= item.block_size;
+      break;
+    }
+  }
 }
 
 uint64_t disk_layout_checksum(DiskLayout *layout) {
@@ -246,21 +264,26 @@ int main(void) {
   assert(txt->num_lines == 1 && "invalid puzzle input");
 
   DiskMap *map = disk_map_parse(txt->lines[0]);
-  DiskLayout *layout = disk_layout_parse(map);
 
-  disk_layout_compact(layout);
-  uint64_t layout_checksum = disk_layout_checksum(layout);
+  DiskLayout *compact_layout = disk_layout_parse(map);
+  disk_layout_compact(compact_layout);
+  uint64_t compact_layout_checksum = disk_layout_checksum(compact_layout);
 
-  disk_layout_free(layout);
-  disk_map_free(map);
+  DiskLayout *defragged_layout = disk_layout_parse(map);
+  disk_layout_defrag(defragged_layout, map);
+  uint64_t defragged_layout_checksum = disk_layout_checksum(defragged_layout);
+
   txt_free(txt);
+  disk_map_free(map);
+  disk_layout_free(compact_layout);
+  disk_layout_free(defragged_layout);
 
   print_day(9, "Disk Fragmenter");
-  printf("Part 1: %" PRIu64 " \n", layout_checksum);
-  printf("Part 2: TODO\n");
+  printf("Part 1: %" PRIu64 " \n", compact_layout_checksum);
+  printf("Part 2: %" PRIu64 " \n", defragged_layout_checksum);
 
-  assert(layout_checksum == PART1_ANSWER);
-  // assert(0 == PART2_ANSWER);
+  assert(compact_layout_checksum == PART1_ANSWER);
+  assert(defragged_layout_checksum == PART2_ANSWER);
 
   return 0;
 }
