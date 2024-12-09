@@ -9,7 +9,8 @@ typedef struct Txt {
 } Txt;
 
 Txt *txt_new(size_t num_lines);
-Txt *txt_read(FILE *stream);
 void txt_free(Txt *txt);
+Txt *txt_read(FILE *stream);
+void txt_print(Txt *txt);
 
 #endif

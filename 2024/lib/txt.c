@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,14 @@ Txt *txt_new(size_t num_lines) {
   txt->num_lines = num_lines;
 
   return txt;
+}
+
+void txt_free(Txt *txt) {
+  for (size_t i = 0; i < txt->num_lines; i++) {
+    free(txt->lines[i]);
+  }
+  free(txt->lines);
+  free(txt);
 }
 
 Txt *txt_read(FILE *stream) {
@@ -43,10 +52,8 @@ Txt *txt_read(FILE *stream) {
   return txt;
 }
 
-void txt_free(Txt *txt) {
+void txt_print(Txt *txt) {
   for (size_t i = 0; i < txt->num_lines; i++) {
-    free(txt->lines[i]);
+    printf("%s\n", txt->lines[i]);
   }
-  free(txt->lines);
-  free(txt);
 }
