@@ -9,6 +9,7 @@ https://adventofcode.com/2024/day/3
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +22,7 @@ typedef struct MemoryState {
   char *memory;
   char *pos;
   bool do_mul;
-  int64_t result;
+  uint64_t result;
 } MemoryState;
 
 void free_memory_state(MemoryState *state) {
@@ -95,14 +96,14 @@ bool next_mul(MemoryState *state) {
   }
 
   assert(mult_int64_ok(x, y));
-  state->result = x * y;
+  state->result = (uint64_t)(x * y);
   return true;
 }
 
 int main(void) {
   MemoryState *state = read_memory();
-  int64_t unconditional_total = 0;
-  int64_t conditional_total = 0;
+  uint64_t unconditional_total = 0;
+  uint64_t conditional_total = 0;
 
   while (next_mul(state)) {
     unconditional_total += state->result;
@@ -115,11 +116,8 @@ int main(void) {
   free_memory_state(state);
 
   print_day(3, "Mull It Over");
-  printf("Part 1: %" PRId64 "\n", unconditional_total);
-  printf("Part 2: %" PRId64 "\n", conditional_total);
-
-  assert(unconditional_total == PART1_ANSWER);
-  assert(conditional_total == PART2_ANSWER);
+  print_part(1, unconditional_total, PART1_ANSWER);
+  print_part(2, conditional_total, PART2_ANSWER);
 
   return 0;
 }

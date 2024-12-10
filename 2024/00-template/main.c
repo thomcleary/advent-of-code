@@ -14,8 +14,8 @@ https://adventofcode.com/2024/day/0
 
 int main(void) {
   print_day(0, "Template");
-  printf("Part 1: TODO\n");
-  printf("Part 2: TODO\n");
+  print_part(1, 0, PART1_ANSWER);
+  print_part(2, 2, PART2_ANSWER);
 
   assert(0 == PART1_ANSWER);
   assert(0 == PART2_ANSWER);

@@ -279,11 +279,8 @@ int main(void) {
   disk_layout_free(defragged_layout);
 
   print_day(9, "Disk Fragmenter");
-  printf("Part 1: %" PRIu64 " \n", compact_layout_checksum);
-  printf("Part 2: %" PRIu64 " \n", defragged_layout_checksum);
-
-  assert(compact_layout_checksum == PART1_ANSWER);
-  assert(defragged_layout_checksum == PART2_ANSWER);
+  print_part(1, compact_layout_checksum, PART1_ANSWER);
+  print_part(2, defragged_layout_checksum, PART2_ANSWER);
 
   return 0;
 }

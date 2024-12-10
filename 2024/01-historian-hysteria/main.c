@@ -25,8 +25,8 @@ size_t get_ids(int64_t left_ids[], int64_t right_ids[]) {
   errno = 0;
 
   while ((getline(&line, &line_len, stdin) != -1)) {
-    long left, right;
-    int matched = sscanf(line, "%ld %ld", &left, &right);
+    int64_t left, right;
+    int matched = sscanf(line, "%" PRId64 "%" PRId64, &left, &right);
     assert(matched == 2 && "sscanf failed");
 
     left_ids[num_lines] = left;
@@ -40,8 +40,19 @@ size_t get_ids(int64_t left_ids[], int64_t right_ids[]) {
   return num_lines;
 }
 
-int compare_int(const void *a, const void *b) {
-  return *(int *)a - *(int *)b;
+int compare_int64(const void *a, const void *b) {
+  int64_t a_value = *(int64_t *)a;
+  int64_t b_value = *(int64_t *)b;
+
+  if (a_value == b_value) {
+    return 0;
+  }
+
+  if (a_value < b_value) {
+    return -1;
+  }
+
+  return 1;
 }
 
 char *get_key(int64_t id) {
@@ -71,8 +82,8 @@ int main(void) {
   int64_t left_ids[BUFSIZ], right_ids[BUFSIZ];
   size_t num_ids = get_ids(left_ids, right_ids);
 
-  qsort(left_ids, num_ids, sizeof(*left_ids), compare_int);
-  qsort(right_ids, num_ids, sizeof(*right_ids), compare_int);
+  qsort(left_ids, num_ids, sizeof(*left_ids), compare_int64);
+  qsort(right_ids, num_ids, sizeof(*right_ids), compare_int64);
 
   Hashtable *right_counts_ht = hashtable_new();
   assert(right_counts_ht != NULL && "hashtable_new failed");
@@ -112,11 +123,8 @@ int main(void) {
   free_hashtable(right_counts_ht, right_ids, num_ids);
 
   print_day(1, "Hystorian Hysteria");
-  printf("Part 1: %" PRId64 "\n", total_distance);
-  printf("Part 2: %" PRId64 "\n", similarity_score);
-
-  assert(total_distance == PART1_ANSWER);
-  assert(similarity_score == PART2_ANSWER);
+  print_part(1, (uint64_t)total_distance, PART1_ANSWER);
+  print_part(2, (uint64_t)similarity_score, PART2_ANSWER);
 
   return 0;
 }

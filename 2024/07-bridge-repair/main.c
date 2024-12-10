@@ -164,11 +164,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(7, "Bridge Repair");
-  printf("Part 1: %" PRId64 "\n", add_mult_result);
-  printf("Part 2: %" PRId64 "\n", add_mult_concat_result);
-
-  assert(add_mult_result == PART1_ANSWER);
-  assert(add_mult_concat_result == PART2_ANSWER);
+  print_part(1, (uint64_t)add_mult_result, PART1_ANSWER);
+  print_part(2, (uint64_t)add_mult_concat_result, PART2_ANSWER);
 
   return 0;
 }

@@ -149,11 +149,8 @@ int main(void) {
   }
 
   print_day(2, "Red-Nosed Reports");
-  printf("Part 1: %" PRIu64 "\n", safe_reports);
-  printf("Part 2: %" PRIu64 "\n", safe_reports + dampened_reports);
-
-  assert(safe_reports == PART1_ANSWER);
-  assert((safe_reports + dampened_reports) == PART2_ANSWER);
+  print_part(1, safe_reports, PART1_ANSWER);
+  print_part(2, safe_reports + dampened_reports, PART2_ANSWER);
 
   return 0;
 }

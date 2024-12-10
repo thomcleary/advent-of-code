@@ -192,11 +192,8 @@ int main(void) {
   txt_free(ws);
 
   print_day(4, "Ceres Search");
-  printf("Part 1: %" PRIu64 "\n", xmas_count);
-  printf("Part 2: %" PRIu64 "\n", x_mas_count);
-
-  assert(xmas_count == PART1_ANSWER);
-  assert(x_mas_count == PART2_ANSWER);
+  print_part(1, xmas_count, PART1_ANSWER);
+  print_part(2, x_mas_count, PART2_ANSWER);
 
   return 0;
 }

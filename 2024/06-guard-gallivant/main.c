@@ -263,11 +263,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(6, "Guard Gallivant");
-  printf("Part 1: %" PRId64 "\n", positions_visited);
-  printf("Part 2: %" PRId64 "\n", positions_loopable);
-
-  assert(positions_visited == PART1_ANSWER);
-  assert(positions_loopable == PART2_ANSWER);
+  print_part(1, positions_visited, PART1_ANSWER);
+  print_part(2, positions_loopable, PART2_ANSWER);
 
   return 0;
 }

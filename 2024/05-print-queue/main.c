@@ -231,11 +231,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(5, "Print Queue");
-  printf("Part 1: %" PRIu64 "\n", valid_sum);
-  printf("Part 2: %" PRIu64 "\n", invalid_sum);
-
-  assert(valid_sum == PART1_ANSWER);
-  assert(invalid_sum == PART2_ANSWER);
+  print_part(1, valid_sum, PART1_ANSWER);
+  print_part(2, invalid_sum, PART2_ANSWER);
 
   return 0;
 }

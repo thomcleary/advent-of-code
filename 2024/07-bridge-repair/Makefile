@@ -2,7 +2,7 @@ CC = gcc
 CC_FLAGS = -std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wuninitialized -Wformat -Wconversion
 
 TARGET = main
-LIBS = aoc mathutils txt
+LIBS = ansi aoc mathutils txt
 OBJS = $(addprefix ../lib/, $(addsuffix .o, $(LIBS))) $(TARGET).o
 
 $(TARGET): $(OBJS)

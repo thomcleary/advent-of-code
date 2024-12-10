@@ -306,11 +306,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(8, "Resonant Collinearity");
-  printf("Part 1: %" PRIu64 "\n", num_antinodes);
-  printf("Part 2: %" PRIu64 "\n", num_antinodes_with_resonant_harmonics);
-
-  assert(num_antinodes == PART1_ANSWER);
-  assert(num_antinodes_with_resonant_harmonics == PART2_ANSWER);
+  print_part(1, num_antinodes, PART1_ANSWER);
+  print_part(2, num_antinodes_with_resonant_harmonics, PART2_ANSWER);
 
   return 0;
 }
