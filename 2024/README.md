@@ -21,7 +21,7 @@ docker compose run --rm aoc
 |  7  | Bridge Repair         |  ⭐⭐  |
 |  8  | Resonant Collinearity |  ⭐⭐  |
 |  9  | Disk Fragmenter       |  ⭐⭐  |
-| 10  | Hoof It               |   ⭐   |
+| 10  | Hoof It               |  ⭐⭐  |
 | 11  |                       |        |
 | 12  |                       |        |
 | 13  |                       |        |

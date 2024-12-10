@@ -32,16 +32,15 @@ typedef struct TopographicMap {
   size_t num_trailheads;
 } TopographicMap;
 
-const AnsiCode HEIGHT_BG_COLOUR_CODE[10] = {ANSI_CODE_BG_BLACK,
-                                            ANSI_CODE_BG_BLUE,
-                                            ANSI_CODE_BG_BRIGHT_BLUE,
-                                            ANSI_CODE_BG_MAGENTA,
-                                            ANSI_CODE_BG_BRIGHT_MAGENTA,
-                                            ANSI_CODE_BG_RED,
-                                            ANSI_CODE_BG_BRIGHT_RED,
-                                            ANSI_CODE_BG_YELLOW,
-                                            ANSI_CODE_BG_BRIGHT_YELLOW,
-                                            ANSI_CODE_BG_GREEN
+typedef struct TrailheadInfo {
+  uint64_t peaks_reachable, num_hiking_trails;
+} TrailheadInfo;
+
+const AnsiCode HEIGHT_BG_COLOUR_CODE[10] = {
+    ANSI_CODE_BG_BLACK,   ANSI_CODE_BG_BLUE,    ANSI_CODE_BG_BLUE,
+    ANSI_CODE_BG_MAGENTA, ANSI_CODE_BG_MAGENTA, ANSI_CODE_BG_RED,
+    ANSI_CODE_BG_RED,     ANSI_CODE_BG_YELLOW,  ANSI_CODE_BG_YELLOW,
+    ANSI_CODE_BG_GREEN
 
 };
 
@@ -52,7 +51,6 @@ void topographic_map_free(TopographicMap *map) {
 }
 
 void topographic_map_print(TopographicMap *map) {
-  printf("Map (%zu x %zu)\n", map->num_rows, map->num_columns);
   for (size_t i = 0; i < map->num_rows; i++) {
     for (size_t j = 0; j < map->num_columns; j++) {
       uint8_t pos = map->positions[(i * map->num_columns) + j];
@@ -62,13 +60,6 @@ void topographic_map_print(TopographicMap *map) {
       ansi_reset();
     }
     printf("\n");
-  }
-  printf("\n");
-
-  printf("Trailheads (%zu)\n", map->num_trailheads);
-  for (size_t i = 0; i < map->num_trailheads; i++) {
-    Coord trailhead = map->trailheads[i];
-    printf("(%zu, %zu)\n", trailhead.row, trailhead.column);
   }
   printf("\n");
 }
@@ -118,7 +109,8 @@ uint8_t topographic_map_get_height_at(TopographicMap *map, Coord position) {
   return map->positions[(position.row * map->num_columns) + position.column];
 }
 
-uint64_t topographic_map_trailhead_score(TopographicMap *map, Coord trailhead) {
+TrailheadInfo topographic_map_trailhead_info(TopographicMap *map,
+                                             Coord trailhead) {
   Coord *stack = malloc(sizeof(*stack) * map->num_rows * map->num_columns + 1);
   assert(stack != NULL && "malloc failed");
 
@@ -128,20 +120,20 @@ uint64_t topographic_map_trailhead_score(TopographicMap *map, Coord trailhead) {
   size_t stack_pointer = 1;
   stack[stack_pointer] = trailhead;
 
-  uint64_t trailhead_score = 0;
+  TrailheadInfo info = {.peaks_reachable = 0, .num_hiking_trails = 0};
 
   while (stack_pointer > 0) {
     Coord popped = stack[stack_pointer--];
-    size_t visited_index = (popped.row * map->num_columns) + popped.column;
 
-    if (visited[visited_index]) {
-      continue;
-    } else {
-      visited[(popped.row * map->num_columns) + popped.column] = true;
-    }
+    size_t visited_index = (popped.row * map->num_columns) + popped.column;
+    bool popped_seen = visited[visited_index];
+    visited[visited_index] = true;
 
     if (topographic_map_get_height_at(map, popped) == 9) {
-      trailhead_score++;
+      if (!popped_seen) {
+        info.peaks_reachable++;
+      }
+      info.num_hiking_trails++;
       continue;
     }
 
@@ -150,20 +142,14 @@ uint64_t topographic_map_trailhead_score(TopographicMap *map, Coord trailhead) {
     if (popped.row < map->num_rows) {
       if (popped.row > 0) {
         Coord up = {.row = popped.row - 1, .column = popped.column};
-        bool seen = visited[(up.row * map->num_columns) + up.column];
-        uint8_t up_height = topographic_map_get_height_at(map, up);
-
-        if (!seen && (popped_height == up_height - 1)) {
+        if (popped_height == topographic_map_get_height_at(map, up) - 1) {
           stack[++stack_pointer] = up;
         }
       }
 
       if (popped.row < map->num_rows - 1) {
         Coord down = {.row = popped.row + 1, .column = popped.column};
-        bool seen = visited[(down.row * map->num_columns) + down.column];
-        uint8_t down_height = topographic_map_get_height_at(map, down);
-
-        if (!seen && (popped_height == down_height - 1)) {
+        if (popped_height == topographic_map_get_height_at(map, down) - 1) {
           stack[++stack_pointer] = down;
         }
       }
@@ -172,20 +158,14 @@ uint64_t topographic_map_trailhead_score(TopographicMap *map, Coord trailhead) {
     if (popped.row < map->num_columns) {
       if (popped.column > 0) {
         Coord left = {.row = popped.row, .column = popped.column - 1};
-        bool seen = visited[(left.row * map->num_columns) + left.column];
-        uint8_t left_height = topographic_map_get_height_at(map, left);
-
-        if (!seen && (popped_height == left_height - 1)) {
+        if (popped_height == topographic_map_get_height_at(map, left) - 1) {
           stack[++stack_pointer] = left;
         }
       }
 
       if (popped.column < map->num_columns - 1) {
         Coord right = {.row = popped.row, .column = popped.column + 1};
-        bool seen = visited[(right.row * map->num_columns) + right.column];
-        uint8_t right_height = topographic_map_get_height_at(map, right);
-
-        if (!seen && (popped_height == right_height - 1)) {
+        if (popped_height == topographic_map_get_height_at(map, right) - 1) {
           stack[++stack_pointer] = right;
         }
       }
@@ -195,7 +175,7 @@ uint64_t topographic_map_trailhead_score(TopographicMap *map, Coord trailhead) {
   free(stack);
   free(visited);
 
-  return trailhead_score;
+  return info;
 }
 
 int main(void) {
@@ -203,18 +183,21 @@ int main(void) {
   TopographicMap *map = topographic_map_parse(txt);
   // topographic_map_print(map);
 
-  uint64_t trailhead_score_total = 0;
+  TrailheadInfo totals = {.peaks_reachable = 0, .num_hiking_trails = 0};
+
   for (size_t i = 0; i < map->num_trailheads; i++) {
-    trailhead_score_total +=
-        topographic_map_trailhead_score(map, map->trailheads[i]);
+    TrailheadInfo info =
+        topographic_map_trailhead_info(map, map->trailheads[i]);
+    totals.peaks_reachable += info.peaks_reachable;
+    totals.num_hiking_trails += info.num_hiking_trails;
   }
 
   topographic_map_free(map);
   txt_free(txt);
 
   print_day(10, "Hoof It");
-  print_part(1, trailhead_score_total, PART1_ANSWER);
-  print_part(2, 0, PART2_ANSWER);
+  print_part(1, totals.peaks_reachable, PART1_ANSWER);
+  print_part(2, totals.num_hiking_trails, PART2_ANSWER);
 
   return 0;
 }
