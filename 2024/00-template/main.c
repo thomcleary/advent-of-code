@@ -17,8 +17,5 @@ int main(void) {
   print_part(1, 0, PART1_ANSWER);
   print_part(2, 2, PART2_ANSWER);
 
-  assert(0 == PART1_ANSWER);
-  assert(0 == PART2_ANSWER);
-
   return 0;
 }
