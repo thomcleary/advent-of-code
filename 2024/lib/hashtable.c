@@ -39,10 +39,7 @@ static void free_entry(HashtableEntry *entry) {
     return;
   }
 
-  if (entry->next != NULL) {
-    free(entry->next);
-  }
-
+  free_entry(entry->next);
   free((char *)entry->key);
   free(entry);
 }
@@ -101,7 +98,7 @@ bool hashtable_has(Hashtable *ht, const char *key) {
   return entry != NULL;
 }
 
-void *hashtable_get(Hashtable *ht, const char *key) {
+HashtableGetResult hashtable_get(Hashtable *ht, const char *key) {
   assert(ht != NULL);
   assert(key != NULL);
 
@@ -112,10 +109,10 @@ void *hashtable_get(Hashtable *ht, const char *key) {
   }
 
   if (entry == NULL) {
-    return NULL;
+    return (HashtableGetResult){.success = false};
   }
 
-  return entry->value;
+  return (HashtableGetResult){.success = true, .value = entry->value};
 }
 
 Hashtable *hashtable_set(Hashtable *ht, const char *key, const void *value) {

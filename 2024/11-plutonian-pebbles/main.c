@@ -9,6 +9,7 @@ https://adventofcode.com/2024/day/11
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -16,9 +17,12 @@ https://adventofcode.com/2024/day/11
 #include <string.h>
 
 #include "../lib/aoc.h"
-// #include "../lib/hashtable.h"
+#include "../lib/hashtable.h"
 #include "../lib/txt.h"
 #include "main.h"
+
+const uint8_t UINT64_MAX_STRLEN = 20;
+const uint8_t UINT8_MAX_STRLEN = 3;
 
 typedef struct Stones {
   uint64_t *value;
@@ -62,57 +66,47 @@ Stones *stones_parse(Txt *txt) {
   return stones;
 }
 
-uint64_t blink(uint64_t stone, uint8_t times) {
+uint64_t blink(uint64_t stone, uint8_t times, Hashtable *cache) {
   if (times == 0) {
     return 1;
   }
 
+  char cache_key[UINT64_MAX_STRLEN + UINT8_MAX_STRLEN + 2]; // +1 ':', +1 '\0
+  snprintf(cache_key, sizeof(cache_key), "%" PRIu64 ":%d", stone, times);
+
+  HashtableGetResult cache_result = hashtable_get(cache, cache_key);
+  if (cache_result.success) {
+    return (uint64_t)cache_result.value;
+  }
+
+  uint64_t num_stone_digits = (uint64_t)log10((double)stone) + 1;
+  uint64_t num_stones;
+
   if (stone == 0) {
-    return blink(1, times - 1);
+    num_stones = blink(1, times - 1, cache);
+  } else if (num_stone_digits % 2 == 0) {
+    uint64_t split_by = (uint64_t)(pow(10, (double)num_stone_digits / 2));
+    num_stones = blink(stone / split_by, times - 1, cache) +
+                 blink(stone % split_by, times - 1, cache);
+  } else {
+    num_stones = blink(stone * 2024, times - 1, cache);
   }
 
-  const uint8_t int64_max_length = 20;
-  char stone_str[int64_max_length + 1];
-  snprintf(stone_str, sizeof(stone_str), "%" PRIu64, stone);
-  size_t stone_str_length = strlen(stone_str);
+  hashtable_set(cache, cache_key, (void *)num_stones);
 
-  if (stone_str_length % 2 == 0) {
-    size_t new_stone_str_length = (stone_str_length / 2);
-
-    char left_stone_str[new_stone_str_length + 1];
-    strncpy(left_stone_str, stone_str, new_stone_str_length);
-    left_stone_str[new_stone_str_length] = '\0';
-
-    char right_stone_str[new_stone_str_length + 1];
-    strncpy(right_stone_str, stone_str + new_stone_str_length,
-            new_stone_str_length);
-    right_stone_str[new_stone_str_length] = '\0';
-
-    errno = 0;
-    uint64_t left_stone = strtoull(left_stone_str, NULL, 10);
-    assert(errno == 0 && "strtoull failed");
-
-    errno = 0;
-    uint64_t right_stone = strtoull(right_stone_str, NULL, 10);
-    assert(errno == 0 && "strtoull failed");
-
-    return blink(left_stone, times - 1) + blink(right_stone, times - 1);
-  }
-
-  return blink(stone * 2024, times - 1);
+  return num_stones;
 }
 
 uint64_t stones_blink(Stones *stones, uint8_t times) {
-  // TODO: maybe use hashtable to cache blink counts of stones?
-  // Hashtable *cache = hashtable_new();
+  Hashtable *cache = hashtable_new();
 
   uint64_t num_stones = 0;
 
   for (size_t i = 0; i < stones->length; i++) {
-    num_stones += blink(stones->value[i], times);
+    num_stones += blink(stones->value[i], times, cache);
   }
 
-  // hashtable_free(cache);
+  hashtable_free(cache);
 
   return num_stones;
 }
@@ -121,14 +115,15 @@ int main(void) {
   Txt *txt = txt_read(stdin);
   Stones *stones = stones_parse(txt);
 
-  uint64_t num_stones = stones_blink(stones, 25);
+  uint64_t stones_after_25_blinks = stones_blink(stones, 25);
+  uint64_t stones_after_75_blinks = stones_blink(stones, 75);
 
   stones_free(stones);
   txt_free(txt);
 
   print_day(11, "Plutonian Pebbles");
-  print_part(1, num_stones, PART1_ANSWER);
-  // print_part(2, 2, PART2_ANSWER);
+  print_part(1, stones_after_25_blinks, PART1_ANSWER);
+  print_part(2, stones_after_75_blinks, PART2_ANSWER);
 
   return 0;
 }

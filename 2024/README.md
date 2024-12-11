@@ -22,7 +22,7 @@ docker compose run --rm aoc
 |  8  | Resonant Collinearity |  ⭐⭐  |
 |  9  | Disk Fragmenter       |  ⭐⭐  |
 | 10  | Hoof It               |  ⭐⭐  |
-| 11  | Plutonian Pebbles     |   ⭐   |
+| 11  | Plutonian Pebbles     |  ⭐⭐  |
 | 12  |                       |        |
 | 13  |                       |        |
 | 14  |                       |        |

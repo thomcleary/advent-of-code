@@ -65,18 +65,6 @@ char *get_key(int64_t id) {
   return key;
 }
 
-void free_hashtable(Hashtable *ht, int64_t keys[], size_t num_keys) {
-  for (size_t i = 0; i < num_keys; i++) {
-    char *key = get_key(keys[i]);
-    long *value = hashtable_get(ht, key);
-    if (value != NULL) {
-      free(value);
-    }
-  }
-
-  hashtable_free(ht);
-}
-
 int main(void) {
   // There's only 1000 lines in the puzzle input, 1024 will do
   int64_t left_ids[BUFSIZ], right_ids[BUFSIZ];
@@ -90,20 +78,16 @@ int main(void) {
   int64_t total_distance = 0;
 
   for (size_t i = 0; i < num_ids; i++) {
-    long right = right_ids[i];
+    int64_t right = right_ids[i];
+    int64_t right_count = 1;
 
     char *key = get_key(right);
-    long *right_count = hashtable_get(right_counts_ht, key);
-
-    if (right_count == NULL) {
-      right_count = malloc(sizeof(*right_count));
-      assert(right_count != NULL && "malloc failed");
-      *right_count = 1;
-    } else {
-      *right_count += 1;
+    HashtableGetResult result = hashtable_get(right_counts_ht, key);
+    if (result.success) {
+      right_count += (int64_t)result.value;
     }
 
-    hashtable_set(right_counts_ht, key, right_count);
+    hashtable_set(right_counts_ht, key, (void *)right_count);
     free(key);
 
     total_distance += llabs(left_ids[i] - right);
@@ -114,13 +98,13 @@ int main(void) {
     int64_t left = left_ids[i];
 
     char *key = get_key(left);
-    int64_t *right_count = hashtable_get(right_counts_ht, key);
+    HashtableGetResult result = hashtable_get(right_counts_ht, key);
     free(key);
 
-    similarity_score += left * (right_count == NULL ? 0 : *right_count);
+    similarity_score += left * (result.success ? (int64_t)result.value : 0);
   }
 
-  free_hashtable(right_counts_ht, right_ids, num_ids);
+  hashtable_free(right_counts_ht);
 
   print_day(1, "Hystorian Hysteria");
   print_part(1, (uint64_t)total_distance, PART1_ANSWER);

@@ -1,12 +1,13 @@
 CC = gcc
 CC_FLAGS = -std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wuninitialized -Wformat -Wconversion
+LINK_FLAGS = -lm
 
 TARGET = main
 LIBS = ansi aoc hashtable txt
 OBJS = $(addprefix ../lib/, $(addsuffix .o, $(LIBS))) $(TARGET).o
 
 $(TARGET): $(OBJS)
-	$(CC) $(CC_FLAGS) -o $@ $^
+	$(CC) $(CC_FLAGS) -o $@ $^ $(LINK_FLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CC_FLAGS) -c $< -o $@
