@@ -1,13 +1,14 @@
-# Day 0: Template
+# Day 12: Garden Groups
 
-<https://adventofcode.com/2024/day/0>
+<https://adventofcode.com/2024/day/12>
 
 ```shell
 $ make
 $ ./main < input.txt
 ```
 
-## Notes
+## Benchmark
 
-- If you end up wanting to visualise this, get 24bit colour working in the container (xterm)
-  - https://pisquare.osisoft.com/s/Blog-Detail/a8r1I000000GvXBQA0/console-things-getting-24bit-color-working-in-terminals
+```shell
+hyperfine ./main --input input.txt --shell=none
+```

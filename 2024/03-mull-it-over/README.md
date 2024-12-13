@@ -6,3 +6,9 @@
 $ make
 $ ./main < input.txt
 ```
+
+## Benchmark
+
+```shell
+hyperfine ./main --input input.txt --shell=none
+```

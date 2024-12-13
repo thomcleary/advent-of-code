@@ -23,7 +23,7 @@ docker compose run --rm aoc
 |  9  | Disk Fragmenter       |  ⭐⭐  |
 | 10  | Hoof It               |  ⭐⭐  |
 | 11  | Plutonian Pebbles     |  ⭐⭐  |
-| 12  | Garden Groups         |   ⭐   |
+| 12  | Garden Groups         |  ⭐⭐  |
 | 13  |                       |        |
 | 14  |                       |        |
 | 15  |                       |        |

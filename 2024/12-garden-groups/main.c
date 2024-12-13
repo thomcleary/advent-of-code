@@ -7,6 +7,7 @@ https://adventofcode.com/2024/day/12
 #define _DEFAULT_SOURCE
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -27,14 +28,138 @@ typedef struct {
 } GardenPlot;
 
 typedef struct {
+  uint64_t area, perimiter, sides;
+} Region;
+
+typedef struct {
   char **plots;
   size_t rows, columns;
 } GardenMap;
 
-uint64_t plot_region_fencing_cost(GardenMap *map, GardenPlot *plot,
-                                  bool visited[]) {
-  uint64_t region_perimiter = 0;
-  uint64_t region_area = 0;
+typedef struct {
+  uint64_t cost, discount;
+} FencingQuote;
+
+Coord coord_up(const Coord coord) {
+  return (Coord){.row = coord.row - 1, .column = coord.column};
+}
+
+Coord coord_down(const Coord coord) {
+  return (Coord){.row = coord.row + 1, .column = coord.column};
+}
+
+Coord coord_left(const Coord coord) {
+  return (Coord){.row = coord.row, .column = coord.column - 1};
+}
+
+Coord coord_right(const Coord coord) {
+  return (Coord){.row = coord.row, .column = coord.column + 1};
+}
+
+bool is_different_plant(const GardenMap *map, char plant, Coord neighbour) {
+  return map->plots[neighbour.row][neighbour.column] != plant;
+}
+
+bool is_plot_on_top_edge(Coord plot) {
+  return plot.row == 0;
+}
+
+bool is_plot_on_bottom_edge(Coord plot, const GardenMap *map) {
+  return plot.row == map->rows - 1;
+}
+
+bool is_plot_on_left_edge(Coord plot) {
+  return plot.column == 0;
+}
+
+bool is_plot_on_right_edge(Coord plot, const GardenMap *map) {
+  return plot.column == map->columns - 1;
+}
+
+uint8_t count_corners(const GardenMap *map, const GardenPlot *plot) {
+  const char plant = plot->plant;
+  const Coord location = plot->location;
+
+  const Coord up = coord_up(location);
+  const Coord down = coord_down(location);
+  const Coord left = coord_left(location);
+  const Coord right = coord_right(location);
+
+  bool up_edge =
+      is_plot_on_top_edge(location) || is_different_plant(map, plant, up);
+  bool down_edge = is_plot_on_bottom_edge(location, map) ||
+                   is_different_plant(map, plant, down);
+  bool left_edge =
+      is_plot_on_left_edge(location) || is_different_plant(map, plant, left);
+  bool right_edge = is_plot_on_right_edge(location, map) ||
+                    is_different_plant(map, plant, right);
+
+  // Corners (C)
+  // on the outside border (#)
+  // of the region (c)
+  // (concave corners, interior angle < 180 degrees)
+
+  // ###
+  // #Cc
+  // #cc
+  int count = up_edge && left_edge;
+
+  // ###
+  // cC#
+  // cc#
+  count += up_edge && right_edge;
+
+  // #cc
+  // #Cc
+  // ###
+  count += down_edge && left_edge;
+
+  // cc#
+  // cC#
+  // ###
+  count += down_edge && right_edge;
+
+  // Corners (C)
+  // on the border of regions (X)
+  // that are nested within the region (c)
+  // (convex corners, interior angle > 180 degrees)
+
+  // XXcc#
+  // ccCc#
+  // cccc#
+  // #####
+  count +=
+      !up_edge && !left_edge && is_different_plant(map, plant, coord_left(up));
+
+  // #ccXX
+  // #cCcc
+  // #cccc
+  // #####
+  count += !up_edge && !right_edge &&
+           is_different_plant(map, plant, coord_right(up));
+
+  // #####
+  // cccc#
+  // ccCc#
+  // XXcc#
+  count += !down_edge && !left_edge &&
+           is_different_plant(map, plant, coord_left(down));
+
+  // #####
+  // cccc#
+  // cCcc#
+  // ccXX#
+  count += !down_edge && !right_edge &&
+           is_different_plant(map, plant, coord_right(down));
+
+  return (uint8_t)(count);
+}
+
+Region find_region(const GardenMap *map, const GardenPlot *plot,
+                   bool visited[]) {
+  uint64_t area = 0;
+  uint64_t perimiter = 0;
+  uint64_t sides = 0;
 
   Coord stack[map->rows * map->columns];
   size_t stack_pointer = 1;
@@ -47,52 +172,55 @@ uint64_t plot_region_fencing_cost(GardenMap *map, GardenPlot *plot,
     if (visited[popped_visited_index]) {
       continue;
     }
-
     visited[popped_visited_index] = true;
-    region_area++;
+
+    area++;
+    sides += count_corners(
+        map, &(GardenPlot){.plant = plot->plant, .location = popped});
+
+    const Coord up = coord_up(popped);
+    const Coord down = coord_down(popped);
+    const Coord left = coord_left(popped);
+    const Coord right = coord_right(popped);
 
     uint8_t num_touching = 0;
-    Coord up = {.row = popped.row - 1, .column = popped.column};
-    Coord down = {.row = popped.row + 1, .column = popped.column};
-    Coord left = {.row = popped.row, .column = popped.column - 1};
-    Coord right = {.row = popped.row, .column = popped.column + 1};
 
-    if (popped.row < map->rows) {
-      if (popped.row > 0 && map->plots[up.row][up.column] == plot->plant) {
-        num_touching++;
-        stack[++stack_pointer] = up;
-      }
-
-      if ((popped.row < map->rows - 1) &&
-          map->plots[down.row][down.column] == plot->plant) {
-        num_touching++;
-        stack[++stack_pointer] = down;
-      }
+    if (!is_plot_on_top_edge(popped) &&
+        !is_different_plant(map, plot->plant, up)) {
+      num_touching++;
+      stack[++stack_pointer] = up;
     }
 
-    if (popped.column < map->columns) {
-      if (popped.column > 0 &&
-          map->plots[left.row][left.column] == plot->plant) {
-        num_touching++;
-        stack[++stack_pointer] = left;
-      }
-
-      if ((popped.column < map->columns - 1) &&
-          map->plots[right.row][right.column] == plot->plant) {
-        num_touching++;
-        stack[++stack_pointer] = right;
-      }
+    if (!is_plot_on_bottom_edge(popped, map) &&
+        !is_different_plant(map, plot->plant, down)) {
+      num_touching++;
+      stack[++stack_pointer] = down;
     }
 
-    region_perimiter += 4 - num_touching;
+    if (!is_plot_on_left_edge(popped) &&
+        !is_different_plant(map, plot->plant, left)) {
+      num_touching++;
+      stack[++stack_pointer] = left;
+    }
+
+    if (!is_plot_on_right_edge(popped, map) &&
+        !is_different_plant(map, plot->plant, right)) {
+      num_touching++;
+      stack[++stack_pointer] = right;
+    }
+
+    perimiter += 4 - num_touching;
   }
 
-  return region_perimiter * region_area;
+  return (Region){.area = area, .perimiter = perimiter, .sides = sides};
 }
 
-uint64_t garden_fencing_cost(Txt *garden_map) {
-  size_t num_columns = strlen(garden_map->lines[0]);
-  size_t num_plots = garden_map->num_lines * num_columns;
+FencingQuote fencing_quote(Txt *map) {
+  const size_t num_columns = strlen(map->lines[0]);
+  const size_t num_plots = map->num_lines * num_columns;
+
+  const GardenMap garden_map = {
+      .plots = map->lines, .rows = map->num_lines, .columns = num_columns};
 
   bool visited[num_plots];
   for (size_t plot = 0; plot < num_plots; plot++) {
@@ -100,17 +228,20 @@ uint64_t garden_fencing_cost(Txt *garden_map) {
   }
 
   uint64_t cost = 0;
+  uint64_t discount = 0;
 
-  for (size_t row = 0; row < garden_map->num_lines; row++) {
+  for (size_t row = 0; row < map->num_lines; row++) {
     for (size_t col = 0; col < num_columns; col++) {
       if (!visited[(row * num_columns) + col]) {
-        cost += plot_region_fencing_cost(
-            &(GardenMap){.plots = garden_map->lines,
-                         .rows = garden_map->num_lines,
-                         .columns = num_columns},
-            &(GardenPlot){.plant = garden_map->lines[row][col],
-                          .location = (Coord){.row = row, .column = col}},
-            visited);
+        const GardenPlot plot = {.plant = map->lines[row][col],
+                                 .location = {.row = row, .column = col}};
+
+        Region region = find_region(&garden_map, &plot, visited);
+        uint64_t region_cost = region.area * region.perimiter;
+        uint64_t region_discount = region_cost - (region.area * region.sides);
+
+        cost += region_cost;
+        discount += region_discount;
       }
     }
   }
@@ -119,19 +250,18 @@ uint64_t garden_fencing_cost(Txt *garden_map) {
     assert(visited[plot] && "plot not visited");
   }
 
-  return cost;
+  return (FencingQuote){.cost = cost, .discount = discount};
 }
 
 int main(void) {
-  Txt *garden_map = txt_read(stdin);
+  Txt *map = txt_read(stdin);
+  FencingQuote quote = fencing_quote(map);
 
-  uint64_t fencing_cost = garden_fencing_cost(garden_map);
-
-  txt_free(garden_map);
+  txt_free(map);
 
   print_day(12, "Garden Groups");
-  print_part(1, fencing_cost, PART1_ANSWER);
-  // print_part(2, 2, PART2_ANSWER);
+  print_part(1, quote.cost, PART1_ANSWER);
+  print_part(2, quote.cost - quote.discount, PART2_ANSWER);
 
   return 0;
 }
