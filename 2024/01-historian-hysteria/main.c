@@ -3,9 +3,7 @@ Day 1: Hystorian Hysteria
 https://adventofcode.com/2024/day/1
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -16,7 +14,16 @@ https://adventofcode.com/2024/day/1
 
 #include "../lib/aoc.h"
 #include "../lib/hashtable.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 11
+#define PART2_ANSWER 31
+#else
+#define PART1_ANSWER 3246517
+#define PART2_ANSWER 29379307
+#endif
 
 size_t get_ids(int64_t left_ids[], int64_t right_ids[]) {
   size_t num_lines = 0;

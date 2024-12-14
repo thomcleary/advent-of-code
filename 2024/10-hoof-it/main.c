@@ -3,9 +3,7 @@ Day 10: Hoof It
 https://adventofcode.com/2024/day/10
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -18,7 +16,16 @@ https://adventofcode.com/2024/day/10
 #include "../lib/ansi.h"
 #include "../lib/aoc.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 36
+#define PART2_ANSWER 81
+#else
+#define PART1_ANSWER 574
+#define PART2_ANSWER 1238
+#endif
 
 typedef struct Coord {
   size_t row, column;

@@ -3,9 +3,7 @@ Day 3: Mull It Over
 https://adventofcode.com/2024/day/3
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -16,7 +14,16 @@ https://adventofcode.com/2024/day/3
 
 #include "../lib/aoc.h"
 #include "../lib/mathutils.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 161
+#define PART2_ANSWER 48
+#else
+#define PART1_ANSWER 189600467
+#define PART2_ANSWER 107069718
+#endif
 
 typedef struct MemoryState {
   char *memory;

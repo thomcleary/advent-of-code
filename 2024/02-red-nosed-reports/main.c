@@ -3,9 +3,7 @@ Day 2: Red-Nosed Reports
 https://adventofcode.com/2024/day/2
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -16,7 +14,16 @@ https://adventofcode.com/2024/day/2
 #include <string.h>
 
 #include "../lib/aoc.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 2
+#define PART2_ANSWER 4
+#else
+#define PART1_ANSWER 510
+#define PART2_ANSWER 553
+#endif
 
 typedef struct Report {
   int64_t *levels;

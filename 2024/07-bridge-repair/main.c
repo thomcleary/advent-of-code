@@ -3,9 +3,7 @@ Day 7: Bridge Repair
 https://adventofcode.com/2024/day/7
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -18,7 +16,16 @@ https://adventofcode.com/2024/day/7
 #include "../lib/aoc.h"
 #include "../lib/mathutils.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 3749
+#define PART2_ANSWER 11387
+#else
+#define PART1_ANSWER 7579994664753
+#define PART2_ANSWER 438027111276610
+#endif
 
 typedef struct Equation {
   int64_t test_value;

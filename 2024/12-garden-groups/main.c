@@ -3,9 +3,7 @@ Day 12: Garden Groups
 https://adventofcode.com/2024/day/12
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -16,7 +14,16 @@ https://adventofcode.com/2024/day/12
 
 #include "../lib/aoc.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 1930
+#define PART2_ANSWER 1206
+#else
+#define PART1_ANSWER 1473276
+#define PART2_ANSWER 901100
+#endif
 
 typedef struct {
   size_t row, column;

@@ -10,5 +10,5 @@ $ ./main < input.txt
 ## Benchmark
 
 ```shell
-hyperfine ./main --input input.txt --shell=none
+hyperfine ./main --input puzzle-input.txt --shell=none
 ```

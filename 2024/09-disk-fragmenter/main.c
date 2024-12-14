@@ -3,9 +3,7 @@ Day 9: Disk Fragmenter
 https://adventofcode.com/2024/day/9
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <ctype.h>
 #include <inttypes.h>
@@ -18,7 +16,16 @@ https://adventofcode.com/2024/day/9
 
 #include "../lib/aoc.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 1928
+#define PART2_ANSWER 2858
+#else
+#define PART1_ANSWER 6310675819476
+#define PART2_ANSWER 6335972980679
+#endif
 
 typedef enum DiskItemType {
   DISK_ITEM_TYPE_FILE,

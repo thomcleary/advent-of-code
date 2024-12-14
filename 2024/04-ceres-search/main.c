@@ -3,9 +3,7 @@ Day 4: Ceres Search
 https://adventofcode.com/2024/day/4
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -18,7 +16,16 @@ https://adventofcode.com/2024/day/4
 #include "../lib/aoc.h"
 #include "../lib/strutils.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 18
+#define PART2_ANSWER 9
+#else
+#define PART1_ANSWER 2406
+#define PART2_ANSWER 1807
+#endif
 
 Txt *transpose(const Txt *txt) {
   size_t num_columns = strlen(txt->lines[0]);

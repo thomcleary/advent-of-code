@@ -3,9 +3,7 @@ Day 13: Claw Contraption
 https://adventofcode.com/2024/day/13
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -16,7 +14,16 @@ https://adventofcode.com/2024/day/13
 
 #include "../lib/aoc.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 480
+#define PART2_ANSWER 875318608908
+#else
+#define PART1_ANSWER 31065
+#define PART2_ANSWER 93866170395343
+#endif
 
 typedef struct {
   int64_t _1, _2;

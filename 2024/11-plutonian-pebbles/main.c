@@ -3,9 +3,7 @@ Day 11: Plutonian Pebbles
 https://adventofcode.com/2024/day/11
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -19,7 +17,16 @@ https://adventofcode.com/2024/day/11
 #include "../lib/aoc.h"
 #include "../lib/hashtable.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 55312
+#define PART2_ANSWER 65601038650482
+#else
+#define PART1_ANSWER 199986
+#define PART2_ANSWER 236804088748754
+#endif
 
 const uint8_t UINT64_MAX_STRLEN = 20;
 const uint8_t UINT8_MAX_STRLEN = 3;

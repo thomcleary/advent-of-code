@@ -1,4 +1,4 @@
 CompileFlags:
-  Add: [-xc, -std=c17, -Wall, -Werror]  # -xc sets language to C
+  Add: [-xc, -std=c17, -Wall, -Wextra, -Werror, -pedantic, -Wshadow, -Wuninitialized, -Wformat, -Wconversion]  # -xc sets language to C
 Diagnostics:
   UnusedIncludes: Strict

@@ -1,6 +1,6 @@
-# Day 12: Garden Groups
+# Day 14: Restroom Redoubt
 
-<https://adventofcode.com/2024/day/12>
+<https://adventofcode.com/2024/day/14>
 
 ```shell
 $ make

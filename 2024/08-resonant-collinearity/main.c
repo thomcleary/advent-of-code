@@ -3,9 +3,7 @@ Day 8: Resonant Collinearity
 https://adventofcode.com/2024/day/8
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <ctype.h>
 #include <inttypes.h>
@@ -16,7 +14,16 @@ https://adventofcode.com/2024/day/8
 
 #include "../lib/aoc.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 14
+#define PART2_ANSWER 34
+#else
+#define PART1_ANSWER 357
+#define PART2_ANSWER 1266
+#endif
 
 typedef struct Coord {
   int64_t row, column;

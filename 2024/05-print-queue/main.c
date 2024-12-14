@@ -3,9 +3,7 @@ Day 5: Print Queue
 https://adventofcode.com/2024/day/5
 */
 
-// #define USE_EXAMPLE
 #define _GNU_SOURCE // qsort_r
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -18,7 +16,16 @@ https://adventofcode.com/2024/day/5
 #include "../lib/aoc.h"
 #include "../lib/strutils.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 143
+#define PART2_ANSWER 123
+#else
+#define PART1_ANSWER 6498
+#define PART2_ANSWER 5017
+#endif
 
 typedef struct OrderingRule {
   uint64_t page;

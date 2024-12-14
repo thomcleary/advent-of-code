@@ -3,9 +3,7 @@ Day 6: Guard Gallivant
 https://adventofcode.com/2024/day/6
 */
 
-// #define USE_EXAMPLE
 #define _DEFAULT_SOURCE
-
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -15,7 +13,16 @@ https://adventofcode.com/2024/day/6
 
 #include "../lib/aoc.h"
 #include "../lib/txt.h"
-#include "main.h"
+
+// #define USE_EXAMPLE
+
+#ifdef USE_EXAMPLE
+#define PART1_ANSWER 41
+#define PART2_ANSWER 6
+#else
+#define PART1_ANSWER 4883
+#define PART2_ANSWER 1655
+#endif
 
 typedef enum Direction {
   DIRECTION_UP,

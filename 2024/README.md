@@ -25,7 +25,7 @@ docker compose run --rm aoc
 | 11  | Plutonian Pebbles     |  ⭐⭐  |
 | 12  | Garden Groups         |  ⭐⭐  |
 | 13  | Claw Contraption      |  ⭐⭐  |
-| 14  |                       |        |
+| 14  | Restroom Redoubt      |   ⭐   |
 | 15  |                       |        |
 | 16  |                       |        |
 | 17  |                       |        |
