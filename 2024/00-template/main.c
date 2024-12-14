@@ -22,7 +22,7 @@ int main(void) {
 
   print_day(0, "Template");
   print_part(1, 0, PART1_ANSWER);
-  print_part(2, 2, PART2_ANSWER);
+  print_part(2, 0, PART2_ANSWER);
 
   return 0;
 }

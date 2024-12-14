@@ -57,3 +57,62 @@ void txt_print(Txt *txt) {
     printf("%s\n", txt->lines[i]);
   }
 }
+
+SplitTxt *txt_split(Txt *txt, char *sep) {
+  SplitTxt *split_txt = malloc(sizeof(*split_txt));
+  assert(split_txt != NULL && "malloc failed");
+
+  split_txt->num_txts = 0;
+  split_txt->txts = malloc(sizeof(*split_txt->txts) * txt->num_lines);
+  assert(split_txt->txts != NULL && "malloc failed");
+
+  char *line_buffer[txt->num_lines];
+  size_t line_buffer_length = 0;
+
+  for (size_t i = 0; i < txt->num_lines; i++) {
+    char *line = txt->lines[i];
+
+    if (strcmp(line, sep) == 0) {
+      char **lines = malloc(sizeof(*lines) * line_buffer_length);
+      assert(lines != NULL);
+      memcpy(lines, line_buffer, (sizeof *line_buffer) * line_buffer_length);
+
+      split_txt->txts[split_txt->num_txts++] =
+          (Txt){.lines = lines, .num_lines = line_buffer_length};
+
+      line_buffer_length = 0;
+      continue;
+    }
+
+    char *line_dup = strdup(line);
+    assert(line_dup != NULL && "strdup failed");
+    line_buffer[line_buffer_length++] = line_dup;
+  }
+
+  if (line_buffer_length > 0) {
+    char **lines = malloc(sizeof(*lines) * line_buffer_length);
+    assert(lines != NULL);
+    memcpy(lines, line_buffer, (sizeof *line_buffer) * line_buffer_length);
+
+    split_txt->txts[split_txt->num_txts++] =
+        (Txt){.lines = lines, .num_lines = line_buffer_length};
+  }
+
+  split_txt->txts =
+      realloc(split_txt->txts, sizeof(*split_txt->txts) * split_txt->num_txts);
+  assert(split_txt->txts != NULL && "realloc failed");
+
+  return split_txt;
+}
+
+void split_txt_free(SplitTxt *split_txt) {
+  for (size_t i = 0; i < split_txt->num_txts; i++) {
+    Txt txt = split_txt->txts[i];
+    for (size_t j = 0; j < txt.num_lines; j++) {
+      free(txt.lines[j]);
+    }
+    free(txt.lines);
+  }
+  free(split_txt->txts);
+  free(split_txt);
+}
