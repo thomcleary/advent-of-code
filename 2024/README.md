@@ -24,7 +24,7 @@ docker compose run --rm aoc
 | 10  | Hoof It               |  ⭐⭐  |
 | 11  | Plutonian Pebbles     |  ⭐⭐  |
 | 12  | Garden Groups         |  ⭐⭐  |
-| 13  | Claw Contraption      |   ⭐   |
+| 13  | Claw Contraption      |  ⭐⭐  |
 | 14  |                       |        |
 | 15  |                       |        |
 | 16  |                       |        |

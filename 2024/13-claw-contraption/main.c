@@ -123,23 +123,43 @@ PlayResult play(ClawMachine *machine) {
       .win = win, .a_pushes = cramer_result.x, .b_pushes = cramer_result.y};
 }
 
-int main(void) {
-  Txt *txt = txt_read(stdin);
-  ClawMachineList claw_machines = claw_machine_list_parse(txt);
-
+int64_t claw_machines_test(ClawMachineList machines) {
   int64_t tokens_required = 0;
-  for (size_t i = 0; i < claw_machines.num_machines; i++) {
-    PlayResult result = play(&claw_machines.machines[i]);
+
+  for (size_t i = 0; i < machines.num_machines; i++) {
+    PlayResult result = play(&machines.machines[i]);
+
     if (result.win) {
       tokens_required += (3 * result.a_pushes) + result.b_pushes;
     }
   }
 
+  return tokens_required;
+}
+
+void claw_machines_fix_measurements(ClawMachineList machines) {
+  const int64_t prize_adjustment = 10000000000000;
+
+  for (size_t i = 0; i < machines.num_machines; i++) {
+    machines.machines[i].prize.x += prize_adjustment;
+    machines.machines[i].prize.y += prize_adjustment;
+  }
+}
+
+int main(void) {
+  Txt *txt = txt_read(stdin);
+  ClawMachineList claw_machines = claw_machine_list_parse(txt);
+
+  int64_t tokens_required = claw_machines_test(claw_machines);
+  claw_machines_fix_measurements(claw_machines);
+  int64_t tokens_required_after_fix = claw_machines_test(claw_machines);
+
+  free(claw_machines.machines);
   txt_free(txt);
 
   print_day(13, "Claw Contraption");
   print_part(1, (uint64_t)tokens_required, PART1_ANSWER);
-  // print_part(2, 0, PART2_ANSWER);
+  print_part(2, (uint64_t)tokens_required_after_fix, PART2_ANSWER);
 
   return 0;
 }
