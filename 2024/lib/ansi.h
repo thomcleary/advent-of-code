@@ -44,6 +44,7 @@ typedef enum AnsiCode {
 } AnsiCode;
 
 void ansi_esc(AnsiCode code);
+void ansi_clear(void);
 void ansi_reset(void);
 
 #endif
