@@ -26,7 +26,7 @@ docker compose run --rm aoc
 | 12  | Garden Groups         |  ⭐⭐  |
 | 13  | Claw Contraption      |  ⭐⭐  |
 | 14  | Restroom Redoubt      |  ⭐⭐  |
-| 15  | Warehouse Woes        |   ⭐   |
+| 15  | Warehouse Woes        |  ⭐⭐  |
 | 16  |                       |        |
 | 17  |                       |        |
 | 18  |                       |        |

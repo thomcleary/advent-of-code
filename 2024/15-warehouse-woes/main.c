@@ -5,6 +5,8 @@ https://adventofcode.com/2024/day/15
 
 #define _DEFAULT_SOURCE
 #include <assert.h>
+#include <inttypes.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -17,43 +19,55 @@ https://adventofcode.com/2024/day/15
 #include "../lib/txt.h"
 
 // #define USE_EXAMPLE
-// #define VISUALISE
 
 #ifdef USE_EXAMPLE
 #define PART1_ANSWER 10092
-#define PART2_ANSWER 2
+#define PART2_ANSWER 9021
 #else
 #define PART1_ANSWER 1465523
-#define PART2_ANSWER 2
+#define PART2_ANSWER 1471049
 #endif
 
-typedef enum {
-  ROBOT_MOVE_UP,
-  ROBOT_MOVE_DOWN,
-  ROBOT_MOVE_LEFT,
-  ROBOT_MOVE_RIGHT,
-} RobotMove;
+#define ANIMATION_SPEED_MS 16
 
-typedef enum { TILE_WALL, TILE_BOX, TILE_ROBOT, TILE_EMPTY } Tile;
+#define UP '^'
+#define DOWN 'v'
+#define LEFT '<'
+#define RIGHT '>'
+
+#define WALL '#'
+#define BOX 'O'
+#define WIDE_BOX_LEFT '['
+#define WIDE_BOX_RIGHT ']'
+#define ROBOT '@'
+#define EMPTY '.'
+
+typedef struct {
+  int64_t x, y;
+} Vec2;
 
 typedef struct {
   size_t row, column;
 } Coord;
 
 typedef struct {
-  Tile **map;
+  bool wide;
+
+  char **map;
   size_t map_rows, map_columns;
+  Vec2 robot_pos;
 
-  Coord robot_pos;
-
-  RobotMove *robot_moves;
-  size_t num_robot_moves;
+  char *moves;
+  size_t num_moves;
   size_t current_move;
 } Warehouse;
 
 void warehouse_free(Warehouse *warehouse) {
+  for (size_t i = 0; i < warehouse->map_rows; i++) {
+    free(warehouse->map[i]);
+  }
   free(warehouse->map);
-  free(warehouse->robot_moves);
+  free(warehouse->moves);
   free(warehouse);
 }
 
@@ -66,263 +80,166 @@ Warehouse *warehouse_parse(Txt *txt) {
   Warehouse *warehouse = malloc(sizeof(*warehouse));
   assert(warehouse != NULL && "malloc failed");
 
+  warehouse->wide = false;
   warehouse->map_rows = map_txt.num_lines;
   warehouse->map_columns = strlen(map_txt.lines[0]);
   warehouse->map = malloc(sizeof(*warehouse->map) * warehouse->map_rows);
   assert(warehouse->map != NULL && "malloc failed");
 
   for (size_t i = 0; i < warehouse->map_rows; i++) {
+    char *line = map_txt.lines[i];
     warehouse->map[i] =
-        malloc((sizeof(warehouse->map[i]) * warehouse->map_columns));
+        malloc(sizeof(*warehouse->map[i]) * warehouse->map_columns);
     assert(warehouse->map[i] != NULL && "malloc failed");
-
     for (size_t j = 0; j < warehouse->map_columns; j++) {
-      char ch = map_txt.lines[i][j];
-      Tile tile;
-
-      switch (ch) {
-      case '#':
-        tile = TILE_WALL;
-        break;
-      case 'O':
-        tile = TILE_BOX;
-        break;
-      case '@':
-        tile = TILE_ROBOT;
-        warehouse->robot_pos = (Coord){.row = i, .column = j};
-        break;
-      case '.':
-        tile = TILE_EMPTY;
-        break;
-      default:
-        fprintf(stderr, "Invalid map tile [%c]\n", ch);
-        exit(EXIT_FAILURE);
-      }
-
+      char tile = line[j];
       warehouse->map[i][j] = tile;
+
+      if (tile == ROBOT) {
+        warehouse->robot_pos = (Vec2){.x = (int64_t)i, .y = (int64_t)j};
+      }
     }
   }
 
   size_t move_txt_line_length = strlen(moves_txt.lines[0]);
   size_t robot_moves_size = moves_txt.num_lines * move_txt_line_length;
-  warehouse->num_robot_moves = 0;
+
+  warehouse->num_moves = 0;
   warehouse->current_move = 0;
-  warehouse->robot_moves =
-      malloc(sizeof(*warehouse->robot_moves) * robot_moves_size);
-  assert(warehouse->robot_moves != NULL && "malloc failed");
+  warehouse->moves = malloc(sizeof(*warehouse->moves) * robot_moves_size);
+  assert(warehouse->moves != NULL && "malloc failed");
 
   for (size_t i = 0; i < moves_txt.num_lines; i++) {
     for (size_t j = 0; j < move_txt_line_length; j++) {
-      if (warehouse->num_robot_moves == robot_moves_size) {
+      if (warehouse->num_moves == robot_moves_size) {
         robot_moves_size *= 2;
-        warehouse->robot_moves =
-            realloc(warehouse->robot_moves,
-                    sizeof(*warehouse->robot_moves) * robot_moves_size);
-        assert(warehouse->robot_moves != NULL && "realloc failed");
+        warehouse->moves = realloc(warehouse->moves, sizeof(*warehouse->moves) *
+                                                         robot_moves_size);
+        assert(warehouse->moves != NULL && "realloc failed");
       }
 
-      char ch = moves_txt.lines[i][j];
-      RobotMove move;
-
-      switch (ch) {
-      case '^':
-        move = ROBOT_MOVE_UP;
-        break;
-      case 'v':
-        move = ROBOT_MOVE_DOWN;
-        break;
-      case '<':
-        move = ROBOT_MOVE_LEFT;
-        break;
-      case '>':
-        move = ROBOT_MOVE_RIGHT;
-        break;
-      default:
-        fprintf(stderr, "Invalid robot move [%c]\n", ch);
-        exit(EXIT_FAILURE);
-      }
-
-      warehouse->robot_moves[warehouse->num_robot_moves++] = move;
+      warehouse->moves[warehouse->num_moves++] = moves_txt.lines[i][j];
     }
   }
 
-  warehouse->robot_moves =
-      realloc(warehouse->robot_moves,
-              sizeof(*warehouse->robot_moves) * warehouse->num_robot_moves);
-  assert(warehouse->robot_moves != NULL && "realloc failed");
+  warehouse->moves = realloc(warehouse->moves,
+                             sizeof(*warehouse->moves) * warehouse->num_moves);
+  assert(warehouse->moves != NULL && "realloc failed");
 
   split_txt_free(split_txt);
 
   return warehouse;
 }
 
-char ROBOT_MOVE_CHARS[] = {[ROBOT_MOVE_UP] = '^',
-                           [ROBOT_MOVE_DOWN] = 'v',
-                           [ROBOT_MOVE_LEFT] = '<',
-                           [ROBOT_MOVE_RIGHT] = '>'};
-
 void warehouse_print(Warehouse *warehouse, size_t current_move) {
+  size_t map_str_length =
+      (warehouse->map_rows * warehouse->map_columns) + warehouse->map_rows;
+
+  char map_buf[map_str_length + 1];
+  size_t map_buf_index = 0;
   for (size_t i = 0; i < warehouse->map_rows; i++) {
     for (size_t j = 0; j < warehouse->map_columns; j++) {
-      Tile tile = warehouse->map[i][j];
-      if (tile == TILE_WALL) {
-        ansi_esc(ANSI_CODE_FAINT);
-        ansi_esc(ANSI_CODE_FG_RED);
-        putchar('#');
-      } else if (tile == TILE_BOX) {
-        ansi_esc(ANSI_CODE_FG_GREEN);
-        putchar('O');
-      } else if (tile == TILE_ROBOT) {
-        putchar('@');
-      } else {
-        ansi_esc(ANSI_CODE_FAINT);
-        ansi_esc(ANSI_CODE_FG_YELLOW);
-        putchar('.');
-      }
-      ansi_reset();
+      map_buf[map_buf_index++] = warehouse->map[i][j];
     }
-    putchar('\n');
+    map_buf[map_buf_index++] = '\n';
   }
+  map_buf[map_buf_index] = '\0';
 
-  for (size_t i = 0; i < warehouse->num_robot_moves; i++) {
-    RobotMove move = warehouse->robot_moves[i];
-    if (i < current_move) {
-      ansi_esc(ANSI_CODE_FG_BLUE);
-    } else if (i == current_move) {
-      ansi_esc(ANSI_CODE_BOLD);
+  size_t max_show = warehouse->map_columns - strlen("Move: ^  ");
+  size_t moves_remaining = warehouse->num_moves - current_move + 1;
+  size_t show_moves = moves_remaining < max_show ? moves_remaining : max_show;
 
-    } else {
-      ansi_esc(ANSI_CODE_FAINT);
-    }
-    putchar(ROBOT_MOVE_CHARS[move]);
-    ansi_reset();
+  char move_buf[show_moves + 1];
+  size_t move_buf_index = 0;
+  for (size_t i = 0; i < show_moves; i++) {
+    move_buf[move_buf_index++] = warehouse->moves[current_move + 1 + i];
   }
-  putchar('\n');
+  move_buf[move_buf_index] = '\0';
+
+  printf("%s\n", map_buf);
+  printf("Move: %c  ", warehouse->moves[current_move]);
+  printf("%s\n", move_buf);
+  printf("(%zu/%zu)\n\n", current_move + 1, warehouse->num_moves);
 }
 
-void warehouse_predict(Warehouse *warehouse) {
-  for (size_t i = 0; i < warehouse->num_robot_moves; i++) {
-    RobotMove move = warehouse->robot_moves[i];
-    Tile *robot =
-        &warehouse->map[warehouse->robot_pos.row][warehouse->robot_pos.column];
+bool push(Warehouse *warehouse, Vec2 tile_pos, Vec2 direction, bool check) {
+  char *tile = &warehouse->map[tile_pos.x][tile_pos.y];
 
-    // TODO: There's probably a neater way of doing this...
-    // Up/Down and Left/Right are pretty much the same logic
+  Vec2 adjacent_vec = {.x = tile_pos.x + direction.x,
+                       .y = tile_pos.y + direction.y};
+  char *adjacent = &warehouse->map[adjacent_vec.x][adjacent_vec.y];
 
-    if (move == ROBOT_MOVE_UP && warehouse->robot_pos.row > 0) {
-      Tile *up =
-          &warehouse
-               ->map[warehouse->robot_pos.row - 1][warehouse->robot_pos.column];
+  if (*adjacent == WALL) {
+    return false;
+  }
 
-      if (*up == TILE_EMPTY) {
-        *up = TILE_ROBOT;
-        *robot = TILE_EMPTY;
-        warehouse->robot_pos.row--;
-      } else if (*up == TILE_BOX) {
-        size_t row = warehouse->robot_pos.row - 1;
-        while (*up != TILE_WALL && *up != TILE_EMPTY) {
-          row--;
-          up = &warehouse->map[row][warehouse->robot_pos.column];
-        }
+  bool adjacent_is_wide_box =
+      *adjacent == WIDE_BOX_LEFT || *adjacent == WIDE_BOX_RIGHT;
 
-        if (*up == TILE_EMPTY) {
-          while (row < warehouse->robot_pos.row) {
-            *up = TILE_BOX;
-            row++;
-            up = &warehouse->map[row][warehouse->robot_pos.column];
-          }
-          *robot = TILE_EMPTY;
-          warehouse->robot_pos.row--;
-          warehouse
-              ->map[warehouse->robot_pos.row][warehouse->robot_pos.column] =
-              TILE_ROBOT;
-        }
-      }
-    } else if (move == ROBOT_MOVE_DOWN &&
-               warehouse->robot_pos.row < warehouse->map_rows - 1) {
-      Tile *down =
-          &warehouse
-               ->map[warehouse->robot_pos.row + 1][warehouse->robot_pos.column];
-
-      if (*down == TILE_EMPTY) {
-        *down = TILE_ROBOT;
-        *robot = TILE_EMPTY;
-        warehouse->robot_pos.row++;
-      } else if (*down == TILE_BOX) {
-        size_t row = warehouse->robot_pos.row + 1;
-        while (*down != TILE_WALL && *down != TILE_EMPTY) {
-          row++;
-          down = &warehouse->map[row][warehouse->robot_pos.column];
-        }
-
-        if (*down == TILE_EMPTY) {
-          while (row > warehouse->robot_pos.row) {
-            *down = TILE_BOX;
-            row--;
-            down = &warehouse->map[row][warehouse->robot_pos.column];
-          }
-          *robot = TILE_EMPTY;
-          warehouse->robot_pos.row++;
-          warehouse
-              ->map[warehouse->robot_pos.row][warehouse->robot_pos.column] =
-              TILE_ROBOT;
-        }
-      }
-    } else if (move == ROBOT_MOVE_LEFT && warehouse->robot_pos.column > 0) {
-      Tile *left =
-          &warehouse
-               ->map[warehouse->robot_pos.row][warehouse->robot_pos.column - 1];
-
-      if (*left == TILE_EMPTY) {
-        *left = TILE_ROBOT;
-        *robot = TILE_EMPTY;
-        warehouse->robot_pos.column--;
-      } else if (*left == TILE_BOX) {
-        while (*left != TILE_WALL && *left != TILE_EMPTY) {
-          left--;
-        }
-
-        if (*left == TILE_EMPTY) {
-          while (left < robot) {
-            *left = TILE_BOX;
-            left++;
-          }
-          *robot = TILE_EMPTY;
-          *(robot - 1) = TILE_ROBOT;
-          warehouse->robot_pos.column--;
-        }
-      }
-    } else if (move == ROBOT_MOVE_RIGHT &&
-               warehouse->robot_pos.column < warehouse->map_columns - 1) {
-      Tile *right =
-          &warehouse
-               ->map[warehouse->robot_pos.row][warehouse->robot_pos.column + 1];
-
-      if (*right == TILE_EMPTY) {
-        *right = TILE_ROBOT;
-        *robot = TILE_EMPTY;
-        warehouse->robot_pos.column++;
-      } else if (*right == TILE_BOX) {
-        while (*right != TILE_WALL && *right != TILE_EMPTY) {
-          right++;
-        }
-
-        if (*right == TILE_EMPTY) {
-          while (right > robot) {
-            *right = TILE_BOX;
-            right--;
-          }
-          *robot = TILE_EMPTY;
-          *(robot + 1) = TILE_ROBOT;
-          warehouse->robot_pos.column++;
-        }
-      }
+  if (*adjacent == BOX || (adjacent_is_wide_box && direction.x == 0)) {
+    if (!push(warehouse, adjacent_vec, direction, check)) {
+      return false;
     }
-#ifdef VISUALISE
-    ansi_clear();
-    warehouse_print(warehouse, i);
-    usleep(25 * 1000);
-#endif
+  } else if (adjacent_is_wide_box) {
+    Vec2 other_half = {.x = adjacent_vec.x,
+                       .y = adjacent_vec.y +
+                            (*adjacent == WIDE_BOX_LEFT ? 1 : -1)};
+
+    bool blocked = !(push(warehouse, adjacent_vec, direction, true) &&
+                     push(warehouse, other_half, direction, true));
+
+    if (blocked) {
+      return false;
+    }
+
+    if (!check) {
+      push(warehouse, adjacent_vec, direction, false);
+      push(warehouse, other_half, direction, false);
+      warehouse->map[other_half.x][other_half.y] = EMPTY;
+    }
+  }
+
+  if (!check) {
+    *adjacent = *tile;
+    *tile = EMPTY;
+  }
+
+  return true;
+}
+
+void warehouse_predict(Warehouse *warehouse, bool visualise) {
+  const Vec2 up_vec = {.x = -1, .y = 0};
+  const Vec2 down_vec = {.x = 1, .y = 0};
+  const Vec2 left_vec = {.x = 0, .y = -1};
+  const Vec2 right_vec = {.x = 0, .y = 1};
+
+  for (size_t i = 0; i < warehouse->num_moves; i++) {
+    Vec2 direction;
+    switch (warehouse->moves[i]) {
+    case UP:
+      direction = up_vec;
+      break;
+    case DOWN:
+      direction = down_vec;
+      break;
+    case LEFT:
+      direction = left_vec;
+      break;
+    default:
+      direction = right_vec;
+      break;
+    }
+
+    if (push(warehouse, warehouse->robot_pos, direction, false)) {
+      warehouse->robot_pos.x += direction.x;
+      warehouse->robot_pos.y += direction.y;
+    };
+
+    if (visualise) {
+      ansi_clear();
+      warehouse_print(warehouse, i);
+      usleep(ANIMATION_SPEED_MS * 1000);
+    }
   }
 }
 
@@ -331,8 +248,8 @@ uint64_t warehouse_box_gps_sum(Warehouse *warehouse) {
 
   for (size_t i = 0; i < warehouse->map_rows; i++) {
     for (size_t j = 0; j < warehouse->map_columns; j++) {
-      Tile tile = warehouse->map[i][j];
-      if (tile == TILE_BOX) {
+      char tile = warehouse->map[i][j];
+      if (tile == BOX || tile == WIDE_BOX_LEFT) {
         gps_sum += (100 * i) + (j);
       }
     }
@@ -341,19 +258,73 @@ uint64_t warehouse_box_gps_sum(Warehouse *warehouse) {
   return gps_sum;
 }
 
+Warehouse *warehouse_widen(Warehouse *warehouse) {
+  if (warehouse->wide) {
+    return warehouse;
+  }
+
+  char buf[warehouse->map_rows][warehouse->map_columns * 2];
+
+  for (size_t i = 0; i < warehouse->map_rows; i++) {
+    for (size_t j = 0; j < warehouse->map_columns; j++) {
+      char tile = warehouse->map[i][j];
+      char left, right;
+      if (tile == WALL) {
+        left = tile;
+        right = tile;
+      } else if (tile == BOX) {
+        left = WIDE_BOX_LEFT;
+        right = WIDE_BOX_RIGHT;
+      } else if (tile == ROBOT) {
+        left = ROBOT;
+        right = EMPTY;
+        warehouse->robot_pos = (Vec2){.x = (int64_t)i, .y = (int64_t)j * 2};
+      } else {
+        left = EMPTY;
+        right = EMPTY;
+      }
+
+      buf[i][j * 2] = left;
+      buf[i][j * 2 + 1] = right;
+    }
+  }
+
+  warehouse->wide = true;
+  warehouse->map_columns *= 2;
+
+  for (size_t i = 0; i < warehouse->map_rows; i++) {
+    warehouse->map[i] = realloc(warehouse->map[i], sizeof(*warehouse->map[i]) *
+                                                       warehouse->map_columns);
+    assert(warehouse->map[i] != NULL && "realloc failed");
+
+    for (size_t j = 0; j < warehouse->map_columns; j++) {
+      warehouse->map[i][j] = buf[i][j];
+    }
+  }
+
+  return warehouse;
+}
+
 int main(void) {
   Txt *txt = txt_read(stdin);
-  Warehouse *warehouse = warehouse_parse(txt);
 
-  warehouse_predict(warehouse);
+  bool visualise = false;
+  Warehouse *warehouse = warehouse_parse(txt);
+  warehouse_predict(warehouse, visualise);
   uint64_t box_gps_sum = warehouse_box_gps_sum(warehouse);
 
+  visualise = false;
+  Warehouse *wide_warehouse = warehouse_widen(warehouse_parse(txt));
+  warehouse_predict(wide_warehouse, visualise);
+  uint64_t wide_box_gps_sum = warehouse_box_gps_sum(wide_warehouse);
+
   warehouse_free(warehouse);
+  warehouse_free(wide_warehouse);
   txt_free(txt);
 
   print_day(15, "Warehouse Woes");
   print_part(1, box_gps_sum, PART1_ANSWER);
-  // print_part(2, 0, PART2_ANSWER);
+  print_part(2, wide_box_gps_sum, PART2_ANSWER);
 
   return 0;
 }
