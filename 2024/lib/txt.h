@@ -17,6 +17,7 @@ typedef struct {
 Txt *txt_new(size_t num_lines);
 void txt_free(Txt *txt);
 Txt *txt_read(FILE *stream);
+Txt *txt_read_file(char *filename);
 void txt_print(Txt *txt);
 
 SplitTxt *txt_split(Txt *txt, char *sep);

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "strutils.h"
+#include "str-utils.h"
 
 char *str_rev(const char *str) {
   assert(str != NULL && "str is NULL");

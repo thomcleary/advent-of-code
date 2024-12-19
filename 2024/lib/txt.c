@@ -52,6 +52,16 @@ Txt *txt_read(FILE *stream) {
   return txt;
 }
 
+Txt *txt_read_file(char *filename) {
+  FILE *input_file = fopen(filename, "r");
+  assert(input_file != NULL && "fopen failed");
+
+  Txt *txt = txt_read(input_file);
+  fclose(input_file);
+
+  return txt;
+}
+
 void txt_print(Txt *txt) {
   for (size_t i = 0; i < txt->num_lines; i++) {
     printf("%s\n", txt->lines[i]);

@@ -13,7 +13,7 @@ https://adventofcode.com/2024/day/3
 #include <string.h>
 
 #include "../lib/aoc.h"
-#include "../lib/mathutils.h"
+#include "../lib/math-utils.h"
 
 // #define USE_EXAMPLE
 

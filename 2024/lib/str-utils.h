@@ -1,5 +1,5 @@
-#ifndef STRUTILS_H
-#define STRUTILS_H
+#ifndef STR_UTILS_H
+#define STR_UTILS_H
 
 #include <stdint.h>
 

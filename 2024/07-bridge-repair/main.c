@@ -14,7 +14,7 @@ https://adventofcode.com/2024/day/7
 #include <string.h>
 
 #include "../lib/aoc.h"
-#include "../lib/mathutils.h"
+#include "../lib/math-utils.h"
 #include "../lib/txt.h"
 
 // #define USE_EXAMPLE

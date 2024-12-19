@@ -1,7 +1,7 @@
 #include <limits.h>
 #include <stdint.h>
 
-#include "./mathutils.h"
+#include "./math-utils.h"
 
 bool add_int64_ok(int64_t a, int64_t b) {
   return a <= INT64_MAX - b;
