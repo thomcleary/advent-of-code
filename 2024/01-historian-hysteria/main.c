@@ -14,6 +14,7 @@ https://adventofcode.com/2024/day/1
 
 #include "../lib/aoc.h"
 #include "../lib/hashtable.h"
+#include "../lib/types.h"
 
 // #define USE_EXAMPLE
 
@@ -89,9 +90,9 @@ int main(void) {
     int64_t right_count = 1;
 
     char *key = get_key(right);
-    HashtableGetResult result = hashtable_get(right_counts_ht, key);
-    if (result.success) {
-      right_count += (int64_t)result.value;
+    Option existing_count = hashtable_get(right_counts_ht, key);
+    if (existing_count.some) {
+      right_count += (int64_t)existing_count.value;
     }
 
     hashtable_set(right_counts_ht, key, (void *)right_count);
@@ -105,10 +106,11 @@ int main(void) {
     int64_t left = left_ids[i];
 
     char *key = get_key(left);
-    HashtableGetResult result = hashtable_get(right_counts_ht, key);
+    Option right_count = hashtable_get(right_counts_ht, key);
     free(key);
 
-    similarity_score += left * (result.success ? (int64_t)result.value : 0);
+    similarity_score +=
+        left * (right_count.some ? (int64_t)right_count.value : 0);
   }
 
   hashtable_free(right_counts_ht);

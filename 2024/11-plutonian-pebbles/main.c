@@ -17,6 +17,7 @@ https://adventofcode.com/2024/day/11
 #include "../lib/aoc.h"
 #include "../lib/hashtable.h"
 #include "../lib/txt.h"
+#include "../lib/types.h"
 
 // #define USE_EXAMPLE
 
@@ -81,9 +82,9 @@ uint64_t blink(uint64_t stone, uint8_t times, Hashtable *cache) {
   char cache_key[UINT64_MAX_STRLEN + UINT8_MAX_STRLEN + 2]; // +1 ':', +1 '\0
   snprintf(cache_key, sizeof(cache_key), "%" PRIu64 ":%d", stone, times);
 
-  HashtableGetResult cache_result = hashtable_get(cache, cache_key);
-  if (cache_result.success) {
-    return (uint64_t)cache_result.value;
+  Option cached = hashtable_get(cache, cache_key);
+  if (cached.some) {
+    return (uint64_t)cached.value;
   }
 
   uint64_t num_stone_digits = (uint64_t)log10((double)stone) + 1;

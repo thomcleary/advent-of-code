@@ -15,6 +15,7 @@ I'll implement a separate-chained hashtable so I don't just copy and paste lol.
 #include <string.h>
 
 #include "hashtable.h"
+#include "types.h"
 
 // This is the lowest power of 2 that causes no collisions with my puzzle input
 #define NUM_BUCKETS 2048
@@ -85,6 +86,10 @@ void hashtable_free(Hashtable *ht) {
   free(ht);
 }
 
+size_t hashtable_size(Hashtable *ht) {
+  return ht->size;
+}
+
 bool hashtable_has(Hashtable *ht, const char *key) {
   assert(ht != NULL);
   assert(key != NULL);
@@ -98,7 +103,7 @@ bool hashtable_has(Hashtable *ht, const char *key) {
   return entry != NULL;
 }
 
-HashtableGetResult hashtable_get(Hashtable *ht, const char *key) {
+Option hashtable_get(Hashtable *ht, const char *key) {
   assert(ht != NULL);
   assert(key != NULL);
 
@@ -109,10 +114,10 @@ HashtableGetResult hashtable_get(Hashtable *ht, const char *key) {
   }
 
   if (entry == NULL) {
-    return (HashtableGetResult){.success = false};
+    return none();
   }
 
-  return (HashtableGetResult){.success = true, .value = entry->value};
+  return some(entry->value);
 }
 
 Hashtable *hashtable_set(Hashtable *ht, const char *key, const void *value) {
@@ -150,8 +155,4 @@ Hashtable *hashtable_set(Hashtable *ht, const char *key, const void *value) {
 
   ht->size++;
   return ht;
-}
-
-size_t hashtable_size(Hashtable *ht) {
-  return ht->size;
 }

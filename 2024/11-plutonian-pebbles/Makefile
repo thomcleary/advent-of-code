@@ -3,7 +3,7 @@ CC_FLAGS = -std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wuninitialized -Wf
 LINK_FLAGS = -lm
 
 TARGET = main
-LIBS = ansi aoc hashtable txt
+LIBS = ansi aoc hashtable txt types
 OBJS = $(addprefix ../lib/, $(addsuffix .o, $(LIBS))) $(TARGET).o
 
 $(TARGET): $(OBJS)

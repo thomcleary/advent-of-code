@@ -27,7 +27,7 @@ docker compose run --rm aoc
 | 13  | Claw Contraption      |  ⭐⭐  |
 | 14  | Restroom Redoubt      |  ⭐⭐  |
 | 15  | Warehouse Woes        |  ⭐⭐  |
-| 16  | Reindeeer Maze        |   ⭐   |
+| 16  | Reindeeer Maze        |  ⭐⭐  |
 | 17  |                       |        |
 | 18  |                       |        |
 | 19  |                       |        |

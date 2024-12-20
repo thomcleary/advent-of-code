@@ -12,7 +12,6 @@ https://adventofcode.com/2024/day/16
 #include <stdlib.h>
 #include <string.h>
 
-#include "../lib/ansi.h"
 #include "../lib/aoc.h"
 #include "../lib/binary-heap.h"
 #include "../lib/txt.h"
@@ -22,11 +21,11 @@ https://adventofcode.com/2024/day/16
 #ifdef USE_EXAMPLE
 #define INPUT_FILENAME "example-input.txt"
 #define PART1_ANSWER 11048
-#define PART2_ANSWER 2
+#define PART2_ANSWER 64
 #else
 #define INPUT_FILENAME "puzzle-input.txt"
 #define PART1_ANSWER 88416
-#define PART2_ANSWER 2
+#define PART2_ANSWER 442
 #endif
 
 #define NUM_DIRECTIONS 4
@@ -37,17 +36,14 @@ typedef struct {
   int64_t x, y;
 } Vec2;
 
-typedef struct {
+typedef struct MazeNode {
+  bool seen;
+  int64_t score;
   Vec2 position;
-  Vec2 from;
   Direction direction;
-  int64_t cost;
+  struct MazeNode *from[NUM_DIRECTIONS];
+  size_t num_from;
 } MazeNode;
-
-typedef struct {
-  Vec2 position;
-  Direction direction;
-} Reindeer;
 
 typedef struct {
   char **tiles;
@@ -55,16 +51,14 @@ typedef struct {
   Vec2 start, end;
 } Maze;
 
+typedef struct {
+  int64_t lowest_score;
+  uint64_t num_best_seats;
+} MazeDetails;
+
 static const struct {
   char WALL, EMPTY, START, END;
 } MAZE_TILE = {.WALL = '#', .EMPTY = '.', .START = 'S', .END = 'E'};
-
-static const char DIRECTION_TILE[] = {
-    [NORTH] = '^', [SOUTH] = 'v', [EAST] = '>', [WEST] = '<'};
-
-bool vec2_equal(Vec2 a, Vec2 b) {
-  return a.x == b.x && a.y == b.y;
-}
 
 void maze_free(Maze *maze) {
   for (size_t r = 0; r < maze->rows; r++) {
@@ -104,52 +98,47 @@ Maze *maze_parse(Txt *txt) {
   return maze;
 }
 
-void maze_print(Maze *maze, Reindeer reindeer) {
-  for (size_t r = 0; r < maze->rows; r++) {
-    for (size_t c = 0; c < maze->columns; c++) {
-      char tile = maze->tiles[r][c];
-      if (reindeer.position.x == (int64_t)r &&
-          reindeer.position.y == (int64_t)c) {
-        tile = DIRECTION_TILE[reindeer.direction];
-      }
-
-      if (tile == MAZE_TILE.WALL) {
-        ansi_esc(ANSI_CODE_FG_GREEN);
-      } else if (tile == MAZE_TILE.EMPTY) {
-        ansi_esc(ANSI_CODE_FG_YELLOW);
-        ansi_esc(ANSI_CODE_FAINT);
-      } else if (tile == MAZE_TILE.START) {
-        ansi_esc(ANSI_CODE_FG_CYAN);
-      } else if (tile == MAZE_TILE.END) {
-        ansi_esc(ANSI_CODE_BOLD);
-        ansi_esc(ANSI_CODE_FG_YELLOW);
-      } else {
-        ansi_esc(ANSI_CODE_BOLD);
-        ansi_esc(ANSI_CODE_FG_RED);
-      }
-
-      putchar(tile);
-      ansi_reset();
-    }
-    putchar('\n');
-  }
-  putchar('\n');
-}
-
 int64_t compare_maze_nodes(const void *a, const void *b) {
-  int64_t a_cost = (*(MazeNode *)a).cost;
-  int64_t b_cost = (*(MazeNode *)b).cost;
+  int64_t a_score = (*(MazeNode *)a).score;
+  int64_t b_score = (*(MazeNode *)b).score;
 
-  // Lower cost is higher priority
-  if (a_cost < b_cost) {
+  // Lower score is higher priority
+  if (a_score < b_score) {
     return 1;
   }
 
-  if (a_cost > b_cost) {
+  if (a_score > b_score) {
     return -1;
   }
 
   return 0;
+}
+
+void maze_nodes_reset(size_t rows, size_t cols,
+                      MazeNode nodes[rows][cols][NUM_DIRECTIONS]) {
+  for (size_t r = 0; r < rows; r++) {
+    for (size_t c = 0; c < cols; c++) {
+      MazeNode unseen = {.seen = false,
+                         .position = {.x = (int64_t)r, .y = (int64_t)c},
+                         .num_from = 0};
+
+      unseen.direction = NORTH;
+      nodes[r][c][NORTH] = unseen;
+
+      unseen.direction = SOUTH;
+      nodes[r][c][SOUTH] = unseen;
+
+      unseen.direction = EAST;
+      nodes[r][c][EAST] = unseen;
+
+      unseen.direction = WEST;
+      nodes[r][c][WEST] = unseen;
+    }
+  }
+}
+
+bool is_same_position(Vec2 a, Vec2 b) {
+  return a.x == b.x && a.y == b.y;
 }
 
 Vec2 step_north(Vec2 vec) {
@@ -162,13 +151,13 @@ Vec2 step_south(Vec2 vec) {
   return vec;
 }
 
-Vec2 step_west(Vec2 vec) {
-  vec.y--;
+Vec2 step_east(Vec2 vec) {
+  vec.y++;
   return vec;
 }
 
-Vec2 step_east(Vec2 vec) {
-  vec.y++;
+Vec2 step_west(Vec2 vec) {
+  vec.y--;
   return vec;
 }
 
@@ -176,127 +165,124 @@ bool is_wall_tile(Maze *maze, Vec2 tile) {
   return maze->tiles[tile.x][tile.y] == MAZE_TILE.WALL;
 }
 
-int64_t maze_search(Maze *maze) {
+uint64_t num_best_seats(Maze *maze, MazeNode *end_nodes[NUM_DIRECTIONS],
+                        size_t num_end_nodes) {
+  bool best_seats[maze->rows][maze->columns];
+  memset(best_seats, false, sizeof(best_seats));
+  uint64_t num_best_seats = 0;
+
+  MazeNode *backtrack_nodes[maze->rows * maze->columns * NUM_DIRECTIONS];
+  size_t backtrack_nodes_length = 0;
+
+  for (size_t i = 0; i < num_end_nodes; i++) {
+    backtrack_nodes[backtrack_nodes_length++] = end_nodes[i];
+  }
+
+  while (backtrack_nodes_length > 0) {
+    MazeNode *backtrack_node = backtrack_nodes[backtrack_nodes_length - 1];
+    backtrack_nodes_length--;
+
+    bool *seat =
+        &best_seats[backtrack_node->position.x][backtrack_node->position.y];
+
+    if (!(*seat)) {
+      *seat = true;
+      num_best_seats++;
+    }
+
+    for (size_t i = 0; i < backtrack_node->num_from; i++) {
+      backtrack_nodes[backtrack_nodes_length++] = backtrack_node->from[i];
+    }
+  }
+
+  return num_best_seats;
+}
+
+MazeDetails maze_search(Maze *maze) {
   BinaryHeap *priorityq = binaryheap_new(compare_maze_nodes);
 
-  size_t nodes_size = maze->rows * maze->columns * NUM_DIRECTIONS;
-  size_t nodes_length = 0;
-  MazeNode nodes[nodes_size];
-  assert(nodes != NULL && "malloc failed");
+  MazeNode nodes[maze->rows][maze->columns][NUM_DIRECTIONS];
+  maze_nodes_reset(maze->rows, maze->columns, nodes);
 
-  bool seen[maze->rows][maze->columns][NUM_DIRECTIONS];
-  memset(seen, false, sizeof(seen));
+  MazeNode *start = &nodes[maze->start.x][maze->start.y][EAST];
+  *start = (MazeNode){.seen = true,
+                      .position = maze->start,
+                      .direction = EAST,
+                      .num_from = 0,
+                      .score = 0};
 
-  nodes[nodes_length++] = (MazeNode){.position = maze->start,
-                                     .from = maze->start,
-                                     .direction = EAST,
-                                     .cost = 0};
+  MazeNode *end_nodes[NUM_DIRECTIONS];
+  size_t num_end_nodes = 0;
+  int64_t lowest_score = INT64_MAX;
 
-  MazeNode *start = &nodes[nodes_length - 1];
   binaryheap_push(priorityq, start);
-  seen[start->position.x][start->position.y][start->direction] = true;
 
   while (!binaryheap_is_empty(priorityq)) {
     Option node_option = binaryheap_pop(priorityq);
     assert(node_option.some);
-    MazeNode *node = node_option.value;
+    MazeNode *curr_node = node_option.value;
 
-    if (vec2_equal(node->position, maze->end)) {
-      binaryheap_free(priorityq);
-      return node->cost;
+    if (is_same_position(curr_node->position, maze->end)) {
+      if (curr_node->score <= lowest_score) {
+        lowest_score = curr_node->score;
+        end_nodes[num_end_nodes++] = curr_node;
+      }
+      continue;
     }
 
-    Vec2 north_node = step_north(node->position);
-    Vec2 south_node = step_south(node->position);
-    Vec2 west_node = step_west(node->position);
-    Vec2 east_node = step_east(node->position);
+    struct NextStep {
+      Direction direction;
+      Vec2 to;
+    } next[NUM_DIRECTIONS] = {
+        {.direction = NORTH, .to = step_north(curr_node->position)},
+        {.direction = SOUTH, .to = step_south(curr_node->position)},
+        {.direction = EAST, .to = step_east(curr_node->position)},
+        {.direction = WEST, .to = step_west(curr_node->position)},
+    };
 
-    // TODO: can probably condense this logic
-    // Lets wait for part 2 though...
+    for (size_t i = 0; i < NUM_DIRECTIONS; i++) {
+      struct NextStep next_step = next[i];
 
-    if (!vec2_equal(node->from, north_node) &&
-        !is_wall_tile(maze, north_node) &&
-        !seen[north_node.x][north_node.y][NORTH]) {
-      MazeNode next_node = {.position = north_node,
-                            .from = node->position,
-                            .direction = NORTH,
-                            .cost = node->cost + 1};
+      MazeNode *next_node =
+          &nodes[next_step.to.x][next_step.to.y][next_step.direction];
 
-      if (node->direction != NORTH) {
-        next_node.cost += 1000;
+      int64_t next_step_score =
+          (curr_node->score) +
+          (next_step.direction != curr_node->direction ? 1001 : 1);
+
+      if (!is_wall_tile(maze, next_step.to) &&
+          (!next_node->seen || next_step_score <= next_node->score)) {
+        next_node->score = next_step_score;
+        next_node->from[next_node->num_from++] = curr_node;
+
+        if (!next_node->seen) {
+          next_node->seen = true;
+          binaryheap_push(priorityq, next_node);
+        }
       }
-      nodes[nodes_length++] = next_node;
-      binaryheap_push(priorityq, &nodes[nodes_length - 1]);
-      seen[north_node.x][north_node.y][NORTH] = true;
-    }
-
-    if (!vec2_equal(node->from, south_node) &&
-        !is_wall_tile(maze, south_node) &&
-        !seen[south_node.x][south_node.y][SOUTH]) {
-      MazeNode next_node = {.position = south_node,
-                            .from = node->position,
-                            .direction = SOUTH,
-                            .cost = node->cost + 1};
-
-      if (node->direction != SOUTH) {
-        next_node.cost += 1000;
-      }
-
-      nodes[nodes_length++] = next_node;
-      binaryheap_push(priorityq, &nodes[nodes_length - 1]);
-      seen[south_node.x][south_node.y][SOUTH] = true;
-    }
-
-    if (!vec2_equal(node->from, west_node) && !is_wall_tile(maze, west_node) &&
-        !seen[west_node.x][west_node.y][WEST]) {
-      MazeNode next_node = {.position = west_node,
-                            .from = node->position,
-                            .direction = WEST,
-                            .cost = node->cost + 1};
-
-      if (node->direction != WEST) {
-        next_node.cost += 1000;
-      }
-
-      nodes[nodes_length++] = next_node;
-      binaryheap_push(priorityq, &nodes[nodes_length - 1]);
-      seen[west_node.x][west_node.y][WEST] = true;
-    }
-
-    if (!vec2_equal(node->from, east_node) && !is_wall_tile(maze, east_node) &&
-        !seen[east_node.x][east_node.y][EAST]) {
-      MazeNode next_node = {.position = east_node,
-                            .from = node->position,
-                            .direction = EAST,
-                            .cost = node->cost + 1};
-
-      if (node->direction != EAST) {
-        next_node.cost += 1000;
-      }
-
-      nodes[nodes_length++] = next_node;
-      binaryheap_push(priorityq, &nodes[nodes_length - 1]);
-      seen[east_node.x][east_node.y][EAST] = true;
     }
   }
+  assert(num_end_nodes > 0 && "end of maze not found");
 
   binaryheap_free(priorityq);
 
-  return -1;
+  return (MazeDetails){.lowest_score = lowest_score,
+                       .num_best_seats =
+                           num_best_seats(maze, end_nodes, num_end_nodes)};
 }
 
 int main(void) {
   Txt *txt = txt_read_file(INPUT_FILENAME);
 
   Maze *maze = maze_parse(txt);
-  int64_t lowest_score = maze_search(maze);
+  MazeDetails maze_details = maze_search(maze);
 
   maze_free(maze);
   txt_free(txt);
 
   print_day(16, "Reindeer Maze");
-  print_part(1, (uint64_t)lowest_score, PART1_ANSWER);
-  // print_part(2, 0, PART2_ANSWER);
+  print_part(1, (uint64_t)maze_details.lowest_score, PART1_ANSWER);
+  print_part(2, maze_details.num_best_seats, PART2_ANSWER);
 
   return 0;
 }
