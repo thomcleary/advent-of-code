@@ -35,24 +35,46 @@ void print_day(unsigned int day, const char *name) {
   print_border(border_len);
 }
 
-void print_part(uint8_t part, uint64_t answer, uint64_t expected) {
-  bool correct = answer == expected;
-
+static void print_part(uint8_t part, bool correct) {
   ansi_esc(correct ? ANSI_CODE_FG_GREEN : ANSI_CODE_FG_RED);
   printf("Part %d: ", part);
   ansi_reset();
+}
 
-  printf("%" PRIu64, answer);
-
+static void print_result_icon(bool correct) {
   ansi_esc(ANSI_CODE_BOLD);
   ansi_esc(correct ? ANSI_CODE_FG_GREEN : ANSI_CODE_FG_RED);
   printf("  ");
   printf(correct ? "✔️" : "x");
   ansi_reset();
+}
+
+void print_part_uint64(uint8_t part, uint64_t answer, uint64_t expected) {
+  bool correct = answer == expected;
+
+  print_part(part, correct);
+  printf("%" PRIu64, answer);
+  print_result_icon(correct);
 
   if (!correct) {
     ansi_esc(ANSI_CODE_FAINT);
     printf(" (should be %" PRIu64 ")", expected);
+    ansi_reset();
+  }
+
+  printf("\n");
+}
+
+void print_part_str(uint8_t part, char *answer, char *expected) {
+  bool correct = strcmp(answer, expected) == 0;
+
+  print_part(part, correct);
+  printf("\"%s\"", answer);
+  print_result_icon(correct);
+
+  if (!correct) {
+    ansi_esc(ANSI_CODE_FAINT);
+    printf(" (should be \"%s\")", expected);
     ansi_reset();
   }
 

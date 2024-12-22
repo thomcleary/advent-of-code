@@ -1,6 +1,6 @@
-# Day 0: Template
+# Day 17: Chronospatial Computer
 
-<https://adventofcode.com/2024/day/0>
+<https://adventofcode.com/2024/day/17>
 
 ```shell
 $ make

@@ -130,8 +130,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(11, "Plutonian Pebbles");
-  print_part(1, stones_after_25_blinks, PART1_ANSWER);
-  print_part(2, stones_after_75_blinks, PART2_ANSWER);
+  print_part_uint64(1, stones_after_25_blinks, PART1_ANSWER);
+  print_part_uint64(2, stones_after_75_blinks, PART2_ANSWER);
 
   return 0;
 }

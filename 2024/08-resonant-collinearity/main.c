@@ -313,8 +313,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(8, "Resonant Collinearity");
-  print_part(1, num_antinodes, PART1_ANSWER);
-  print_part(2, num_antinodes_with_resonant_harmonics, PART2_ANSWER);
+  print_part_uint64(1, num_antinodes, PART1_ANSWER);
+  print_part_uint64(2, num_antinodes_with_resonant_harmonics, PART2_ANSWER);
 
   return 0;
 }

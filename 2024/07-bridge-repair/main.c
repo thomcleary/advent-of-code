@@ -171,8 +171,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(7, "Bridge Repair");
-  print_part(1, (uint64_t)add_mult_result, PART1_ANSWER);
-  print_part(2, (uint64_t)add_mult_concat_result, PART2_ANSWER);
+  print_part_uint64(1, (uint64_t)add_mult_result, PART1_ANSWER);
+  print_part_uint64(2, (uint64_t)add_mult_concat_result, PART2_ANSWER);
 
   return 0;
 }

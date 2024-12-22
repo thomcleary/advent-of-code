@@ -156,8 +156,8 @@ int main(void) {
   }
 
   print_day(2, "Red-Nosed Reports");
-  print_part(1, safe_reports, PART1_ANSWER);
-  print_part(2, safe_reports + dampened_reports, PART2_ANSWER);
+  print_part_uint64(1, safe_reports, PART1_ANSWER);
+  print_part_uint64(2, safe_reports + dampened_reports, PART2_ANSWER);
 
   return 0;
 }

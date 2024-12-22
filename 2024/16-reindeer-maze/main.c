@@ -281,8 +281,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(16, "Reindeer Maze");
-  print_part(1, (uint64_t)maze_details.lowest_score, PART1_ANSWER);
-  print_part(2, maze_details.num_best_seats, PART2_ANSWER);
+  print_part_uint64(1, (uint64_t)maze_details.lowest_score, PART1_ANSWER);
+  print_part_uint64(2, maze_details.num_best_seats, PART2_ANSWER);
 
   return 0;
 }

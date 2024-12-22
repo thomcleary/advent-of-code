@@ -165,8 +165,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(13, "Claw Contraption");
-  print_part(1, (uint64_t)tokens_required, PART1_ANSWER);
-  print_part(2, (uint64_t)tokens_required_after_fix, PART2_ANSWER);
+  print_part_uint64(1, (uint64_t)tokens_required, PART1_ANSWER);
+  print_part_uint64(2, (uint64_t)tokens_required_after_fix, PART2_ANSWER);
 
   return 0;
 }

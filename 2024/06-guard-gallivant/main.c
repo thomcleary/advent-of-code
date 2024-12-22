@@ -270,8 +270,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(6, "Guard Gallivant");
-  print_part(1, positions_visited, PART1_ANSWER);
-  print_part(2, positions_loopable, PART2_ANSWER);
+  print_part_uint64(1, positions_visited, PART1_ANSWER);
+  print_part_uint64(2, positions_loopable, PART2_ANSWER);
 
   return 0;
 }

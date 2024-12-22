@@ -267,8 +267,8 @@ int main(void) {
   txt_free(map);
 
   print_day(12, "Garden Groups");
-  print_part(1, quote.cost, PART1_ANSWER);
-  print_part(2, quote.cost - quote.discount, PART2_ANSWER);
+  print_part_uint64(1, quote.cost, PART1_ANSWER);
+  print_part_uint64(2, quote.cost - quote.discount, PART2_ANSWER);
 
   return 0;
 }

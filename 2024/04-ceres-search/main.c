@@ -199,8 +199,8 @@ int main(void) {
   txt_free(ws);
 
   print_day(4, "Ceres Search");
-  print_part(1, xmas_count, PART1_ANSWER);
-  print_part(2, x_mas_count, PART2_ANSWER);
+  print_part_uint64(1, xmas_count, PART1_ANSWER);
+  print_part_uint64(2, x_mas_count, PART2_ANSWER);
 
   return 0;
 }

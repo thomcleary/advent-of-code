@@ -123,8 +123,8 @@ int main(void) {
   free_memory_state(state);
 
   print_day(3, "Mull It Over");
-  print_part(1, unconditional_total, PART1_ANSWER);
-  print_part(2, conditional_total, PART2_ANSWER);
+  print_part_uint64(1, unconditional_total, PART1_ANSWER);
+  print_part_uint64(2, conditional_total, PART2_ANSWER);
 
   return 0;
 }

@@ -116,8 +116,8 @@ int main(void) {
   hashtable_free(right_counts_ht);
 
   print_day(1, "Hystorian Hysteria");
-  print_part(1, (uint64_t)total_distance, PART1_ANSWER);
-  print_part(2, (uint64_t)similarity_score, PART2_ANSWER);
+  print_part_uint64(1, (uint64_t)total_distance, PART1_ANSWER);
+  print_part_uint64(2, (uint64_t)similarity_score, PART2_ANSWER);
 
   return 0;
 }

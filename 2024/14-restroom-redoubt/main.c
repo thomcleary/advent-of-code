@@ -182,8 +182,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(14, "Restroom Redoubt");
-  print_part(1, safety, PART1_ANSWER);
-  print_part(2, PART2_ANSWER, PART2_ANSWER);
+  print_part_uint64(1, safety, PART1_ANSWER);
+  print_part_uint64(2, PART2_ANSWER, PART2_ANSWER);
   print_easter_egg_tiles(tiles);
 
   return 0;

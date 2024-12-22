@@ -203,8 +203,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(10, "Hoof It");
-  print_part(1, totals.peaks_reachable, PART1_ANSWER);
-  print_part(2, totals.num_hiking_trails, PART2_ANSWER);
+  print_part_uint64(1, totals.peaks_reachable, PART1_ANSWER);
+  print_part_uint64(2, totals.num_hiking_trails, PART2_ANSWER);
 
   return 0;
 }

@@ -323,8 +323,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(15, "Warehouse Woes");
-  print_part(1, box_gps_sum, PART1_ANSWER);
-  print_part(2, wide_box_gps_sum, PART2_ANSWER);
+  print_part_uint64(1, box_gps_sum, PART1_ANSWER);
+  print_part_uint64(2, wide_box_gps_sum, PART2_ANSWER);
 
   return 0;
 }

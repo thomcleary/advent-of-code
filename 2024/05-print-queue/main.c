@@ -238,8 +238,8 @@ int main(void) {
   txt_free(txt);
 
   print_day(5, "Print Queue");
-  print_part(1, valid_sum, PART1_ANSWER);
-  print_part(2, invalid_sum, PART2_ANSWER);
+  print_part_uint64(1, valid_sum, PART1_ANSWER);
+  print_part_uint64(2, invalid_sum, PART2_ANSWER);
 
   return 0;
 }
