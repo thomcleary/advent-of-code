@@ -29,7 +29,7 @@ int main(void) {
 
   txt_free(txt);
 
-  print_day(17, "Chronospatial Computer");
+  print_day(0, "Template");
   print_part_uint64(1, 0, PART1_ANSWER);
   print_part_uint64(2, 0, PART2_ANSWER);
 
