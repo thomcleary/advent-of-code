@@ -20,11 +20,11 @@ https://adventofcode.com/2024/day/19
 #ifdef USE_EXAMPLE
 #define INPUT_FILENAME "example-input.txt"
 #define PART1_ANSWER 6
-#define PART2_ANSWER 2
+#define PART2_ANSWER 16
 #else
 #define INPUT_FILENAME "puzzle-input.txt"
 #define PART1_ANSWER 365
-#define PART2_ANSWER 2
+#define PART2_ANSWER 730121486795169
 #endif
 
 typedef struct {
@@ -76,10 +76,10 @@ Towels towels_parse(Txt *txt) {
   return towels;
 }
 
-bool is_design_valid(char *design, Hashtable *patterns, Hashtable *cache) {
+uint64_t valid_designs(char *design, Hashtable *patterns, Hashtable *cache) {
   Option cache_option = hashtable_get(cache, design);
   if (cache_option.some) {
-    return (bool)cache_option.value;
+    return (uint64_t)cache_option.value;
   }
 
   int64_t design_len = (int64_t)strlen(design);
@@ -88,7 +88,7 @@ bool is_design_valid(char *design, Hashtable *patterns, Hashtable *cache) {
   int64_t window_head = 0;
   int64_t window_tail = design_len - 1;
 
-  bool found = false;
+  uint64_t found = 0;
 
   while (window_head <= window_tail) {
     int64_t window_len = window_tail - window_head + 1;
@@ -97,9 +97,10 @@ bool is_design_valid(char *design, Hashtable *patterns, Hashtable *cache) {
 
     if (hashtable_has(patterns, window)) {
       char *next = &design[window_tail + 1];
-      if (!(*next) || is_design_valid(next, patterns, cache)) {
-        found = true;
-        break;
+      if (*next) {
+        found += valid_designs(next, patterns, cache);
+      } else {
+        found++;
       }
     }
 
@@ -111,33 +112,32 @@ bool is_design_valid(char *design, Hashtable *patterns, Hashtable *cache) {
   return found;
 }
 
-uint64_t valid_towel_designs(Towels *towels) {
+int main(void) {
+  Txt *txt = txt_read_file(INPUT_FILENAME);
+  Towels towels = towels_parse(txt);
   Hashtable *cache = hashtable_new();
-  uint64_t valid = 0;
 
-  for (size_t i = 0; i < towels->num_designs; i++) {
-    if (is_design_valid(towels->designs[i], towels->patterns, cache)) {
-      valid++;
+  uint64_t existing_valid_designs = 0;
+  uint64_t total_valid_designs = 0;
+
+  for (size_t i = 0; i < towels.num_designs; i++) {
+    uint64_t num_designs =
+        valid_designs(towels.designs[i], towels.patterns, cache);
+
+    if (num_designs > 0) {
+      existing_valid_designs++;
     }
+
+    total_valid_designs += num_designs;
   }
 
   hashtable_free(cache);
-
-  return valid;
-}
-
-int main(void) {
-  Txt *txt = txt_read_file(INPUT_FILENAME);
-
-  Towels towels = towels_parse(txt);
-  uint64_t num_valid_designs = valid_towel_designs(&towels);
-
   towels_free(&towels);
   txt_free(txt);
 
   print_day(19, "Linen Layout");
-  print_part_uint64(1, num_valid_designs, PART1_ANSWER);
-  // print_part_uint64(2, 0, PART2_ANSWER);
+  print_part_uint64(1, existing_valid_designs, PART1_ANSWER);
+  print_part_uint64(2, total_valid_designs, PART2_ANSWER);
 
   return 0;
 }
