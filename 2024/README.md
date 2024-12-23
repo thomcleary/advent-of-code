@@ -30,7 +30,7 @@ docker compose run --rm aoc
 | 16  | Reindeeer Maze         |  ⭐⭐  |
 | 17  | Chronospatial Computer |   ⭐   |
 | 18  | RAM Run                |  ⭐⭐  |
-| 19  |                        |        |
+| 19  | Linen Layout           |   ⭐   |
 | 20  |                        |        |
 | 21  |                        |        |
 | 22  |                        |        |
