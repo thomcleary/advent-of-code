@@ -29,7 +29,7 @@ docker compose run --rm aoc
 | 15  | Warehouse Woes         |  ⭐⭐  |
 | 16  | Reindeeer Maze         |  ⭐⭐  |
 | 17  | Chronospatial Computer |   ⭐   |
-| 18  | RAM Run                |   ⭐   |
+| 18  | RAM Run                |  ⭐⭐  |
 | 19  |                        |        |
 | 20  |                        |        |
 | 21  |                        |        |
