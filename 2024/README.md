@@ -31,7 +31,7 @@ docker compose run --rm aoc
 | 17  | Chronospatial Computer |   ⭐   |
 | 18  | RAM Run                |  ⭐⭐  |
 | 19  | Linen Layout           |  ⭐⭐  |
-| 20  |                        |        |
+| 20  | Race Condition         |   ⭐   |
 | 21  |                        |        |
 | 22  |                        |        |
 | 23  |                        |        |
