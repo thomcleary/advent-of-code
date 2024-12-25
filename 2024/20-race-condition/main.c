@@ -20,14 +20,16 @@ https://adventofcode.com/2024/day/20
 
 #ifdef USE_EXAMPLE
 #define INPUT_FILENAME "example-input.txt"
-#define MIN_TIME_SAVED 2
+#define PART1_MIN_TIME_SAVED 2
 #define PART1_ANSWER 44
-#define PART2_ANSWER 2
+#define PART2_MIN_TIME_SAVED 76
+#define PART2_ANSWER 3
 #else
 #define INPUT_FILENAME "puzzle-input.txt"
-#define MIN_TIME_SAVED 100
+#define PART1_MIN_TIME_SAVED 100
 #define PART1_ANSWER 1378
-#define PART2_ANSWER 2
+#define PART2_MIN_TIME_SAVED 100
+#define PART2_ANSWER 975379
 #endif
 
 #define WALL '#'
@@ -51,13 +53,6 @@ typedef struct {
   Coord start, end;
 } CodePath;
 
-static const Coord directions[] = {
-    {.row = -1, .column = 0},
-    {.row = 1, .column = 0},
-    {.row = 0, .column = -1},
-    {.row = 0, .column = 1},
-};
-
 bool coord_equal(Coord *a, Coord *b) {
   return a->row == b->row && a->column == b->column;
 }
@@ -78,6 +73,13 @@ int64_t codepath_walk(CodePath *code_path, Coord *position) {
   }
 
   CodePathTile *curr_tile = &code_path->path[position->row][position->column];
+
+  const Coord directions[] = {
+      {.row = -1, .column = 0},
+      {.row = 1, .column = 0},
+      {.row = 0, .column = -1},
+      {.row = 0, .column = 1},
+  };
 
   Coord *next_pos = NULL;
   CodePathTile *next_tile = NULL;
@@ -140,56 +142,60 @@ CodePath codepath_parse(Txt *txt) {
   return code_path;
 }
 
-uint64_t find_cheats(CodePath *code_path, int64_t min_time_saved) {
+uint64_t find_cheats(CodePath *code_path, int64_t min_time_saved,
+                     int64_t cheat_length) {
   int64_t path_length =
       code_path->path[code_path->start.row][code_path->start.column]
           .steps_to_end;
 
   uint64_t cheats_found = 0;
 
-  for (int64_t r = 0; r < code_path->rows; r++) {
-    for (int64_t c = 0; c < code_path->columns; c++) {
-      Coord position = {.row = r, .column = c};
-      CodePathTile tile = code_path->path[position.row][position.column];
+  for (int64_t row = 0; row < code_path->rows; row++) {
+    for (int64_t col = 0; col < code_path->columns; col++) {
+      for (int64_t steps = 2; steps <= cheat_length; steps++) {
+        Coord start_position = {.row = row, .column = col};
+        CodePathTile start_tile =
+            code_path->path[start_position.row][start_position.column];
 
-      if (!tile.is_path) {
-        continue;
-      }
+        for (int64_t x = -steps; x <= steps; x++) {
+          int64_t y = steps - (x < 0 ? -x : x);
 
-      for (size_t i = 0; i < (sizeof(directions) / sizeof(directions[0]));
-           i++) {
-        Coord direction = directions[i];
-        Coord next_position = {.row = position.row + direction.row,
-                               .column = position.column + direction.column};
-        CodePathTile *next_tile =
-            &code_path->path[next_position.row][next_position.column];
+          const Coord end_directions[] = {
+              {.row = x, .column = y},
+              {.row = x, .column = -y},
+          };
+          size_t num_directions = y == 0 ? 1 : 2;
 
-        if (next_tile->is_path) {
-          continue;
-        }
+          for (size_t i = 0; i < num_directions; i++) {
+            Coord direction = end_directions[i];
+            Coord end_position = {.row = start_position.row + direction.row,
+                                  .column =
+                                      start_position.column + direction.column};
 
-        next_position.row += direction.row;
-        next_position.column += direction.column;
+            bool valid_row =
+                end_position.row > 0 && end_position.row < code_path->rows - 1;
+            bool valid_column = end_position.column > 0 &&
+                                end_position.column < code_path->columns - 1;
 
-        bool valid_row =
-            next_position.row > 0 && next_position.row < code_path->rows - 1;
-        bool valid_column = next_position.column > 0 &&
-                            next_position.column < code_path->columns - 1;
+            if (!valid_row || !valid_column) {
+              continue;
+            }
 
-        if (!(valid_row && valid_column)) {
-          continue;
-        }
+            CodePathTile *end_tile =
+                &code_path->path[end_position.row][end_position.column];
 
-        next_tile = &code_path->path[next_position.row][next_position.column];
+            if (!end_tile->is_path) {
+              continue;
+            }
 
-        if (next_tile->is_path) {
-          int64_t steps_to_tile = path_length - tile.steps_to_end;
-          int64_t steps_to_next_tile = steps_to_tile + 2;
-          int64_t cheat_path_length =
-              steps_to_next_tile + next_tile->steps_to_end;
+            int64_t steps_to_tile = path_length - start_tile.steps_to_end;
+            int64_t steps_to_end_tile = steps_to_tile + steps;
+            int64_t cheat_path_length =
+                steps_to_end_tile + end_tile->steps_to_end;
 
-          if (path_length - cheat_path_length >= min_time_saved) {
-            cheats_found++;
+            if (path_length - cheat_path_length >= min_time_saved) {
+              cheats_found++;
+            }
           }
         }
       }
@@ -203,14 +209,18 @@ int main(void) {
   Txt *txt = txt_read_file(INPUT_FILENAME);
 
   CodePath code_path = codepath_parse(txt);
-  uint64_t num_cheats = find_cheats(&code_path, MIN_TIME_SAVED);
+
+  uint64_t num_deprecated_cheats =
+      find_cheats(&code_path, PART1_MIN_TIME_SAVED, 2);
+
+  uint64_t num_cheats = find_cheats(&code_path, PART2_MIN_TIME_SAVED, 20);
 
   codepath_free(&code_path);
   txt_free(txt);
 
   print_day(20, "Race Condition");
-  print_part_uint64(1, num_cheats, PART1_ANSWER);
-  // print_part_uint64(2, 0, PART2_ANSWER);
+  print_part_uint64(1, num_deprecated_cheats, PART1_ANSWER);
+  print_part_uint64(2, num_cheats, PART2_ANSWER);
 
   return 0;
 }
