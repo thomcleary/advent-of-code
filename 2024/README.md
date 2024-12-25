@@ -32,8 +32,8 @@ docker compose run --rm aoc
 | 18  | RAM Run                |  ⭐⭐  |
 | 19  | Linen Layout           |  ⭐⭐  |
 | 20  | Race Condition         |  ⭐⭐  |
-| 21  |                        |        |
-| 22  |                        |        |
+| 21  | Keypad Conundrum       |        |
+| 22  | Monkey Market          |   ⭐   |
 | 23  |                        |        |
 | 24  |                        |        |
 | 25  |                        |        |
