@@ -4,7 +4,7 @@
 
 | Day | Challenge                              | Stars |
 | :-: | -------------------------------------- | :---: |
-|  1  | Not Quite Lisp                         |       |
+|  1  | Not Quite Lisp                         |  ⭐️  |
 |  2  | I Was Told There Would Be No Math      |       |
 |  3  | Perfectly Spherical Houses in a Vacuum |       |
 |  4  | The Ideal Stocking Stuffer             |       |
