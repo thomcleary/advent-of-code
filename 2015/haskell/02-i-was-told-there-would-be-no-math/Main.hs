@@ -10,16 +10,13 @@ getDimensions input = map (parse . splitOn 'x') (lines input)
   where
     parse [l, w, h] = (read l, read w, read h)
 
-wrap :: Dimensions -> Int
-wrap (l, w, h) = sum (map (* 2) sides) + minimum sides
+wrappingPaper :: Dimensions -> Int
+wrappingPaper (l, w, h) = sum (map (* 2) sides) + minimum sides
   where
     sides = [l * w, w * h, h * l]
 
-part1 :: [Dimensions] -> Int
-part1 = sum . map wrap
-
-part2 :: String -> Int
-part2 = const (-2)
+ribbon :: Dimensions -> Int
+ribbon (l, w, h) = (l * w * h) + (2 * minimum [l + w, l + h, w + h])
 
 main :: IO ()
 main = do
@@ -27,8 +24,8 @@ main = do
 
   let dimensions = getDimensions input
 
-  let p1 = part1 dimensions
-  -- let p2 = part2 input
+  let part1 = sum . map wrappingPaper $ dimensions
+  let part2 = sum . map ribbon $ dimensions
 
-  putStrLn ("Part 1: " ++ show p1)
-  putStrLn ("Part 2: " ++ "TODO")
+  putStrLn ("Part 1: " ++ show part1)
+  putStrLn ("Part 2: " ++ show part2)
