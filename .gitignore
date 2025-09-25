@@ -2,4 +2,5 @@
 .DS_Store
 **/node_modules
 **/puzzle-input.txt
+**/input.txt
 **/description.md

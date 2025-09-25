@@ -1,6 +1,6 @@
 import Data.Digest.Pure.MD5 (md5)
 import Data.List (isPrefixOf)
-import qualified Data.String as ByteString
+import Data.String qualified as ByteString
 
 mine :: String -> Int -> Int
 mine key zeros = go 1
