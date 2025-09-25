@@ -1,3 +1,4 @@
+import Data.Set (Set)
 import Data.Set qualified as Set
 
 start :: (Int, Int)
@@ -9,20 +10,29 @@ step '>' (x, y) = (x + 1, y)
 step 'v' (x, y) = (x, y - 1)
 step '<' (x, y) = (x - 1, y)
 
-deliver :: String -> Int
+deliver :: String -> Set (Int, Int)
 deliver = go start (Set.singleton start)
   where
-    go pos visited "" = Set.size visited
+    go pos visited "" = visited
     go pos visited (d : directions) = go next (Set.insert next visited) directions
       where
         next = step d pos
+
+splitDirections :: String -> (String, String)
+splitDirections [] = ([], [])
+splitDirections [x] = ([x], [])
+splitDirections (x : y : rest) = (x : xs, y : ys)
+  where
+    (xs, ys) = splitDirections rest
 
 main :: IO ()
 main = do
   input <- getContents
 
-  let part1 = deliver input
-  let part2 = "TODO"
+  let part1 = Set.size $ deliver input
+
+  let (santaDirs, robotDirs) = splitDirections input
+  let part2 = Set.size $ Set.union (deliver santaDirs) (deliver robotDirs)
 
   putStrLn ("Part 1: " ++ show part1)
   putStrLn ("Part 2: " ++ show part2)
