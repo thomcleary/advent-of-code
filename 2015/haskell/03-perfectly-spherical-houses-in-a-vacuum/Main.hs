@@ -1,5 +1,5 @@
 import Data.Set (Set)
-import Data.Set qualified as Set
+import qualified Data.Set as Set
 
 start :: (Int, Int)
 start = (0, 0)
@@ -8,12 +8,12 @@ step :: (Num b, Num a) => Char -> (a, b) -> (a, b)
 step '^' (x, y) = (x, y + 1)
 step '>' (x, y) = (x + 1, y)
 step 'v' (x, y) = (x, y - 1)
-step '<' (x, y) = (x - 1, y)
+step _ (x, y) = (x - 1, y)
 
 deliver :: String -> Set (Int, Int)
 deliver = go start (Set.singleton start)
   where
-    go pos visited "" = visited
+    go _ visited "" = visited
     go pos visited (d : directions) = go next (Set.insert next visited) directions
       where
         next = step d pos

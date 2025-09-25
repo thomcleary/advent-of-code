@@ -1,12 +1,13 @@
 toLevel :: Char -> Int
 toLevel '(' = 1
-toLevel ')' = negate 1
+toLevel _ = negate 1
 
 findBasement :: [Int] -> Int
 findBasement = go 0 0
   where
-    go i (-1) ds = i
-    go i floor (d : ds) = go (i + 1) (floor + d) ds
+    go i (-1) _ = i
+    go _ _ [] = error "Basement not found"
+    go i level (d : ds) = go (i + 1) (level + d) ds
 
 main :: IO ()
 main = do

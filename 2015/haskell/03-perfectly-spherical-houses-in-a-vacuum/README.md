@@ -5,5 +5,5 @@
 ## Run
 
 ```shell
-runhaskell Main.hs < input.txt
+stack runhaskell Main.hs < input.txt
 ```

@@ -1,6 +1,7 @@
 main :: IO ()
 main = do
   input <- getContents
+  putStrLn input
 
   let part1 = "TODO"
   let part2 = "TODO"
