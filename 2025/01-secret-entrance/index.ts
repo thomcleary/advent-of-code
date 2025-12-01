@@ -1,52 +1,54 @@
+import { getInputLines } from "../utils.ts";
+
 const TOTAL_POSITIONS = 100;
 const STARTING_POSITION = 50;
 
-const readStdin = async () => {
-  let chunks = [];
+type Rotation = { type: "left" | "right"; value: number };
 
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
+const getPasswords = (rotations: Rotation[]) => {
+  let oldPassword = 0;
+  let newPassword = 0;
 
-  return chunks.join("");
-};
-
-const toRotation = (line: string) => {
-  const [direction] = line;
-
-  let rotation = parseInt(line.slice(1));
-
-  if (direction === "L") {
-    rotation *= -1;
-  }
-
-  return rotation;
-};
-
-const getPassword = (rotations: number[]) => {
-  let password = 0;
   let position = STARTING_POSITION;
 
   for (const rotation of rotations) {
-    position = (position + rotation) % TOTAL_POSITIONS;
+    for (let i = 0; i < rotation.value; i++) {
+      if (rotation.type === "left") {
+        position -= 1;
+      } else {
+        position += 1;
+      }
+
+      position %= TOTAL_POSITIONS;
+
+      if (position === 0) {
+        newPassword += 1;
+      }
+    }
 
     if (position === 0) {
-      password += 1;
+      oldPassword += 1;
     }
   }
 
-  return password;
+  return { oldPassword, newPassword };
 };
 
 const main = async () => {
-  const stdin = await readStdin();
-  const input = stdin.split("\n").map((l) => l.trim());
+  const lines = await getInputLines();
 
-  const rotations = input.map(toRotation);
+  const rotations = lines.map(
+    (line) =>
+      ({
+        type: line.at(0) === "L" ? "left" : "right",
+        value: parseInt(line.slice(1)),
+      }) satisfies Rotation
+  );
 
-  const password = getPassword(rotations);
+  const { oldPassword, newPassword } = getPasswords(rotations);
 
-  console.log(`Part 1: ${password}`);
+  console.log(`Part 1: ${oldPassword}`);
+  console.log(`Part 2: ${newPassword}`);
 };
 
 await main();

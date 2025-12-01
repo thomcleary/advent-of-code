@@ -4,13 +4,19 @@
 
 ## Setup
 
-TODO
+```shell
+pnpm i
+
+cd 01-secret-entrance
+
+node index.ts < example.txt
+```
 
 ## Calendar
 
 | Day | Challenge       | Stars |
 | :-: | --------------- | :---: |
-|  1  | Secret Entrance |  ⭐️  |
+|  1  | Secret Entrance | ⭐️⭐️  |
 |  2  |                 |       |
 |  3  |                 |       |
 |  4  |                 |       |
