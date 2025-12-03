@@ -1,4 +1,4 @@
-import { getInputLines } from "../utils.ts";
+import { stdin } from "../utils.ts";
 
 const TOTAL_POSITIONS = 100;
 const STARTING_POSITION = 50;
@@ -35,9 +35,7 @@ const getPasswords = (rotations: Rotation[]) => {
 };
 
 const main = async () => {
-  const lines = await getInputLines();
-
-  const rotations = lines.map(
+  const rotations = (await stdin()).split("\n").map(
     (line) =>
       ({
         type: line.at(0) === "L" ? "left" : "right",

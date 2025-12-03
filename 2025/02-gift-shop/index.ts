@@ -1,5 +1,5 @@
 import assert from "assert";
-import { getStdin } from "../utils.ts";
+import { stdin } from "../utils.ts";
 
 type Range = {
   start: number;
@@ -39,9 +39,7 @@ const invalidIdSum = (ranges: Range[], { maxRepeats }: { maxRepeats?: number } =
 };
 
 const main = async () => {
-  const stdin = await getStdin();
-
-  const ranges = stdin
+  const ranges = (await stdin())
     .trim()
     .split(",")
     .map((r) => {

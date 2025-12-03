@@ -1,13 +1,9 @@
-export const getStdin = async () => {
+export const stdin = async () => {
   let chunks = [];
 
   for await (const chunk of process.stdin) {
     chunks.push(chunk);
   }
 
-  return chunks.join("");
+  return chunks.join("").trim();
 };
-
-export const toLines = (str: string) => str.split("\n").map((l) => l.trim());
-
-export const getInputLines = async () => toLines(await getStdin());
