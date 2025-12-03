@@ -17,7 +17,7 @@ node index.ts < example.txt
 | Day | Challenge       | Stars |
 | :-: | --------------- | :---: |
 |  1  | Secret Entrance | ⭐️⭐️  |
-|  2  |                 |       |
+|  2  | Gift Shop       |  ⭐️   |
 |  3  |                 |       |
 |  4  |                 |       |
 |  5  |                 |       |
