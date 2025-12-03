@@ -1,31 +1,35 @@
+import assert from "node:assert";
 import { stdin } from "../utils.ts";
 
-const maxJoltage = (bank: number[]): number => {
-  const { first, second } = bank.reduce(
-    ({ first, second }, curr, index) => {
-      if (curr > first && index !== bank.length - 1) {
-        return { first: curr, second: 0 };
-      }
+const maxJoltage = ({ bank, batteriesRequired }: { bank: number[]; batteriesRequired: number }): number => {
+  const batteries: number[] = [];
+  let windowHead = 0;
 
-      if (curr > second) {
-        return { first, second: curr };
-      }
+  while (batteries.length < batteriesRequired) {
+    const windowSize = bank.length - windowHead - (batteriesRequired - batteries.length) + 1;
+    const window = bank.slice(windowHead, windowHead + windowSize);
 
-      return { first, second };
-    },
-    { first: 0, second: 0 }
-  );
+    const largestBattery = Math.max(...window);
+    const largestBatteryIndex = window.indexOf(largestBattery);
+    assert(largestBatteryIndex >= 0);
 
-  return parseInt(`${first}${second}`);
+    batteries.push(largestBattery);
+
+    windowHead += largestBatteryIndex + 1;
+  }
+
+  return parseInt(batteries.map((b) => b.toString()).join(""));
+};
+
+const totalJoltage = ({ banks, batteriesRequired }: { banks: number[][]; batteriesRequired: number }) => {
+  return banks.map((bank) => maxJoltage({ bank, batteriesRequired })).reduce((a, b) => a + b, 0);
 };
 
 const main = async () => {
   const banks = (await stdin()).split("\n").map((l) => l.split("").map((d) => parseInt(d)));
 
-  const totalJoltageOutput = banks.map(maxJoltage).reduce((a, b) => a + b, 0);
-
-  console.log(`Part 1: ${totalJoltageOutput}`);
-  console.log(`Part 2: TODO`);
+  console.log(`Part 1: ${totalJoltage({ banks, batteriesRequired: 2 })}`);
+  console.log(`Part 2: ${totalJoltage({ banks, batteriesRequired: 12 })}`);
 };
 
 await main();

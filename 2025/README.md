@@ -18,7 +18,7 @@ node index.ts < example.txt
 | :-: | --------------- | :---: |
 |  1  | Secret Entrance | ⭐️⭐️  |
 |  2  | Gift Shop       | ⭐️⭐️  |
-|  3  | Lobby           |  ⭐️   |
+|  3  | Lobby           | ⭐️⭐️  |
 |  4  |                 |       |
 |  5  |                 |       |
 |  6  |                 |       |
