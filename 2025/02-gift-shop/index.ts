@@ -39,14 +39,11 @@ const invalidIdSum = (ranges: Range[], { maxRepeats }: { maxRepeats?: number } =
 };
 
 const main = async () => {
-  const ranges = (await stdin())
-    .trim()
-    .split(",")
-    .map((r) => {
-      const [start, end] = r.split("-");
-      assert(start && end);
-      return { start: parseInt(start), end: parseInt(end) } satisfies Range;
-    });
+  const ranges = (await stdin()).split(",").map((r) => {
+    const [start, end] = r.split("-");
+    assert(start && end);
+    return { start: parseInt(start), end: parseInt(end) } satisfies Range;
+  });
 
   console.log(`Part 1: ${invalidIdSum(ranges, { maxRepeats: 2 })}`);
   console.log(`Part 2: ${invalidIdSum(ranges)}`);
