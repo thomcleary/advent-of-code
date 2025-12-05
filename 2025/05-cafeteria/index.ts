@@ -1,8 +1,10 @@
 import assert, { Assert } from "assert";
 import { stdin } from "../utils.ts";
 
+type Range = { start: number; end: number };
+
 type Inventory = {
-  freshRanges: { start: number; end: number }[];
+  freshRanges: Range[];
   ingredients: number[];
 };
 
@@ -22,7 +24,7 @@ const getInventory = (input: string): Inventory => {
   return { freshRanges, ingredients: ingredientIds };
 };
 
-const getFreshIngredients = (inventory: Inventory): number[] => {
+const getFreshIngredients = (inventory: Inventory): number => {
   const fresh: number[] = [];
 
   inventory.ingredients.forEach((ingredient) => {
@@ -34,16 +36,38 @@ const getFreshIngredients = (inventory: Inventory): number[] => {
     }
   });
 
-  return fresh;
+  return fresh.length;
+};
+
+const getFreshIds = (inventory: Inventory): number => {
+  const mergedRanges: Range[] = [];
+
+  const sortedFreshRanges = inventory.freshRanges.sort((a, b) => a.start - b.start);
+
+  for (const range of sortedFreshRanges) {
+    const previousRange = mergedRanges.at(-1);
+
+    if (!previousRange || range.start > previousRange.end) {
+      mergedRanges.push(range);
+    } else {
+      previousRange.end = Math.max(range.end, previousRange.end);
+    }
+  }
+
+  let freshIds = 0;
+
+  for (const range of mergedRanges) {
+    freshIds += range.end - range.start + 1;
+  }
+
+  return freshIds;
 };
 
 const main = async () => {
   const inventory = getInventory(await stdin());
 
-  const freshIngredients = getFreshIngredients(inventory);
-
-  console.log(`Part 1: ${freshIngredients.length}`);
-  console.log(`Part 2: TODO`);
+  console.log(`Part 1: ${getFreshIngredients(inventory)}`);
+  console.log(`Part 2: ${getFreshIds(inventory)}`);
 };
 
 await main();
