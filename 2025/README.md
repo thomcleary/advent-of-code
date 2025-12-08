@@ -21,7 +21,7 @@ node index.ts < example.txt
 |  3  | Lobby               | ⭐️⭐️  |
 |  4  | Printing Department | ⭐️⭐️  |
 |  5  | Cafeteria           | ⭐️⭐️  |
-|  6  |                     |       |
+|  6  | Trash Compactor     |  ⭐️   |
 |  7  |                     |       |
 |  8  |                     |       |
 |  9  |                     |       |
