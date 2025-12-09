@@ -1,15 +1,17 @@
 import assert from "node:assert";
 import { stdin } from "../utils.ts";
 
+type Operator = "*" | "+";
+
 type Problem = {
   operands: number[];
-  operator: "*" | "+";
+  operator: Operator;
 };
 
-const getHomeworkProblems = (input: string): Problem[] => {
+const getHumanProblems = (input: string): Problem[] => {
   const lines = input
     .split(/\r?\n/)
-    .map((line) => line.split(/\s+/).filter((char) => !!char));
+    .map((line) => line.split(/\s+/).filter((str) => !!str));
 
   const problemCount = lines.at(0)?.length;
   assert(problemCount !== undefined);
@@ -35,33 +37,98 @@ const getHomeworkProblems = (input: string): Problem[] => {
   return problems;
 };
 
-const solve = (problem: Problem) => {
-  const [first, ...rest] = problem.operands;
-  assert(first !== undefined);
+const getCephalopodProblems = (input: string): Problem[] => {
+  const lines = input.split(/\r?\n/);
+  const longestLine = lines.reduce(
+    (prev, curr) => Math.max(prev, curr.length),
+    0
+  );
+  const paddedLines = lines.map((line) => line.padEnd(longestLine, " "));
 
-  let result = first;
+  const operandLines = paddedLines.slice(0, -1);
+  const operatorLine = paddedLines.at(-1);
+  assert(operatorLine !== undefined);
 
-  for (const operand of rest) {
-    switch (problem.operator) {
-      case "*":
-        result *= operand;
-        break;
-      case "+":
-        result += operand;
-        break;
+  const problemRanges: { start: number; end: number; operator: Operator }[] =
+    [];
+
+  const firstOperator = operatorLine.at(0);
+  assert(firstOperator === "*" || firstOperator === "+");
+
+  let currentOperator: Operator = firstOperator;
+  let start = 0;
+
+  for (let i = start + 1; i < operatorLine.length; i++) {
+    const char = operatorLine.at(i);
+    assert(char !== undefined);
+
+    if (char === "*" || char === "+") {
+      problemRanges.push({ start, end: i - 2, operator: currentOperator });
+      start = i;
+      currentOperator = char;
     }
   }
+  problemRanges.push({
+    start,
+    end: operatorLine.length - 1,
+    operator: currentOperator,
+  });
 
-  return result;
+  const problems: Problem[] = [];
+
+  for (const range of problemRanges) {
+    const operands: number[] = [];
+
+    const rangeOperands = operandLines.map((line) =>
+      line.slice(range.start, range.end + 1)
+    );
+
+    const rangeColumns = rangeOperands[0]?.length;
+    assert(rangeColumns !== undefined);
+
+    for (let column = rangeColumns - 1; column >= 0; column--) {
+      let operand = "";
+      for (const line of rangeOperands) {
+        operand += line[column] ?? "";
+      }
+      operands.push(parseInt(operand));
+    }
+
+    problems.push({
+      operands,
+      operator: range.operator,
+    });
+  }
+
+  return problems;
+};
+
+const solve = (problems: Problem[]) => {
+  return problems
+    .map(({ operands, operator }) => {
+      const [first, ...rest] = operands;
+      assert(first !== undefined);
+
+      let result = first;
+
+      for (const operand of rest) {
+        if (operator === "*") {
+          result *= operand;
+        } else {
+          result += operand;
+        }
+      }
+
+      return result;
+    })
+    .reduce((a, b) => a + b, 0);
 };
 
 const main = async () => {
-  const problems = getHomeworkProblems(await stdin());
+  const input = await stdin();
 
-  const answerTotal = problems.map(solve).reduce((a, b) => a + b, 0);
-
-  console.log(`Part 1: ${answerTotal}`);
-  console.log(`Part 2: TODO`);
+  console.log(`Part 1: ${solve(getHumanProblems(input))}`);
+  console.log(`Part 2: ${solve(getCephalopodProblems(input))}`);
 };
 
 await main();
