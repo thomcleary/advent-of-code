@@ -1,4 +1,4 @@
-import assert, { Assert } from "assert";
+import assert from "assert";
 import { stdin } from "../utils.ts";
 
 type Range = { start: number; end: number };
@@ -42,7 +42,9 @@ const getFreshIngredients = (inventory: Inventory): number => {
 const getFreshIds = (inventory: Inventory): number => {
   const mergedRanges: Range[] = [];
 
-  const sortedFreshRanges = inventory.freshRanges.sort((a, b) => a.start - b.start);
+  const sortedFreshRanges = inventory.freshRanges.sort(
+    (a, b) => a.start - b.start
+  );
 
   for (const range of sortedFreshRanges) {
     const previousRange = mergedRanges.at(-1);
