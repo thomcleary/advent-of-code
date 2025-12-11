@@ -52,13 +52,18 @@ const connectBoxes = ({
   limit,
 }: {
   junctionBoxes: JunctionBox[];
-  limit: number;
-}): Set<number>[] => {
+  limit?: number;
+}): {
+  circuits: Set<number>[];
+  lastConnection: { from: JunctionBox; to: JunctionBox };
+} => {
   const distances = getDistances(junctionBoxes)
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit);
 
   const circuits: Set<number>[] = junctionBoxes.map((box) => new Set([box.id]));
+
+  let lastConnection: { from: number; to: number } | undefined = undefined;
 
   for (const { from, to } of distances) {
     const fromCircuit = circuits.find((c) => c.has(from));
@@ -75,24 +80,42 @@ const connectBoxes = ({
       fromCircuit.add(box);
       toCircuit.delete(box);
     }
+
+    lastConnection = { from, to };
+
+    if (fromCircuit.size === junctionBoxes.length) {
+      break;
+    }
   }
 
-  return circuits.filter((c) => c.size > 0);
+  assert(lastConnection !== undefined);
+
+  const lastFromBox = junctionBoxes.find((b) => b.id === lastConnection.from);
+  const lastToBox = junctionBoxes.find((b) => b.id === lastConnection.to);
+
+  assert(lastFromBox !== undefined);
+  assert(lastToBox !== undefined);
+
+  return {
+    circuits: circuits.filter((c) => c.size > 0),
+    lastConnection: { from: lastFromBox, to: lastToBox },
+  };
 };
 
 const main = async () => {
   const junctionBoxes = getJunctionBoxes(await stdin());
 
-  const circuits = connectBoxes({ junctionBoxes, limit: 1000 });
-
-  const part1 = circuits
-    .map((c) => c.size)
+  const part1 = connectBoxes({ junctionBoxes, limit: 1000 })
+    .circuits.map((c) => c.size)
     .sort((a, b) => b - a)
     .slice(0, 3)
     .reduce((a, b) => a * b, 1);
 
+  const { from, to } = connectBoxes({ junctionBoxes }).lastConnection;
+  const part2 = from.position.x * to.position.x;
+
   console.log(`Part 1: ${part1}`);
-  console.log(`Part 2: TODO`);
+  console.log(`Part 2: ${part2}`);
 };
 
 await main();
