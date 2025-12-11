@@ -23,7 +23,7 @@ node index.ts < example.txt
 |  5  | Cafeteria           | ⭐️⭐️  |
 |  6  | Trash Compactor     | ⭐️⭐️  |
 |  7  | Laboratories        |  ⭐️   |
-|  8  |                     |       |
+|  8  | Playground          |  ⭐️   |
 |  9  |                     |       |
 | 10  |                     |       |
 | 11  |                     |       |
