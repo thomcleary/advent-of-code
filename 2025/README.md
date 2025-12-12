@@ -25,6 +25,6 @@ node index.ts < example.txt
 |  7  | Laboratories        |  ⭐️   |
 |  8  | Playground          | ⭐️⭐️  |
 |  9  | Movie Theater       |  ⭐️   |
-| 10  |                     |       |
-| 11  |                     |       |
-| 12  |                     |       |
+| 10  | Factory             |  ⭐️   |
+| 11  | Reactor             |       |
+| 12  | Christmas Tree Farm |       |
