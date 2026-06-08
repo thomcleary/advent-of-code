@@ -15,7 +15,7 @@ $ gleam run -m day_XX
 
 | Day | Challenge                          | Stars |
 | :-: | ---------------------------------- | :---: |
-|  1  | The Tyranny of the Rocket Equation |  ⭐️   |
+|  1  | The Tyranny of the Rocket Equation | ⭐️⭐️  |
 |  2  |                                    |       |
 |  3  |                                    |       |
 |  4  |                                    |       |
