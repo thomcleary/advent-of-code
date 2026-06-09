@@ -31,13 +31,13 @@ pub fn main() {
 pub fn part1(masses: List(Int)) -> Int {
   masses
   |> list.map(required_fuel)
-  |> list.fold(0, int.add)
+  |> int.sum
 }
 
 pub fn part2(masses: List(Int)) -> Int {
   masses
   |> list.map(required_fuels_fuel(_, 0))
-  |> list.fold(0, int.add)
+  |> int.sum
 }
 
 fn required_fuel(mass: Int) -> Int {
