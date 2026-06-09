@@ -16,25 +16,25 @@ pub fn main() {
     |> list.try_map(int.parse)
 
   masses
-  |> part_1
+  |> part1
   |> int.to_string
   |> string.append("Part 1: ", _)
   |> io.println
 
   masses
-  |> part_2
+  |> part2
   |> int.to_string
   |> string.append("Part 2: ", _)
   |> io.println
 }
 
-pub fn part_1(masses: List(Int)) -> Int {
+pub fn part1(masses: List(Int)) -> Int {
   masses
   |> list.map(required_fuel)
   |> list.fold(0, int.add)
 }
 
-pub fn part_2(masses: List(Int)) -> Int {
+pub fn part2(masses: List(Int)) -> Int {
   masses
   |> list.map(required_fuels_fuel(_, 0))
   |> list.fold(0, int.add)
