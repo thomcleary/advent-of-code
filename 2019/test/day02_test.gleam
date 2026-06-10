@@ -1,6 +1,6 @@
 import gleam/list
 import gleam/pair
-import intcode
+import lib/intcode
 
 pub fn part1_example1_test() {
   run_test(
@@ -43,8 +43,8 @@ fn run_test(
 ) {
   let assert Ok(halted) =
     program
-    |> intcode.load_program
-    |> intcode.run_program
+    |> intcode.boot
+    |> intcode.run
 
   let actual =
     halted

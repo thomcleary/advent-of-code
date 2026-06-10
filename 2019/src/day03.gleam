@@ -1,51 +1,47 @@
+import gleam/dict
 import gleam/int
-import gleam/io
 import gleam/list
+import gleam/option
 import gleam/pair
 import gleam/result
-import gleam/set
 import gleam/string
+import lib/part
 
 pub fn solve(input: String) -> Nil {
   let assert Ok(wires) = parse_wires(input)
 
-  let assert Ok(part1_answer) = part1(wires)
-  io.println("Part 1: " <> int.to_string(part1_answer))
+  wires
+  |> part1
+  |> part.try_print(part.One)
 
-  let assert Ok(part2_answer) = part2(wires)
-  io.println("Part 2: " <> int.to_string(part2_answer))
+  wires
+  |> part2
+  |> part.try_print(part.Two)
 }
 
 pub fn part1(wires: #(Wire, Wire)) -> Result(Int, Nil) {
-  let positions =
-    wires
-    |> pair.map_first(wire_to_positions)
-    |> pair.map_second(wire_to_positions)
-
-  use distance_to_closest_intersection <- result.try(
-    set.intersection(pair.first(positions), pair.second(positions))
-    |> set.to_list
-    |> list.map(distance_from_central_port)
-    |> list.reduce(int.min),
-  )
-
-  Ok(distance_to_closest_intersection)
+  wires
+  |> pair.map_first(to_steps)
+  |> pair.map_second(to_steps)
+  |> intersections
+  |> list.map(distance_from_central_port)
+  |> list.reduce(int.min)
 }
 
 pub fn part2(wires: #(Wire, Wire)) -> Result(Int, Nil) {
-  // Refactor the solution, so that instead of creating sets,
-  // create a Dict(key: Position, value: Int) 
-  // where value is # of steps to Position
+  let steps =
+    wires
+    |> pair.map_first(to_steps)
+    |> pair.map_second(to_steps)
 
-  // For part1, this will just mean getting the intersection
-  // of both wires dict keys
-
-  // For part2
-  // - get the intersection of the keys
-  // - map each key, to the sum of its values from each dict
-  // - return the minimum
-
-  todo
+  steps
+  |> intersections
+  |> list.try_map(fn(position) {
+    use first <- result.try(pair.first(steps) |> dict.get(position))
+    use second <- result.map(pair.second(steps) |> dict.get(position))
+    first + second
+  })
+  |> result.try(list.reduce(_, int.min))
 }
 
 pub type Direction {
@@ -67,6 +63,9 @@ type Position {
   Position(x: Int, y: Int)
 }
 
+type Steps =
+  dict.Dict(Position, Int)
+
 const central_port = Position(x: 0, y: 0)
 
 fn parse_wires(input: String) -> Result(#(Wire, Wire), Nil) {
@@ -83,13 +82,13 @@ fn parse_wires(input: String) -> Result(#(Wire, Wire), Nil) {
 }
 
 fn parse_wire(input: String) -> Result(Wire, Nil) {
-  use segments <- result.try(
+  use segments <- result.map(
     input
     |> string.split(on: ",")
     |> list.try_map(parse_segment),
   )
 
-  Ok(Wire(segments:))
+  Wire(segments:)
 }
 
 fn parse_segment(dir: String) -> Result(Segment, Nil) {
@@ -103,47 +102,62 @@ fn parse_segment(dir: String) -> Result(Segment, Nil) {
     _ -> Error(Nil)
   })
 
-  use distance <- result.try(int.parse(distance))
+  use distance <- result.map(int.parse(distance))
 
-  Ok(Segment(distance:, direction:))
+  Segment(distance:, direction:)
 }
 
-fn wire_to_positions(wire: Wire) -> set.Set(Position) {
-  wire.segments
-  |> list.map_fold(from: central_port, with: fn(current_position, segment) {
-    let from = case segment.direction {
-      Up -> current_position.y
-      Right -> current_position.x
-      Down -> current_position.y
-      Left -> current_position.x
-    }
+type State {
+  State(position: Position, steps_taken: Int, steps: dict.Dict(Position, Int))
+}
 
-    let to = case segment.direction {
-      Up | Right -> from + segment.distance
-      Down | Left -> from - segment.distance
-    }
+fn to_steps(wire: Wire) -> Steps {
+  list.fold(
+    over: wire.segments,
+    from: State(position: central_port, steps_taken: 0, steps: dict.new()),
+    with: step,
+  ).steps
+  |> dict.delete(central_port)
+}
 
-    let positions =
-      int.range(from:, to:, with: set.new(), run: fn(positions, i) {
-        set.insert(positions, case segment.direction {
-          Up | Down -> Position(..current_position, y: i)
-          Right | Left -> Position(..current_position, x: i)
-        })
-      })
+fn step(state: State, segment: Segment) -> State {
+  let #(from, to) = case segment.direction {
+    Up -> #(state.position.y, state.position.y + segment.distance)
+    Right -> #(state.position.x, state.position.x + segment.distance)
+    Down -> #(state.position.y, state.position.y - segment.distance)
+    Left -> #(state.position.x, state.position.x - segment.distance)
+  }
 
-    let next_position = case segment.direction {
-      Up | Down -> Position(..current_position, y: to)
-      Right | Left -> Position(..current_position, x: to)
-    }
+  let take_step = fn(steps, i) {
+    let position = state.position |> move(segment.direction, to: i)
+    let steps_taken = int.absolute_value(i - from) + state.steps_taken
 
-    #(next_position, positions)
-  })
-  |> pair.second
-  |> list.fold(set.new(), set.union)
-  |> set.delete(central_port)
+    steps
+    |> dict.upsert(update: position, with: option.unwrap(_, or: steps_taken))
+  }
+
+  State(
+    position: state.position |> move(segment.direction, to:),
+    steps_taken: state.steps_taken + segment.distance,
+    steps: int.range(from:, to:, with: state.steps, run: take_step),
+  )
+}
+
+fn move(position: Position, direction: Direction, to to: Int) {
+  case direction {
+    Up | Down -> Position(..position, y: to)
+    Right | Left -> Position(..position, x: to)
+  }
+}
+
+fn intersections(steps: #(Steps, Steps)) -> List(Position) {
+  steps
+  |> pair.first
+  |> dict.filter(fn(position, _) { dict.has_key(pair.second(steps), position) })
+  |> dict.keys
 }
 
 fn distance_from_central_port(position: Position) -> Int {
-  int.absolute_value(position.x + central_port.x)
-  + int.absolute_value(position.y + central_port.y)
+  int.absolute_value(position.x - central_port.x)
+  + int.absolute_value(position.y - central_port.y)
 }

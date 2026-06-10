@@ -1,49 +1,62 @@
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
-import intcode
+import lib/intcode
+import lib/part
 
 pub fn solve(input: String) -> Nil {
   let assert Ok(program) = intcode.parse_program(input)
 
-  let assert Ok(part1_answer) = part1(program)
-  io.println("Part 1: " <> int.to_string(part1_answer))
+  program
+  |> part1
+  |> part.try_print(part.One)
 
-  let assert Ok(part2_answer) = part2(program)
-  io.println("Part 2: " <> int.to_string(part2_answer))
+  program
+  |> part2
+  |> part.try_print(part.Two)
 }
 
 fn part1(program: intcode.Program) -> Result(Int, Nil) {
-  use halted <- result.try(
-    program
-    |> intcode.load_program
-    |> intcode.poke_memory(intcode.Address(1), 12)
-    |> intcode.poke_memory(intcode.Address(2), 2)
-    |> intcode.run_program,
-  )
-
-  halted
-  |> intcode.peek_memory(intcode.Address(0))
+  program
+  |> run(with: Input(noun: 12, verb: 2))
 }
 
 fn part2(program: intcode.Program) -> Result(Int, Nil) {
+  use input <- result.map(
+    find_input(with: fn(input) {
+      program
+      |> run(with: input)
+      |> fn(output) {
+        case output {
+          Ok(19_690_720) -> Ok(input)
+          _ -> Error(Nil)
+        }
+      }
+    }),
+  )
+
+  100 * input.noun + input.verb
+}
+
+type Input {
+  Input(noun: Int, verb: Int)
+}
+
+fn run(program: intcode.Program, with input: Input) -> Result(Int, Nil) {
+  program
+  |> intcode.boot
+  |> intcode.poke_memory(at: intcode.Address(1), with: input.noun)
+  |> intcode.poke_memory(at: intcode.Address(2), with: input.verb)
+  |> intcode.run
+  |> result.try(intcode.peek_memory(_, at: intcode.Address(0)))
+}
+
+fn find_input(
+  with with: fn(Input) -> Result(Input, Nil),
+) -> Result(Input, Nil) {
   let input_range = int.range(from: 0, to: 99 + 1, with: [], run: list.prepend)
 
   list.find_map(input_range, fn(noun) {
-    list.find_map(input_range, fn(verb) {
-      use halted <- result.try(
-        program
-        |> intcode.load_program
-        |> intcode.poke_memory(intcode.Address(1), noun)
-        |> intcode.poke_memory(intcode.Address(2), verb)
-        |> intcode.run_program,
-      )
-
-      case intcode.peek_memory(halted, intcode.Address(0)) {
-        Ok(19_690_720) -> Ok(100 * noun + verb)
-        _ -> Error(Nil)
-      }
-    })
+    list.find_map(input_range, fn(verb) { with(Input(noun:, verb:)) })
   })
 }
