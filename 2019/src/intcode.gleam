@@ -48,7 +48,7 @@ pub fn address_offset(address: Address, offset: Int) -> Address {
 }
 
 pub fn peek_memory(computer: Computer, addr addr: Address) -> Result(Int, Nil) {
-  computer.memory |> dict.get(addr)
+  dict.get(computer.memory, addr)
 }
 
 pub fn poke_memory(
@@ -58,7 +58,7 @@ pub fn poke_memory(
 ) -> Computer {
   Computer(
     ..computer,
-    memory: computer.memory |> dict.insert(for: addr, insert: value),
+    memory: dict.insert(computer.memory, for: addr, insert: value),
   )
 }
 
@@ -87,8 +87,8 @@ pub fn run_program(computer computer: Computer) -> Result(Computer, Nil) {
   )
 
   use instruction <- result.try(case op_code {
-    1 -> computer |> binary_op_add |> result.map(Add)
-    2 -> computer |> binary_op_multiply |> result.map(Multiply)
+    1 -> computer |> parse_add_instruction
+    2 -> computer |> parse_multiply_instruction
     99 -> Ok(Halt)
     _ -> Error(Nil)
   })
@@ -103,23 +103,23 @@ pub fn run_program(computer computer: Computer) -> Result(Computer, Nil) {
   }
 }
 
-fn binary_op_add(computer: Computer) -> Result(BinaryOp, Nil) {
+fn parse_add_instruction(computer: Computer) -> Result(Instruction, Nil) {
   use #(a_addr, b_addr, dest_addr) <- result.try(
-    computer |> binary_op_addresses,
+    computer |> read_binary_op_addresses,
   )
 
-  Ok(BinaryOp(int.add, a_addr:, b_addr:, dest_addr:))
+  Ok(Add(BinaryOp(int.add, a_addr:, b_addr:, dest_addr:)))
 }
 
-fn binary_op_multiply(computer: Computer) -> Result(BinaryOp, Nil) {
+fn parse_multiply_instruction(computer: Computer) -> Result(Instruction, Nil) {
   use #(a_addr, b_addr, dest_addr) <- result.try(
-    computer |> binary_op_addresses,
+    computer |> read_binary_op_addresses,
   )
 
-  Ok(BinaryOp(int.multiply, a_addr:, b_addr:, dest_addr:))
+  Ok(Multiply(BinaryOp(int.multiply, a_addr:, b_addr:, dest_addr:)))
 }
 
-fn binary_op_addresses(
+fn read_binary_op_addresses(
   computer: Computer,
 ) -> Result(#(Address, Address, Address), Nil) {
   use a_addr <- result.try(computer |> read_address(ip_offset: 1))

@@ -3,12 +3,8 @@ import gleam/io
 import gleam/list
 import gleam/result
 import intcode
-import simplifile
 
-const input_filepath = "./inputs/day_02.txt"
-
-pub fn main() -> Nil {
-  let assert Ok(input) = simplifile.read(from: input_filepath)
+pub fn solve(input: String) -> Nil {
   let assert Ok(program) = intcode.parse_program(input)
 
   let assert Ok(part1_answer) = part1(program)
@@ -32,7 +28,7 @@ fn part1(program: intcode.Program) -> Result(Int, Nil) {
 }
 
 fn part2(program: intcode.Program) -> Result(Int, Nil) {
-  let input_range = int.range(from: 0, to: 100, with: [], run: list.prepend)
+  let input_range = int.range(from: 0, to: 99 + 1, with: [], run: list.prepend)
 
   list.find_map(input_range, fn(noun) {
     list.find_map(input_range, fn(verb) {

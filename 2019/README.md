@@ -4,11 +4,25 @@
 
 ## Setup
 
+### 1. Install Gleam
+
 <https://gleam.run/install/>
 
+### 2. Save puzzle input to `./priv/inputs`
+
+### 3. Run puzzle
+
 ```shell
-advent-of-code/2019
-$ gleam run -m day_XX
+$ gleam run
+   Compiled in 0.03s
+    Running aoc2019.main
+usage: gleam run [day]
+
+$ gleam run 2
+   Compiled in 0.03s
+    Running aoc2019.main
+Part 1: 4023471
+Part 2: 8051
 ```
 
 ## Calendar
@@ -17,7 +31,7 @@ $ gleam run -m day_XX
 | :-: | ---------------------------------- | :---: |
 |  1  | The Tyranny of the Rocket Equation | ⭐️⭐️  |
 |  2  | 1202 Program Alarm                 | ⭐️⭐️  |
-|  3  |                                    |       |
+|  3  | Crossed Wires                      |  ⭐️   |
 |  4  |                                    |       |
 |  5  |                                    |       |
 |  6  |                                    |       |

@@ -2,13 +2,8 @@ import gleam/int
 import gleam/io
 import gleam/list
 import gleam/string
-import simplifile
 
-const input_filepath = "./inputs/day_01.txt"
-
-pub fn main() {
-  let assert Ok(input) = simplifile.read(input_filepath)
-
+pub fn solve(input: String) -> Nil {
   let assert Ok(masses) =
     input
     |> string.trim
