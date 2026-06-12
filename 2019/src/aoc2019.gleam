@@ -2,6 +2,7 @@ import argv
 import day01
 import day02
 import day03
+import day04
 import gleam/erlang/application
 import gleam/int
 import gleam/io
@@ -30,15 +31,17 @@ type Day {
   Day01
   Day02
   Day03
+  Day04
 }
 
-const solved_days = [Day01, Day02, Day03]
+const solved_days = [Day01, Day02, Day03, Day04]
 
 fn parse_day(str: String) -> Result(Day, Nil) {
   case str {
     "1" | "01" -> Ok(Day01)
     "2" | "02" -> Ok(Day02)
     "3" | "03" -> Ok(Day03)
+    "4" | "04" -> Ok(Day04)
     _ -> Error(Nil)
   }
 }
@@ -48,6 +51,16 @@ fn day_to_string(day: Day) -> String {
     Day01 -> "01"
     Day02 -> "02"
     Day03 -> "03"
+    Day04 -> "04"
+  }
+}
+
+fn day_to_solve(day: Day) -> fn(String) -> Nil {
+  case day {
+    Day01 -> day01.solve
+    Day02 -> day02.solve
+    Day03 -> day03.solve
+    Day04 -> day04.solve
   }
 }
 
@@ -75,31 +88,24 @@ fn solve(day: Day) -> Nil {
 
   io.println("")
 
-  { "\u{250C}" <> " Day " <> day_to_string(day) <> " " }
-  |> string.pad_end(to: width - 1, with: "\u{2500}")
-  |> string.append("\u{2510}")
+  { term.box.light.down_and_right <> " Day " <> day_to_string(day) <> " " }
+  |> string.pad_end(to: width - 1, with: term.box.light.horizontal)
+  |> string.append(term.box.light.down_and_left)
   |> term.escape(term.Bold)
   |> term.escape(term.FgMagenta)
   |> io.println
 
-  let and_solve = case day {
-    Day01 -> day01.solve
-    Day02 -> day02.solve
-    Day03 -> day03.solve
-  }
-
   let start = timestamp.system_time()
 
-  day
-  |> read_input
-  |> and_solve
+  read_input(day)
+  |> day_to_solve(day)
 
   let time_taken =
     start
     |> timestamp.difference(timestamp.system_time())
     |> duration.to_milliseconds
 
-  "\u{2514}"
+  term.box.light.up_and_right
   |> string.append(" ")
   |> string.append(int.to_string(time_taken))
   |> string.append("ms")

@@ -12,10 +12,12 @@ pub fn solve(input: String) -> Nil {
 
   wires
   |> part1
+  |> result.map(int.to_string)
   |> part.try_print(part.One)
 
   wires
   |> part2
+  |> result.map(int.to_string)
   |> part.try_print(part.Two)
 }
 

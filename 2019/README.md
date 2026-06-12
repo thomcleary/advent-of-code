@@ -32,7 +32,7 @@ Part 2: 8051
 |  1  | The Tyranny of the Rocket Equation | ⭐️⭐️  |
 |  2  | 1202 Program Alarm                 | ⭐️⭐️  |
 |  3  | Crossed Wires                      | ⭐️⭐️  |
-|  4  | Secure Container                   |       |
+|  4  | Secure Container                   |  ⭐️   |
 |  5  |                                    |       |
 |  6  |                                    |       |
 |  7  |                                    |       |

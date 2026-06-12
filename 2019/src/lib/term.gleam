@@ -1,6 +1,30 @@
 import gleam/int
 import gleam/string
 
+pub type Box {
+  Box(
+    horizontal: String,
+    vertical: String,
+    down_and_left: String,
+    up_and_right: String,
+    down_and_right: String,
+  )
+}
+
+pub type BoxDrawing {
+  BoxDrawing(light: Box)
+}
+
+pub const box = BoxDrawing(
+  light: Box(
+    horizontal: "\u{2500}",
+    vertical: "\u{2502}",
+    down_and_left: "\u{2510}",
+    up_and_right: "\u{2514}",
+    down_and_right: "\u{250C}",
+  ),
+)
+
 @external(erlang, "term_ffi", "columns")
 pub fn columns() -> Result(Int, Nil)
 

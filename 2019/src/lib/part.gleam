@@ -1,4 +1,3 @@
-import gleam/int
 import gleam/io
 import gleam/result
 import gleam/string
@@ -9,15 +8,15 @@ pub type Part {
   Two
 }
 
-pub fn print(answer: Int, part: Part) -> Nil {
+pub const to_do = "TODO"
+
+pub fn print(answer: String, part: Part) -> Nil {
   answer
-  |> int.to_string
   |> do(part)
 }
 
-pub fn try_print(answer: Result(Int, Nil), part: Part) -> Nil {
+pub fn try_print(answer: Result(String, Nil), part: Part) -> Nil {
   answer
-  |> result.map(int.to_string)
   |> result.unwrap(or: "Error" |> term.escape(term.FgRed))
   |> do(part)
 }
@@ -28,7 +27,7 @@ fn do(answer: String, part: Part) -> Nil {
     Two -> "2"
   }
 
-  "\u{2502}"
+  term.box.light.vertical
   |> term.escape(term.FgMagenta)
   |> string.append(" ")
   |> string.append(
@@ -38,7 +37,13 @@ fn do(answer: String, part: Part) -> Nil {
     |> string.append(":")
     |> term.escape(term.Faint)
     |> string.append(" ")
-    |> string.append(answer |> term.escape(term.Bold)),
+    |> string.append(
+      case answer {
+        a if a == to_do -> answer |> term.escape(term.FgYellow)
+        _ -> answer
+      }
+      |> term.escape(term.Bold),
+    ),
   )
   |> io.println
 }

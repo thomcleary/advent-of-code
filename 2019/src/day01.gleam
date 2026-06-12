@@ -8,10 +8,12 @@ pub fn solve(input: String) -> Nil {
 
   masses
   |> part1
+  |> int.to_string
   |> part.print(part.One)
 
   masses
   |> part2
+  |> int.to_string
   |> part.print(part.Two)
 }
 

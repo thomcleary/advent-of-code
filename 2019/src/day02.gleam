@@ -9,10 +9,12 @@ pub fn solve(input: String) -> Nil {
 
   program
   |> part1
+  |> result.map(int.to_string)
   |> part.try_print(part.One)
 
   program
   |> part2
+  |> result.map(int.to_string)
   |> part.try_print(part.Two)
 }
 
