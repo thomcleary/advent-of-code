@@ -9,7 +9,7 @@ pub type Program {
 }
 
 pub type Address {
-  Address(Int)
+  Address(value: Int)
 }
 
 pub opaque type Computer {
@@ -26,24 +26,43 @@ type Instruction {
   Halt
 }
 
-pub fn parse_program(input: String) -> Result(Program, Nil) {
+pub type IntcodeError {
+  ParseError
+  SegmentationFault(at: Address)
+  InvalidOpcode(opcode: Int)
+}
+
+pub fn error_to_string(err: IntcodeError) -> String {
+  case err {
+    ParseError -> "Failed to parse program"
+    SegmentationFault(address) ->
+      "Segmentation fault at address [" <> int.to_string(address.value) <> "]"
+    InvalidOpcode(opcode) -> "Invalid opcode [" <> int.to_string(opcode) <> "]"
+  }
+}
+
+pub fn parse_program(input: String) -> Result(Program, IntcodeError) {
   use integers <- result.map(
     input
     |> string.trim
     |> string.split(on: ",")
-    |> list.try_map(int.parse),
+    |> list.try_map(int.parse)
+    |> result.replace_error(ParseError),
   )
 
   Program(code: integers)
 }
 
-pub fn address_offset(address: Address, offset: Int) -> Address {
-  let Address(a) = address
-  Address(a + offset)
+pub fn address_at_offset(by offset: Int, from address: Address) -> Address {
+  Address(address.value + offset)
 }
 
-pub fn peek_memory(computer: Computer, at addr: Address) -> Result(Int, Nil) {
-  dict.get(computer.memory, addr)
+pub fn peek_memory(
+  computer: Computer,
+  at address: Address,
+) -> Result(Int, IntcodeError) {
+  dict.get(computer.memory, address)
+  |> result.replace_error(SegmentationFault(at: address))
 }
 
 pub fn poke_memory(
@@ -59,11 +78,11 @@ pub fn poke_memory(
 
 pub fn dump_memory(computer: Computer) -> List(#(Address, Int)) {
   computer.memory
-  |> dict.to_list()
+  |> dict.to_list
   |> list.sort(by: fn(a, b) {
-    let #(Address(a_addr), _) = a
-    let #(Address(b_addr), _) = b
-    int.compare(a_addr, b_addr)
+    let #(a_addr, _) = a
+    let #(b_addr, _) = b
+    int.compare(a_addr.value, b_addr.value)
   })
 }
 
@@ -76,7 +95,7 @@ pub fn boot(program: Program) -> Computer {
   )
 }
 
-pub fn run(computer: Computer) -> Result(Computer, Nil) {
+pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
   use op_code <- result.try(
     computer |> peek_memory(at: computer.instruction_pointer),
   )
@@ -85,7 +104,7 @@ pub fn run(computer: Computer) -> Result(Computer, Nil) {
     1 -> computer |> read_binary_op(with: int.add) |> result.map(Add)
     2 -> computer |> read_binary_op(with: int.multiply) |> result.map(Multiply)
     99 -> Ok(Halt)
-    _ -> Error(Nil)
+    code -> Error(InvalidOpcode(code))
   })
 
   case instruction {
@@ -97,28 +116,37 @@ pub fn run(computer: Computer) -> Result(Computer, Nil) {
 fn read_binary_op(
   computer: Computer,
   with apply: fn(Int, Int) -> Int,
-) -> Result(BinaryOp, Nil) {
-  let from = computer.instruction_pointer
+) -> Result(BinaryOp, IntcodeError) {
+  let offset_from_ip_by = address_at_offset(
+    by: _,
+    from: computer.instruction_pointer,
+  )
 
-  use a <- result.try(computer |> peek_memory(at: from |> address_offset(1)))
-  use b <- result.try(computer |> peek_memory(at: from |> address_offset(2)))
-  use dest <- result.map(computer |> peek_memory(at: from |> address_offset(3)))
+  use a <- result.try(computer |> peek_memory(at: offset_from_ip_by(1)))
+  use b <- result.try(computer |> peek_memory(at: offset_from_ip_by(2)))
+  use dest <- result.map(computer |> peek_memory(at: offset_from_ip_by(3)))
 
   BinaryOp(apply:, a: Address(a), b: Address(b), dest: Address(dest))
 }
 
-fn run_binary_op(computer: Computer, op: BinaryOp) -> Result(Computer, Nil) {
+fn run_binary_op(
+  computer: Computer,
+  op: BinaryOp,
+) -> Result(Computer, IntcodeError) {
   use a <- result.try(computer |> peek_memory(at: op.a))
   use b <- result.map(computer |> peek_memory(at: op.b))
 
   computer
   |> poke_memory(at: op.dest, with: op.apply(a, b))
-  |> ip_advance(by: 4)
+  |> advance_instruction_pointer(by: 4)
 }
 
-fn ip_advance(computer: Computer, by offset: Int) -> Computer {
+fn advance_instruction_pointer(computer: Computer, by offset: Int) -> Computer {
   Computer(
     ..computer,
-    instruction_pointer: address_offset(computer.instruction_pointer, offset),
+    instruction_pointer: address_at_offset(
+      offset,
+      from: computer.instruction_pointer,
+    ),
   )
 }

@@ -1,39 +1,34 @@
 import gleam/int
 import gleam/list
+import gleam/result
 import gleam/string
-import lib/part
 
-pub fn solve(input: String) -> Nil {
-  let assert Ok(masses) = parse_masses(input)
+pub const part1_answer = 3_442_987
 
-  masses
-  |> part1
-  |> int.to_string
-  |> part.print(part.One)
+pub const part2_answer = 5_161_601
 
-  masses
-  |> part2
-  |> int.to_string
-  |> part.print(part.Two)
-}
+pub fn part1(input: String) -> Result(Int, String) {
+  use masses <- result.map(parse_masses(input))
 
-pub fn part1(masses: List(Int)) -> Int {
   masses
   |> list.map(required_fuel)
   |> int.sum
 }
 
-pub fn part2(masses: List(Int)) -> Int {
+pub fn part2(input: String) -> Result(Int, String) {
+  use masses <- result.map(parse_masses(input))
+
   masses
   |> list.map(required_fuels_fuel(_, 0))
   |> int.sum
 }
 
-fn parse_masses(input: String) -> Result(List(Int), Nil) {
+fn parse_masses(input: String) -> Result(List(Int), String) {
   input
   |> string.trim
   |> string.split(on: "\n")
   |> list.try_map(int.parse)
+  |> result.replace_error("Non integer mass found in input")
 }
 
 fn required_fuel(mass: Int) -> Int {

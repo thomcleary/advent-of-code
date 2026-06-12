@@ -8,21 +8,29 @@
 
 <https://gleam.run/install/>
 
-### 2. Save puzzle input to `./priv/inputs`
+### 2. Save input
 
-### 3. Run puzzle
+Save puzzle input as as `dayXX.txt` in `./priv/inputs`
+
+- e.g. `./priv/inputs/day02.txt`
+
+### 3. Run
 
 ```shell
-$ gleam run
-   Compiled in 0.03s
-    Running aoc2019.main
-usage: gleam run [day]
-
 $ gleam run 2
+   Compiled in 0.07s
+    Running aoc2019.main
+
+┌ Day 02 ──────────────────────────────┐
+│ Part 1: 4023471
+│ Part 2: 8051
+└ 155ms
+
+$ gleam run 26
    Compiled in 0.03s
     Running aoc2019.main
-Part 1: 4023471
-Part 2: 8051
+
+usage: gleam run [{01|02|03|..|25}]
 ```
 
 ## Calendar
@@ -32,8 +40,8 @@ Part 2: 8051
 |  1  | The Tyranny of the Rocket Equation | ⭐️⭐️  |
 |  2  | 1202 Program Alarm                 | ⭐️⭐️  |
 |  3  | Crossed Wires                      | ⭐️⭐️  |
-|  4  | Secure Container                   |  ⭐️   |
-|  5  |                                    |       |
+|  4  | Secure Container                   | ⭐️⭐️  |
+|  5  | Sunny with a Chance of Asteroids   |       |
 |  6  |                                    |       |
 |  7  |                                    |       |
 |  8  |                                    |       |
