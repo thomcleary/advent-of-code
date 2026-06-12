@@ -1,125 +1,263 @@
 import argv
-import day01
-import day02
-import day03
-import day04
-import gleam/erlang/application
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
-import gleam/time/duration
-import gleam/time/timestamp
+import lib/aoc
 import lib/term
-import simplifile
 
-pub fn main() -> Nil {
+pub fn main() {
   case argv.load().arguments {
-    [] -> list.each(solved_days, solve)
+    [] -> list.each(aoc.solved_days, solve)
     [first, ..] ->
-      case parse_day(first) {
+      case aoc.parse_day(first) {
         Ok(day) -> solve(day)
         Error(_) -> usage()
       }
   }
 }
 
-const application_name = "aoc2019"
-
-type Day {
-  Day01
-  Day02
-  Day03
-  Day04
+fn solve(day: aoc.Day) -> Nil {
+  case aoc.run_day(day) {
+    Ok(day_run) -> day_run_to_term_output(day_run)
+    Error(reason) -> [
+      term.Reset,
+      term.Escape([term.Bold, term.FgRed]),
+      term.Text("Day " <> aoc.day_to_string(day) <> ": " <> reason),
+    ]
+  }
+  |> term.output_to_string
+  |> string.append("\n")
+  |> io.println
 }
 
-const solved_days = [Day01, Day02, Day03, Day04]
+fn day_run_to_term_output(run: aoc.DayRun) -> List(term.Output) {
+  let width =
+    int.clamp(result.unwrap(term.columns(), or: 80) - 8, min: 40, max: 80)
 
-fn parse_day(str: String) -> Result(Day, Nil) {
-  case str {
-    "1" | "01" -> Ok(Day01)
-    "2" | "02" -> Ok(Day02)
-    "3" | "03" -> Ok(Day03)
-    "4" | "04" -> Ok(Day04)
-    _ -> Error(Nil)
-  }
+  [
+    header(day: run.day, width: width),
+    row(
+      content: part_to_term_output(part: "1", result: run.part1.result),
+      width:,
+    ),
+    row(
+      content: part_to_term_output(part: "2", result: run.part2.result),
+      width:,
+    ),
+    footer(times: #(run.part1.time, run.part2.time), width:),
+  ]
+  |> list.flatten
 }
 
-fn day_to_string(day: Day) -> String {
-  case day {
-    Day01 -> "01"
-    Day02 -> "02"
-    Day03 -> "03"
-    Day04 -> "04"
-  }
+fn header(day day: aoc.Day, width width: Int) -> List(term.Output) {
+  let box_content_left = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(term.box.light.arc_down_and_right),
+  ]
+
+  let text_content = [
+    term.Reset,
+    term.Escape([term.Bold, term.BgMagenta, term.FgBlack]),
+    term.Text("  Day "),
+    term.Text(aoc.day_to_string(day)),
+    term.Reset,
+    term.Escape([term.BgMagenta]),
+    term.Text("  "),
+  ]
+
+  let text_content_length = term.output_length(text_content)
+
+  let box_top = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(
+      " "
+      <> string.repeat(term.block.lower_half, times: text_content_length)
+      <> " "
+      <> "\n",
+    ),
+  ]
+
+  let box_content_right = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(
+      term.box.light.horizontal
+      <> string.repeat(
+        term.box.light.horizontal,
+        times: width - term.output_length(box_top) - 1,
+      )
+      <> term.box.light.arc_down_and_left
+      <> "\n",
+    ),
+  ]
+
+  let box_bottom = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(
+      term.box.light.vertical
+      <> string.repeat(term.block.upper_half, times: text_content_length)
+      <> string.repeat(" ", times: term.output_length(box_content_right) - 1)
+      <> term.box.light.vertical
+      <> "\n",
+    ),
+  ]
+
+  [box_top, box_content_left, text_content, box_content_right, box_bottom]
+  |> list.flatten
 }
 
-fn day_to_solve(day: Day) -> fn(String) -> Nil {
-  case day {
-    Day01 -> day01.solve
-    Day02 -> day02.solve
-    Day03 -> day03.solve
-    Day04 -> day04.solve
-  }
+fn row(
+  content content: List(term.Output),
+  width width: Int,
+) -> List(term.Output) {
+  let box_left = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(term.box.light.vertical),
+  ]
+
+  let box_right = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(term.box.light.vertical),
+  ]
+
+  let padding = [
+    term.Reset,
+    term.Text(string.repeat(
+      " ",
+      times: width
+        - term.output_length(box_left)
+        - term.output_length(content)
+        - term.output_length(box_right),
+    )),
+  ]
+
+  [box_left, content, padding, box_right, [term.Text("\n")]]
+  |> list.flatten
+}
+
+fn footer(times times: #(Int, Int), width width: Int) -> List(term.Output) {
+  let #(part1_time, part2_time) = times
+  let total_time = part1_time + part2_time
+
+  let ms = "ms"
+
+  let text_content = [
+    term.Reset,
+    term.Escape([term.Dim]),
+    term.Text(" "),
+    term.Text(int.to_string(part1_time)),
+    term.Text(ms <> " + "),
+    term.Text(int.to_string(part2_time)),
+    term.Text(ms <> " = "),
+    term.Reset,
+    term.Escape([term.Bold, term.FgYellow]),
+    term.Text(int.to_string(total_time)),
+    term.Text(ms <> " "),
+  ]
+
+  let box_right = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(
+      string.repeat(term.box.light.horizontal, times: 1)
+      <> term.box.light.arc_up_and_left,
+    ),
+  ]
+
+  let box_left = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text(
+      term.box.light.arc_up_and_right
+      <> string.repeat(
+        term.box.light.horizontal,
+        times: width
+          - 1
+          - term.output_length(text_content)
+          - term.output_length(box_right),
+      ),
+    ),
+  ]
+
+  [box_left, text_content, box_right]
+  |> list.flatten
+}
+
+fn part_to_term_output(
+  part part: String,
+  result part_result: Result(aoc.PartAssertion, String),
+) -> List(term.Output) {
+  [
+    term.Reset,
+    term.Escape([term.FgYellow]),
+    term.Text(" Part " <> part),
+    term.Text(": "),
+    term.Reset,
+    term.Escape({
+      case part_result {
+        Ok(assertion) ->
+          case assertion {
+            aoc.Todo(_) -> [term.Dim]
+            aoc.Pass(_) -> [term.Bold]
+            aoc.Fail(_, _) -> [term.Bold, term.FgRed]
+          }
+        Error(_) -> [term.Bold, term.FgRed]
+      }
+    }),
+    term.Text(case part_result {
+      Error(reason) -> reason
+      Ok(assertion) ->
+        case assertion {
+          aoc.Todo(value:) -> value <> " (TODO)"
+          aoc.Pass(value:) -> value
+          aoc.Fail(actual:, expected:) -> actual <> " (" <> expected <> ")"
+        }
+    }),
+  ]
 }
 
 fn usage() -> Nil {
-  io.println("")
+  let usage = [
+    term.Reset,
+    term.Escape([term.FgMagenta]),
+    term.Text("usage: "),
+  ]
 
-  "usage:"
-  |> term.escape(term.FgMagenta)
-  |> string.append(" ")
-  |> string.append("gleam run" |> term.escape(term.Bold))
-  |> string.append(" ")
-  |> string.append("[{" |> term.escape(term.Faint))
-  |> string.append(
-    solved_days
-    |> list.map(fn(day) { day_to_string(day) |> term.escape(term.FgYellow) })
-    |> string.join("|" |> term.escape(term.Faint)),
-  )
-  |> string.append("}]" |> term.escape(term.Faint))
+  let command = [
+    term.Reset,
+    term.Escape([term.Bold]),
+    term.Text("gleam run "),
+  ]
+
+  let day_arg =
+    [
+      [term.Reset, term.Escape([term.Dim]), term.Text("[{")],
+      list.index_map(aoc.solved_days, fn(day, i) {
+        let separator = case i < list.length(aoc.solved_days) - 1 {
+          True -> [term.Reset, term.Escape([term.Dim]), term.Text("|")]
+          False -> []
+        }
+        [
+          term.Reset,
+          term.Escape([term.FgYellow]),
+          term.Text(aoc.day_to_string(day)),
+          ..separator
+        ]
+      })
+        |> list.flatten,
+      [term.Reset, term.Escape([term.Dim]), term.Text("}]")],
+    ]
+    |> list.flatten
+
+  [[term.Text("\n")], usage, command, day_arg]
+  |> list.flatten
+  |> term.output_to_string
   |> io.println
-}
-
-fn solve(day: Day) -> Nil {
-  let columns = result.unwrap(term.columns(), or: 0)
-  let width = int.min(columns, 40)
-
-  io.println("")
-
-  { term.box.light.down_and_right <> " Day " <> day_to_string(day) <> " " }
-  |> string.pad_end(to: width - 1, with: term.box.light.horizontal)
-  |> string.append(term.box.light.down_and_left)
-  |> term.escape(term.Bold)
-  |> term.escape(term.FgMagenta)
-  |> io.println
-
-  let start = timestamp.system_time()
-
-  read_input(day)
-  |> day_to_solve(day)
-
-  let time_taken =
-    start
-    |> timestamp.difference(timestamp.system_time())
-    |> duration.to_milliseconds
-
-  term.box.light.up_and_right
-  |> string.append(" ")
-  |> string.append(int.to_string(time_taken))
-  |> string.append("ms")
-  |> term.escape(term.FgMagenta)
-  |> io.println
-}
-
-fn read_input(day: Day) -> String {
-  let assert Ok(priv) = application.priv_directory(application_name)
-
-  let file_path = priv <> "/inputs/day" <> day_to_string(day) <> ".txt"
-
-  case simplifile.read(file_path) {
-    Ok(input) -> input
-    Error(_) -> panic as { "Failed to read input file [" <> file_path <> "]" }
-  }
 }

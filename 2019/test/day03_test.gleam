@@ -1,104 +1,47 @@
-import day03.{Down, Left, Right, Segment, Up, Wire}
+import day03
+import lib/aoc
+
+const example1 = "R8,U5,L5,D3
+U7,R6,D4,L4"
+
+const example2 = "R75,D30,R83,U83,L12,D49,R71,U7,L72
+U62,R66,U55,R34,D71,R55,D58,R83"
+
+const example3 = "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
+U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
 
 pub fn part1_example1_test() {
-  assert day03.part1(example_1) == Ok(6)
+  assert day03.part1(example1) == Ok(6)
 }
 
 pub fn part1_example2_test() {
-  assert day03.part1(example_2) == Ok(159)
+  assert day03.part1(example2) == Ok(159)
 }
 
 pub fn part1_example3_test() {
-  assert day03.part1(example_3) == Ok(135)
+  assert day03.part1(example3) == Ok(135)
+}
+
+pub fn part1_test() {
+  let assert Ok(input) = aoc.read_input(aoc.Day03)
+
+  assert day03.part1(input) == Ok(day03.part1_answer)
 }
 
 pub fn part2_example1_test() {
-  assert day03.part2(example_1) == Ok(30)
+  assert day03.part2(example1) == Ok(30)
 }
 
 pub fn part2_example2_test() {
-  assert day03.part2(example_2) == Ok(610)
+  assert day03.part2(example2) == Ok(610)
 }
 
 pub fn part2_example3_test() {
-  assert day03.part2(example_3) == Ok(410)
+  assert day03.part2(example3) == Ok(410)
 }
 
-const example_1 = #(
-  Wire(
-    [
-      Segment(Right, 8),
-      Segment(Up, 5),
-      Segment(Left, 5),
-      Segment(Down, 3),
-    ],
-  ),
-  Wire(
-    [
-      Segment(Up, 7),
-      Segment(Right, 6),
-      Segment(Down, 4),
-      Segment(Left, 4),
-    ],
-  ),
-)
+pub fn part2_test() {
+  let assert Ok(input) = aoc.read_input(aoc.Day03)
 
-const example_2 = #(
-  Wire(
-    [
-      Segment(Right, 75),
-      Segment(Down, 30),
-      Segment(Right, 83),
-      Segment(Up, 83),
-      Segment(Left, 12),
-      Segment(Down, 49),
-      Segment(Right, 71),
-      Segment(Up, 7),
-      Segment(Left, 72),
-    ],
-  ),
-  Wire(
-    [
-      Segment(Up, 62),
-      Segment(Right, 66),
-      Segment(Up, 55),
-      Segment(Right, 34),
-      Segment(Down, 71),
-      Segment(Right, 55),
-      Segment(Down, 58),
-      Segment(Right, 83),
-    ],
-  ),
-)
-
-const example_3 = #(
-  Wire(
-    [
-      Segment(Right, 98),
-      Segment(Up, 47),
-      Segment(Right, 26),
-      Segment(Down, 63),
-      Segment(Right, 33),
-      Segment(Up, 87),
-      Segment(Left, 62),
-      Segment(Down, 20),
-      Segment(Right, 33),
-      Segment(Up, 53),
-      Segment(Right, 51),
-    ],
-  ),
-  Wire(
-    [
-      Segment(Up, 98),
-      Segment(Right, 91),
-      Segment(Down, 20),
-      Segment(Right, 16),
-      Segment(Down, 67),
-      Segment(Right, 40),
-      Segment(Up, 7),
-      Segment(Right, 15),
-      Segment(Up, 6),
-      Segment(Right, 7),
-    ],
-  ),
-)
+  assert day03.part2(input) == Ok(day03.part2_answer)
+}

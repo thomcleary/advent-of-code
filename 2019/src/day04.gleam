@@ -2,19 +2,29 @@ import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
-import lib/part
 
-pub fn solve(input: String) -> Nil {
-  let assert Ok(password_range) = parse_password_range(input)
+pub const part1_answer = 1048
+
+pub const part2_answer = 677
+
+pub fn part1(input: String) -> Result(Int, String) {
+  use password_range <- result.try(parse_password_range(input))
 
   password_range
-  |> part1
-  |> result.map(int.to_string)
-  |> part.try_print(part.One)
+  |> count_valid_passwords(with: [
+    is_non_decreasing,
+    has_adjacent_pair,
+  ])
+}
 
-  part.to_do
-  |> Ok
-  |> part.try_print(part.Two)
+pub fn part2(input: String) -> Result(Int, String) {
+  use password_range <- result.try(parse_password_range(input))
+
+  password_range
+  |> count_valid_passwords(with: [
+    is_non_decreasing,
+    has_adjacent_pair_with_exactly_two_digits,
+  ])
 }
 
 type Digits {
@@ -32,66 +42,71 @@ pub type PasswordRange {
   PasswordRange(min: Int, max: Int)
 }
 
-pub fn part1(range: PasswordRange) -> Result(Int, Nil) {
-  count_valid_passwords(from: range.min, to: range.max, count: 0)
+fn count_valid_passwords(
+  range: PasswordRange,
+  with predicates: List(fn(Digits) -> Bool),
+) {
+  go(predicates:, from: range.min, to: range.max, count: 0)
 }
 
-fn count_valid_passwords(
+fn go(
+  predicates predicates: List(fn(Digits) -> Bool),
   from password: Int,
   to max: Int,
   count count: Int,
-) -> Result(Int, Nil) {
+) -> Result(Int, String) {
   case password > max {
     True -> Ok(count)
-    False ->
-      case is_valid_password(password) {
-        Ok(True) ->
-          count_valid_passwords(from: password + 1, to: max, count: count + 1)
-        Ok(False) -> count_valid_passwords(from: password + 1, to: max, count:)
-        Error(err) -> Error(err)
+    False -> {
+      use password_digits <- result.try(case int_to_digits(password) {
+        [first, second, third, fourth, fifth, sixth] ->
+          Ok(Digits(first:, second:, third:, fourth:, fifth:, sixth:))
+        _ ->
+          Error(
+            "Password ["
+            <> int.to_string(password)
+            <> "] does not have six digits",
+          )
+      })
+
+      let count = case
+        list.all(predicates, fn(pred) { pred(password_digits) })
+      {
+        True -> count + 1
+        False -> count
       }
+
+      go(predicates:, from: password + 1, to: max, count:)
+    }
   }
 }
 
-fn parse_password_range(input) -> Result(PasswordRange, Nil) {
-  use #(first, second) <- result.try(string.split_once(input, on: "-"))
-  use min <- result.try(int.parse(first))
-  use max <- result.map(int.parse(second))
+fn parse_password_range(input) -> Result(PasswordRange, String) {
+  use #(first, second) <- result.try(
+    string.split_once(input, on: "-")
+    |> result.replace_error("Invalid range [" <> input <> "]"),
+  )
+
+  use min <- result.try(
+    int.parse(first)
+    |> result.replace_error("Invalid range minimum [" <> first <> "]"),
+  )
+  use max <- result.map(
+    int.parse(second)
+    |> result.replace_error("Invalid range minimum [" <> first <> "]"),
+  )
 
   PasswordRange(min:, max:)
 }
 
-fn is_valid_password(password: Int) -> Result(Bool, Nil) {
-  use digits <- result.map(parse_digits(password))
-
-  let adjacent = has_two_adjacent_digits_that_are_the_same(digits)
-  let non_decreasing = is_non_decreasing(digits)
-
-  adjacent && non_decreasing
+fn int_to_digits(n n: Int) -> List(Int) {
+  int_to_digits_go(n, [])
 }
 
-fn parse_digits(n: Int) -> Result(Digits, Nil) {
-  let digits =
-    n
-    |> int.to_string
-    |> string.split(on: "")
-    |> list.try_map(int.parse)
-
-  case digits {
-    Ok([first, second, third, fourth, fifth, sixth]) ->
-      Ok(Digits(first:, second:, third:, fourth:, fifth:, sixth:))
-    _ -> Error(Nil)
-  }
-}
-
-fn has_two_adjacent_digits_that_are_the_same(digits: Digits) -> Bool {
-  case digits {
-    Digits(first, second, _, _, _, _) if first == second -> True
-    Digits(_, second, third, _, _, _) if second == third -> True
-    Digits(_, _, third, fourth, _, _) if third == fourth -> True
-    Digits(_, _, _, fourth, fifth, _) if fourth == fifth -> True
-    Digits(_, _, _, _, fifth, sixth) if fifth == sixth -> True
-    _ -> False
+fn int_to_digits_go(n: Int, digits: List(Int)) -> List(Int) {
+  case n > 0 {
+    True -> int_to_digits_go(n / 10, [n % 10, ..digits])
+    False -> digits
   }
 }
 
@@ -103,4 +118,36 @@ fn is_non_decreasing(digits: Digits) -> Bool {
   && third <= fourth
   && fourth <= fifth
   && fifth <= sixth
+}
+
+fn has_adjacent_pair(digits: Digits) -> Bool {
+  case digits {
+    Digits(first, second, _, _, _, _) if first == second -> True
+    Digits(_, second, third, _, _, _) if second == third -> True
+    Digits(_, _, third, fourth, _, _) if third == fourth -> True
+    Digits(_, _, _, fourth, fifth, _) if fourth == fifth -> True
+    Digits(_, _, _, _, fifth, sixth) if fifth == sixth -> True
+    _ -> False
+  }
+}
+
+fn has_adjacent_pair_with_exactly_two_digits(digits: Digits) -> Bool {
+  case digits {
+    Digits(first, second, third, _, _, _)
+      if first == second && second != third
+    -> True
+    Digits(first, second, third, fourth, _, _)
+      if first != second && second == third && third != fourth
+    -> True
+    Digits(_, second, third, fourth, fifth, _)
+      if second != third && third == fourth && fourth != fifth
+    -> True
+    Digits(_, _, third, fourth, fifth, sixth)
+      if third != fourth && fourth == fifth && fifth != sixth
+    -> True
+    Digits(_, _, _, fourth, fifth, sixth)
+      if fourth != fifth && fifth == sixth
+    -> True
+    _ -> False
+  }
 }

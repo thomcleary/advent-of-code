@@ -5,45 +5,61 @@ import gleam/option
 import gleam/pair
 import gleam/result
 import gleam/string
-import lib/part
 
-pub fn solve(input: String) -> Nil {
-  let assert Ok(wires) = parse_wires(input)
+pub const part1_answer = 731
 
-  wires
-  |> part1
-  |> result.map(int.to_string)
-  |> part.try_print(part.One)
+pub const part2_answer = 5672
 
-  wires
-  |> part2
-  |> result.map(int.to_string)
-  |> part.try_print(part.Two)
-}
+pub fn part1(input: String) -> Result(Int, String) {
+  use wires <- result.try(parse_wires(input))
 
-pub fn part1(wires: #(Wire, Wire)) -> Result(Int, Nil) {
   wires
   |> pair.map_first(to_steps)
   |> pair.map_second(to_steps)
   |> intersections
   |> list.map(distance_from_central_port)
   |> list.reduce(int.min)
+  |> result.replace_error("No wire intersections found")
 }
 
-pub fn part2(wires: #(Wire, Wire)) -> Result(Int, Nil) {
-  let steps =
+pub fn part2(input: String) -> Result(Int, String) {
+  use wires <- result.try(parse_wires(input))
+
+  let wire_steps =
     wires
     |> pair.map_first(to_steps)
     |> pair.map_second(to_steps)
 
-  steps
+  wire_steps
   |> intersections
+  |> intersections_to_step_counts(wire_steps)
+  |> result.try(fn(counts) {
+    list.reduce(counts, int.min)
+    |> result.replace_error("No wire intersections found")
+  })
+}
+
+fn intersections_to_step_counts(
+  intersections: List(Position),
+  wire_steps: #(Steps, Steps),
+) -> Result(List(Int), String) {
+  intersections
   |> list.try_map(fn(position) {
-    use first <- result.try(pair.first(steps) |> dict.get(position))
-    use second <- result.map(pair.second(steps) |> dict.get(position))
+    let position_str = position_to_string(position)
+
+    use first <- result.try(
+      pair.first(wire_steps)
+      |> dict.get(position)
+      |> result.replace_error("Wire1 steps not found @ " <> position_str),
+    )
+    use second <- result.map(
+      pair.second(wire_steps)
+      |> dict.get(position)
+      |> result.replace_error("Wire2 steps not found @ " <> position_str),
+    )
+
     first + second
   })
-  |> result.try(list.reduce(_, int.min))
 }
 
 pub type Direction {
@@ -65,16 +81,21 @@ type Position {
   Position(x: Int, y: Int)
 }
 
+fn position_to_string(pos: Position) -> String {
+  "(" <> int.to_string(pos.x) <> ", " <> int.to_string(pos.y) <> ")"
+}
+
 type Steps =
   dict.Dict(Position, Int)
 
 const central_port = Position(x: 0, y: 0)
 
-fn parse_wires(input: String) -> Result(#(Wire, Wire), Nil) {
+fn parse_wires(input: String) -> Result(#(Wire, Wire), String) {
   use #(first, second) <- result.try(
     input
     |> string.trim
-    |> string.split_once(on: "\n"),
+    |> string.split_once(on: "\n")
+    |> result.replace_error("Did not find segments for exactly 2 wires"),
   )
 
   use first <- result.try(parse_wire(first))
@@ -83,7 +104,7 @@ fn parse_wires(input: String) -> Result(#(Wire, Wire), Nil) {
   Ok(#(first, second))
 }
 
-fn parse_wire(input: String) -> Result(Wire, Nil) {
+fn parse_wire(input: String) -> Result(Wire, String) {
   use segments <- result.map(
     input
     |> string.split(on: ",")
@@ -93,18 +114,24 @@ fn parse_wire(input: String) -> Result(Wire, Nil) {
   Wire(segments:)
 }
 
-fn parse_segment(dir: String) -> Result(Segment, Nil) {
-  use #(direction, distance) <- result.try(string.pop_grapheme(dir))
+fn parse_segment(dir: String) -> Result(Segment, String) {
+  use #(direction, distance) <- result.try(
+    string.pop_grapheme(dir)
+    |> result.replace_error("Invalid direction [" <> dir <> "]"),
+  )
 
   use direction <- result.try(case direction {
     "U" -> Ok(Up)
     "R" -> Ok(Right)
     "D" -> Ok(Down)
     "L" -> Ok(Left)
-    _ -> Error(Nil)
+    _ -> Error("Invalid direction [" <> dir <> "]")
   })
 
-  use distance <- result.map(int.parse(distance))
+  use distance <- result.map(
+    int.parse(distance)
+    |> result.replace_error("Invalid distance [" <> distance <> "]"),
+  )
 
   Segment(distance:, direction:)
 }

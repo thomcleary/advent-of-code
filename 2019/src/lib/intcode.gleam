@@ -9,7 +9,7 @@ pub type Program {
 }
 
 pub type Address {
-  Address(Int)
+  Address(value: Int)
 }
 
 pub opaque type Computer {
@@ -26,12 +26,13 @@ type Instruction {
   Halt
 }
 
-pub fn parse_program(input: String) -> Result(Program, Nil) {
+pub fn parse_program(input: String) -> Result(Program, String) {
   use integers <- result.map(
     input
     |> string.trim
     |> string.split(on: ",")
-    |> list.try_map(int.parse),
+    |> list.try_map(int.parse)
+    |> result.replace_error("Program contains non integer value"),
   )
 
   Program(code: integers)
@@ -42,8 +43,14 @@ pub fn address_offset(address: Address, offset: Int) -> Address {
   Address(a + offset)
 }
 
-pub fn peek_memory(computer: Computer, at addr: Address) -> Result(Int, Nil) {
+pub fn peek_memory(
+  computer: Computer,
+  at addr: Address,
+) -> Result(Int, String) {
   dict.get(computer.memory, addr)
+  |> result.replace_error(
+    "Failed to get memory from address [" <> int.to_string(addr.value) <> "]",
+  )
 }
 
 pub fn poke_memory(
@@ -76,7 +83,7 @@ pub fn boot(program: Program) -> Computer {
   )
 }
 
-pub fn run(computer: Computer) -> Result(Computer, Nil) {
+pub fn run(computer: Computer) -> Result(Computer, String) {
   use op_code <- result.try(
     computer |> peek_memory(at: computer.instruction_pointer),
   )
@@ -85,7 +92,7 @@ pub fn run(computer: Computer) -> Result(Computer, Nil) {
     1 -> computer |> read_binary_op(with: int.add) |> result.map(Add)
     2 -> computer |> read_binary_op(with: int.multiply) |> result.map(Multiply)
     99 -> Ok(Halt)
-    _ -> Error(Nil)
+    _ -> Error("Invalid op code [" <> int.to_string(op_code) <> "]")
   })
 
   case instruction {
@@ -97,7 +104,7 @@ pub fn run(computer: Computer) -> Result(Computer, Nil) {
 fn read_binary_op(
   computer: Computer,
   with apply: fn(Int, Int) -> Int,
-) -> Result(BinaryOp, Nil) {
+) -> Result(BinaryOp, String) {
   let from = computer.instruction_pointer
 
   use a <- result.try(computer |> peek_memory(at: from |> address_offset(1)))
@@ -107,7 +114,7 @@ fn read_binary_op(
   BinaryOp(apply:, a: Address(a), b: Address(b), dest: Address(dest))
 }
 
-fn run_binary_op(computer: Computer, op: BinaryOp) -> Result(Computer, Nil) {
+fn run_binary_op(computer: Computer, op: BinaryOp) -> Result(Computer, String) {
   use a <- result.try(computer |> peek_memory(at: op.a))
   use b <- result.map(computer |> peek_memory(at: op.b))
 
