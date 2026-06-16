@@ -2,6 +2,7 @@ import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
+import lib/digits
 
 pub const part1_answer = 1048
 
@@ -58,7 +59,7 @@ fn go(
   case password > max {
     True -> Ok(count)
     False -> {
-      use password_digits <- result.try(case int_to_digits(password) {
+      use password_digits <- result.try(case digits.from_int(password) {
         [first, second, third, fourth, fifth, sixth] ->
           Ok(Digits(first:, second:, third:, fourth:, fifth:, sixth:))
         _ ->
@@ -97,17 +98,6 @@ fn parse_password_range(input) -> Result(PasswordRange, String) {
   )
 
   PasswordRange(min:, max:)
-}
-
-fn int_to_digits(n n: Int) -> List(Int) {
-  int_to_digits_go(n, [])
-}
-
-fn int_to_digits_go(n: Int, digits: List(Int)) -> List(Int) {
-  case n > 0 {
-    True -> int_to_digits_go(n / 10, [n % 10, ..digits])
-    False -> digits
-  }
 }
 
 fn is_non_decreasing(digits: Digits) -> Bool {

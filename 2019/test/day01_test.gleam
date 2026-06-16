@@ -1,4 +1,5 @@
 import day01
+import gleam/result
 import lib/aoc
 
 pub fn part1_example1_test() {
@@ -18,9 +19,10 @@ pub fn part1_example4_test() {
 }
 
 pub fn part1_test() {
-  let assert Ok(input) = aoc.read_input(aoc.Day01)
-
-  assert day01.part1(input) == Ok(day01.part1_answer)
+  assert aoc.Day01
+    |> aoc.read_input
+    |> result.try(day01.part1)
+    == Ok(day01.part1_answer)
 }
 
 pub fn part2_example1_test() {
@@ -36,7 +38,8 @@ pub fn part2_example3_test() {
 }
 
 pub fn part2_test() {
-  let assert Ok(input) = aoc.read_input(aoc.Day01)
-
-  assert day01.part2(input) == Ok(day01.part2_answer)
+  assert aoc.Day01
+    |> aoc.read_input
+    |> result.try(day01.part2)
+    == Ok(day01.part2_answer)
 }

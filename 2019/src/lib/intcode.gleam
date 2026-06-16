@@ -3,6 +3,7 @@ import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
+import lib/digits
 
 pub type Program {
   Program(code: List(Int))
@@ -13,31 +14,51 @@ pub type Address {
 }
 
 pub opaque type Computer {
-  Computer(memory: dict.Dict(Address, Int), instruction_pointer: Address)
+  Computer(
+    memory: dict.Dict(Address, Int),
+    instruction_pointer: Address,
+    input: List(Int),
+    output: List(Int),
+  )
 }
 
-type BinaryOp {
-  BinaryOp(apply: fn(Int, Int) -> Int, a: Address, b: Address, dest: Address)
+type ParameterMode {
+  PositionMode
+  ImmediateMode
+}
+
+type Parameter {
+  PositionModeParameter(address: Address)
+  ImmediateModeParameter(value: Int)
+}
+
+type BinaryOpParameters {
+  BinaryOpParameters(a: Parameter, b: Parameter, dest: Address)
 }
 
 type Instruction {
-  Add(BinaryOp)
-  Multiply(BinaryOp)
+  Add(with: BinaryOpParameters)
+  Multiply(with: BinaryOpParameters)
+  Read(into: Address, with: Int)
+  Write(with: Parameter)
   Halt
 }
 
 pub type IntcodeError {
   ParseError
-  SegmentationFault(at: Address)
-  InvalidOpcode(opcode: Int)
+  SegmentationFault(computer: Computer, at: Address)
+  InvalidInstruction(computer: Computer, instruction: Int)
+  EndOfInput(computer: Computer)
 }
 
 pub fn error_to_string(err: IntcodeError) -> String {
   case err {
     ParseError -> "Failed to parse program"
-    SegmentationFault(address) ->
+    SegmentationFault(_, at: address) ->
       "Segmentation fault at address [" <> int.to_string(address.value) <> "]"
-    InvalidOpcode(opcode) -> "Invalid opcode [" <> int.to_string(opcode) <> "]"
+    InvalidInstruction(_, instruction:) ->
+      "Invalid instruction [" <> int.to_string(instruction) <> "]"
+    EndOfInput(_) -> "End of input"
   }
 }
 
@@ -58,15 +79,15 @@ pub fn address_at_offset(by offset: Int, from address: Address) -> Address {
 }
 
 pub fn peek_memory(
-  computer: Computer,
+  in computer: Computer,
   at address: Address,
 ) -> Result(Int, IntcodeError) {
   dict.get(computer.memory, address)
-  |> result.replace_error(SegmentationFault(at: address))
+  |> result.replace_error(SegmentationFault(computer:, at: address))
 }
 
 pub fn poke_memory(
-  computer: Computer,
+  in computer: Computer,
   at addr: Address,
   with value: Int,
 ) -> Computer {
@@ -92,56 +113,209 @@ pub fn boot(program: Program) -> Computer {
     memory: program.code
       |> list.index_map(fn(integer, index) { #(Address(index), integer) })
       |> dict.from_list,
+    input: [],
+    output: [],
   )
 }
 
+pub fn with_input(computer: Computer, input: List(Int)) -> Computer {
+  Computer(..computer, input:)
+}
+
+pub fn output(computer: Computer) -> List(Int) {
+  computer.output
+}
+
 pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
-  use op_code <- result.try(
-    computer |> peek_memory(at: computer.instruction_pointer),
+  use instruction <- result.try(
+    computer
+    |> peek_memory(at: computer.instruction_pointer)
+    |> result.try(parse_instruction(from: computer, with: _)),
   )
 
-  use instruction <- result.try(case op_code {
-    1 -> computer |> read_binary_op(with: int.add) |> result.map(Add)
-    2 -> computer |> read_binary_op(with: int.multiply) |> result.map(Multiply)
-    99 -> Ok(Halt)
-    code -> Error(InvalidOpcode(code))
-  })
-
   case instruction {
-    Add(op) | Multiply(op) -> computer |> run_binary_op(op) |> result.try(run)
+    Add(parameters) ->
+      computer
+      |> add(with: parameters)
+      |> result.try(run)
+
+    Multiply(parameters) ->
+      computer
+      |> multiply(with: parameters)
+      |> result.try(run)
+
+    Read(address, value) -> {
+      computer
+      |> read(into: address, with: value)
+      |> run
+    }
+
+    Write(parameter) ->
+      computer
+      |> write(with: parameter)
+      |> result.try(run)
+
     Halt -> Ok(computer)
   }
 }
 
-fn read_binary_op(
+fn parse_instruction(
+  from computer: Computer,
+  with instruction: Int,
+) -> Result(Instruction, IntcodeError) {
+  case parse_opcode(instruction) {
+    1 ->
+      computer
+      |> parse_binary_op_parameters(from: instruction)
+      |> result.map(Add)
+
+    2 ->
+      computer
+      |> parse_binary_op_parameters(from: instruction)
+      |> result.map(Multiply)
+
+    3 ->
+      computer
+      |> parse_read_instruction
+
+    4 ->
+      computer
+      |> parse_write_instruction(from: instruction)
+
+    99 -> Ok(Halt)
+
+    _ -> Error(InvalidInstruction(computer:, instruction: instruction))
+  }
+}
+
+fn parse_opcode(instruction: Int) -> Int {
+  instruction % 100
+}
+
+fn parse_parameter_modes(
+  from instruction: Int,
+  computer computer: Computer,
+) -> Result(dict.Dict(Int, ParameterMode), IntcodeError) {
+  instruction / 100
+  |> digits.from_int
+  |> list.reverse
+  |> list.try_map(with: fn(mode) {
+    case mode {
+      0 -> Ok(PositionMode)
+      1 -> Ok(ImmediateMode)
+      _ -> Error(InvalidInstruction(computer:, instruction:))
+    }
+  })
+  |> result.map(
+    list.index_fold(_, from: dict.new(), with: fn(params, mode, i) {
+      dict.insert(into: params, for: i + 1, insert: mode)
+    }),
+  )
+}
+
+fn get_parameter(
+  parameter: Int,
+  from computer: Computer,
+  with parameter_modes: dict.Dict(Int, ParameterMode),
+) -> Result(Parameter, IntcodeError) {
+  use value <- result.map(peek_memory(
+    in: computer,
+    at: address_at_offset(parameter, from: computer.instruction_pointer),
+  ))
+
+  let mode =
+    parameter_modes
+    |> dict.get(parameter)
+    |> result.unwrap(PositionMode)
+
+  case mode {
+    PositionMode -> PositionModeParameter(address: Address(value))
+    ImmediateMode -> ImmediateModeParameter(value: value)
+  }
+}
+
+fn parse_binary_op_parameters(
   computer: Computer,
-  with apply: fn(Int, Int) -> Int,
-) -> Result(BinaryOp, IntcodeError) {
-  let offset_from_ip_by = address_at_offset(
-    by: _,
-    from: computer.instruction_pointer,
+  from instruction: Int,
+) -> Result(BinaryOpParameters, IntcodeError) {
+  use parameter_modes <- result.try(parse_parameter_modes(
+    instruction,
+    computer:,
+  ))
+
+  use first_param <- result.try(get_parameter(
+    1,
+    from: computer,
+    with: parameter_modes,
+  ))
+
+  use second_param <- result.try(get_parameter(
+    2,
+    from: computer,
+    with: parameter_modes,
+  ))
+
+  use third_param <- result.map(
+    computer
+    |> peek_memory(at: address_at_offset(3, from: computer.instruction_pointer))
+    |> result.map(Address),
   )
 
-  use a <- result.try(computer |> peek_memory(at: offset_from_ip_by(1)))
-  use b <- result.try(computer |> peek_memory(at: offset_from_ip_by(2)))
-  use dest <- result.map(computer |> peek_memory(at: offset_from_ip_by(3)))
-
-  BinaryOp(apply:, a: Address(a), b: Address(b), dest: Address(dest))
+  BinaryOpParameters(a: first_param, b: second_param, dest: third_param)
 }
 
-fn run_binary_op(
+fn parse_read_instruction(
   computer: Computer,
-  op: BinaryOp,
-) -> Result(Computer, IntcodeError) {
-  use a <- result.try(computer |> peek_memory(at: op.a))
-  use b <- result.map(computer |> peek_memory(at: op.b))
+) -> Result(Instruction, IntcodeError) {
+  use value <- result.try(
+    computer.input
+    |> list.first
+    |> result.replace_error(EndOfInput(computer:)),
+  )
 
-  computer
-  |> poke_memory(at: op.dest, with: op.apply(a, b))
-  |> advance_instruction_pointer(by: 4)
+  use parameter <- result.map(
+    computer
+    |> peek_memory(at: address_at_offset(
+      by: 1,
+      from: computer.instruction_pointer,
+    )),
+  )
+
+  Read(into: Address(parameter), with: value)
 }
 
-fn advance_instruction_pointer(computer: Computer, by offset: Int) -> Computer {
+fn parse_write_instruction(
+  computer: Computer,
+  from instruction: Int,
+) -> Result(Instruction, IntcodeError) {
+  use parameter_modes <- result.try(parse_parameter_modes(
+    instruction,
+    computer:,
+  ))
+
+  use parameter <- result.map(get_parameter(
+    1,
+    from: computer,
+    with: parameter_modes,
+  ))
+
+  Write(with: parameter)
+}
+
+fn get_value_of_parameter(
+  computer: Computer,
+  parameter: Parameter,
+) -> Result(Int, IntcodeError) {
+  case parameter {
+    PositionModeParameter(address:) -> peek_memory(in: computer, at: address)
+    ImmediateModeParameter(value:) -> Ok(value)
+  }
+}
+
+fn increase_instruction_pointer(
+  computer: Computer,
+  by offset: Int,
+) -> Computer {
   Computer(
     ..computer,
     instruction_pointer: address_at_offset(
@@ -149,4 +323,51 @@ fn advance_instruction_pointer(computer: Computer, by offset: Int) -> Computer {
       from: computer.instruction_pointer,
     ),
   )
+}
+
+fn run_binary_op_instruction(
+  computer: Computer,
+  with parameters: BinaryOpParameters,
+  and apply: fn(Int, Int) -> Int,
+) -> Result(Computer, IntcodeError) {
+  use a <- result.try(computer |> get_value_of_parameter(parameters.a))
+  use b <- result.map(computer |> get_value_of_parameter(parameters.b))
+
+  computer
+  |> poke_memory(at: parameters.dest, with: apply(a, b))
+  |> increase_instruction_pointer(by: 4)
+}
+
+fn add(
+  computer: Computer,
+  with parameters: BinaryOpParameters,
+) -> Result(Computer, IntcodeError) {
+  computer |> run_binary_op_instruction(with: parameters, and: int.add)
+}
+
+fn multiply(
+  computer: Computer,
+  with parameters: BinaryOpParameters,
+) -> Result(Computer, IntcodeError) {
+  computer |> run_binary_op_instruction(with: parameters, and: int.multiply)
+}
+
+fn read(
+  computer: Computer,
+  into address: Address,
+  with value: Int,
+) -> Computer {
+  Computer(..computer, input: computer.input |> list.drop(1))
+  |> poke_memory(at: address, with: value)
+  |> increase_instruction_pointer(by: 2)
+}
+
+fn write(
+  computer: Computer,
+  with parameter: Parameter,
+) -> Result(Computer, IntcodeError) {
+  use value <- result.map(computer |> get_value_of_parameter(parameter))
+
+  Computer(..computer, output: [value, ..computer.output])
+  |> increase_instruction_pointer(by: 2)
 }

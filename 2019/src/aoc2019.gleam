@@ -211,6 +211,7 @@ fn part_to_term_output(
         Error(_) -> [term.Bold, term.FgRed]
       }
     }),
+    // TODO: break result text into lines, so it doesn't overflow the box
     term.Text(case part_result {
       Error(reason) -> reason
       Ok(assertion) ->
