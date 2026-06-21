@@ -3,6 +3,7 @@ import day02
 import day03
 import day04
 import day05
+import day06
 import gleam/erlang/application
 import gleam/int
 import gleam/option
@@ -19,12 +20,13 @@ pub type Day {
   Day03
   Day04
   Day05
+  Day06
 }
 
 pub type PartFn =
   fn(String) -> Result(Int, String)
 
-pub const solved_days = [Day01, Day02, Day03, Day04, Day05]
+pub const solved_days = [Day01, Day02, Day03, Day04, Day05, Day06]
 
 pub fn parse_day(str: String) -> Result(Day, Nil) {
   case str {
@@ -33,6 +35,7 @@ pub fn parse_day(str: String) -> Result(Day, Nil) {
     "3" | "03" -> Ok(Day03)
     "4" | "04" -> Ok(Day04)
     "5" | "05" -> Ok(Day05)
+    "6" | "06" -> Ok(Day06)
     _ -> Error(Nil)
   }
 }
@@ -44,6 +47,7 @@ pub fn day_to_parts(day: Day) -> #(PartFn, PartFn) {
     Day03 -> #(day03.part1, day03.part2)
     Day04 -> #(day04.part1, day04.part2)
     Day05 -> #(day05.part1, day05.part2)
+    Day06 -> #(day06.part1, day06.part2)
   }
 }
 
@@ -54,6 +58,7 @@ fn day_to_answers(day: Day) -> #(option.Option(Int), option.Option(Int)) {
     Day03 -> #(option.Some(day03.part1_answer), option.Some(day03.part2_answer))
     Day04 -> #(option.Some(day04.part1_answer), option.Some(day04.part2_answer))
     Day05 -> #(option.Some(day05.part1_answer), option.Some(day05.part2_answer))
+    Day06 -> #(option.Some(day06.part1_answer), option.None)
   }
 }
 
@@ -64,6 +69,7 @@ pub fn day_to_string(day: Day) -> String {
     Day03 -> "03"
     Day04 -> "04"
     Day05 -> "05"
+    Day06 -> "06"
   }
 }
 

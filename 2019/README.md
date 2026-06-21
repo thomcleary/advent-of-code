@@ -42,7 +42,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  3  | Crossed Wires                      | ⭐️⭐️  |
 |  4  | Secure Container                   | ⭐️⭐️  |
 |  5  | Sunny with a Chance of Asteroids   | ⭐️⭐️  |
-|  6  |                                    |       |
+|  6  | Universal Orbit Map                |  ⭐️   |
 |  7  |                                    |       |
 |  8  |                                    |       |
 |  9  |                                    |       |
