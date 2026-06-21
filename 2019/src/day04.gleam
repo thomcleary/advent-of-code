@@ -47,10 +47,15 @@ fn count_valid_passwords(
   range: PasswordRange,
   with predicates: List(fn(Digits) -> Bool),
 ) {
-  go(predicates:, from: range.min, to: range.max, count: 0)
+  do_count_valid_passwords(
+    predicates:,
+    from: range.min,
+    to: range.max,
+    count: 0,
+  )
 }
 
-fn go(
+fn do_count_valid_passwords(
   predicates predicates: List(fn(Digits) -> Bool),
   from password: Int,
   to max: Int,
@@ -77,7 +82,7 @@ fn go(
         False -> count
       }
 
-      go(predicates:, from: password + 1, to: max, count:)
+      do_count_valid_passwords(predicates:, from: password + 1, to: max, count:)
     }
   }
 }

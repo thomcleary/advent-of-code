@@ -1,23 +1,29 @@
 import gleam/dict
 import gleam/list
-import gleam/pair
+import gleam/option
 import gleam/result
+import gleam/set
 import gleam/string
 
 pub const part1_answer = 223_251
 
-pub fn part1(input: String) -> Result(Int, String) {
-  use map <- result.try(parse_orbit_map(input))
+pub const part2_answer = 430
 
-  count_orbits(in: map)
+pub fn part1(input: String) -> Result(Int, String) {
+  use orbits <- result.try(parse_orbits(input))
+
+  orbits
+  |> count_direct_and_indirect
 }
 
-pub fn part2(_input: String) -> Result(Int, String) {
-  Ok(-1)
+pub fn part2(input: String) -> Result(Int, String) {
+  use orbits <- result.try(parse_orbits(input))
+
+  orbits
+  |> find_minimum_transfers(from: Satellite("YOU"), to: Satellite("SAN"))
 }
 
 type Body {
-  UniversalCenterOfMass(name: String)
   Body(name: String)
 }
 
@@ -25,73 +31,142 @@ type Satellite {
   Satellite(name: String)
 }
 
+type Orbits {
+  Orbits(map: Map, neighbours: Neighbours)
+}
+
 type Map =
   dict.Dict(Satellite, Body)
 
-fn parse_orbit_map(input: String) -> Result(Map, String) {
+type Neighbours =
+  dict.Dict(String, set.Set(String))
+
+fn parse_orbits(input: String) -> Result(Orbits, String) {
   input
   |> string.split(on: "\n")
-  |> list.try_fold(from: dict.new(), with: fn(map, line) {
-    use #(body, satellite) <- result.map(
-      line
-      |> string.split_once(on: ")")
-      |> result.replace_error("Invalid orbit [" <> line <> "]"),
-    )
+  |> list.try_fold(
+    from: Orbits(map: dict.new(), neighbours: dict.new()),
+    with: fn(orbits, line) {
+      use #(body_name, satellite_name) <- result.map(
+        line
+        |> string.split_once(on: ")")
+        |> result.replace_error("Invalid orbit [" <> line <> "]"),
+      )
 
-    dict.insert(into: map, for: Satellite(name: satellite), insert: case body {
-      "COM" -> UniversalCenterOfMass(name: body)
-      _ -> Body(name: body)
-    })
+      let body = Body(name: body_name)
+      let satellite = Satellite(name: satellite_name)
+
+      Orbits(
+        map: orbits.map
+          |> dict.insert(for: satellite, insert: body),
+        neighbours: orbits.neighbours
+          |> dict.upsert(update: body.name, with: fn(prev) {
+            prev
+            |> option.unwrap(or: set.new())
+            |> set.insert(satellite.name)
+          })
+          |> dict.upsert(update: satellite.name, with: fn(prev) {
+            prev
+            |> option.unwrap(or: set.new())
+            |> set.insert(body.name)
+          }),
+      )
+    },
+  )
+}
+
+fn count_direct_and_indirect(orbits: Orbits) -> Result(Int, String) {
+  orbits.map
+  |> dict.values
+  |> list.try_fold(from: 0, with: fn(count, body) {
+    use body_orbits <- result.map(count_indirect_orbits(
+      of: body,
+      from: 0,
+      with: orbits.map,
+    ))
+
+    count + 1 + body_orbits
   })
 }
 
-fn count_orbits(in map: Map) -> Result(Int, String) {
-  let cache: dict.Dict(Satellite, Int) = dict.new()
-
-  map
-  |> dict.to_list
-  |> list.try_fold(from: #(0, cache), with: fn(acc, orbit) {
-    let #(satellite, body) = orbit
-    let #(count, cache) = acc
-
-    use body_orbits <- result.map(case dict.get(cache, Satellite(body.name)) {
-      Ok(count) -> Ok(count)
-      Error(_) -> count_indirect_orbits(of: body, with: map)
-    })
-
-    let satellite_orbits = body_orbits + 1
-
-    #(
-      count + satellite_orbits,
-      cache
-        |> dict.insert(for: Satellite(body.name), insert: body_orbits)
-        |> dict.insert(for: satellite, insert: satellite_orbits),
-    )
-  })
-  |> result.map(pair.first)
-}
-
-fn count_indirect_orbits(of body: Body, with map: Map) -> Result(Int, String) {
-  count_indirect_orbits_go(of: body, from: 0, with: map)
-}
-
-fn count_indirect_orbits_go(
+fn count_indirect_orbits(
   of body: Body,
   from count: Int,
   with map: Map,
 ) -> Result(Int, String) {
   case body {
-    UniversalCenterOfMass(_) -> Ok(count)
-
+    Body("COM") -> Ok(count)
     Body(name:) -> {
       use next <- result.try(
         dict.get(map, Satellite(name))
         |> result.replace_error(
-          "Failed to find body for satellite [" <> body.name <> "] in map",
+          "Failed to find body for satellite [" <> body.name <> "] in the map",
         ),
       )
 
-      count_indirect_orbits_go(of: next, from: count + 1, with: map)
+      count_indirect_orbits(of: next, from: count + 1, with: map)
     }
+  }
+}
+
+fn find_minimum_transfers(
+  orbits: Orbits,
+  from start: Satellite,
+  to target: Satellite,
+) -> Result(Int, String) {
+  use from <- result.try(
+    dict.get(orbits.map, start)
+    |> result.replace_error(
+      "Failed to find body that [" <> start.name <> "] is orbiting in the map",
+    ),
+  )
+
+  use to <- result.try(
+    dict.get(orbits.map, target)
+    |> result.replace_error(
+      "Failed to find body that [" <> target.name <> "] is orbiting in the map",
+    ),
+  )
+
+  do_find_minimum_transfers(
+    from:,
+    to:,
+    previous: start.name,
+    neighbours: orbits.neighbours,
+    transfers: 0,
+  )
+}
+
+fn do_find_minimum_transfers(
+  from from: Body,
+  to to: Body,
+  previous previous: String,
+  neighbours neighbours: Neighbours,
+  transfers transfers: Int,
+) -> Result(Int, String) {
+  case from {
+    Body(name) if name == to.name -> Ok(transfers)
+    _ ->
+      neighbours
+      |> dict.get(from.name)
+      |> result.unwrap(or: set.new())
+      |> set.delete(previous)
+      |> set.to_list
+      |> list.find_map(with: fn(neighbour) {
+        do_find_minimum_transfers(
+          from: Body(name: neighbour),
+          to:,
+          previous: from.name,
+          neighbours:,
+          transfers: transfers + 1,
+        )
+      })
+      |> result.replace_error(
+        "Failed to find minimum transfers to ["
+        <> to.name
+        <> "] from ["
+        <> from.name
+        <> "]",
+      )
   }
 }
