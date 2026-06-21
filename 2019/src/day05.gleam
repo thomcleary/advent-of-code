@@ -6,6 +6,8 @@ import lib/intcode
 
 pub const part1_answer = 15_259_545
 
+pub const part2_answer = 7_616_021
+
 pub fn part1(input: String) -> Result(Int, String) {
   use diagnostic_program <- result.try(
     input
@@ -13,26 +15,49 @@ pub fn part1(input: String) -> Result(Int, String) {
     |> result.map_error(intcode.error_to_string),
   )
 
-  use halted <- result.try(
+  use output <- result.try(
     diagnostic_program
-    |> intcode.boot
-    |> intcode.with_input([1])
-    |> intcode.run
-    |> result.map_error(intcode.error_to_string),
+    |> run(with_system_id: 1)
+    |> result.map(intcode.output),
   )
 
-  case intcode.output(halted) {
+  case output {
     [diagnostic_code, ..test_outputs] ->
       case int.sum(test_outputs) {
         0 -> Ok(diagnostic_code)
-        _ -> Error(diagnostic_test_error(intcode.output(halted)))
+        _ -> Error(diagnostic_test_error(output))
       }
-    [] -> Error(diagnostic_test_error(intcode.output(halted)))
+    [] -> Error(diagnostic_test_error(output))
   }
 }
 
-pub fn part2(_input: String) -> Result(Int, String) {
-  Ok(-1)
+pub fn part2(input: String) -> Result(Int, String) {
+  use diagnostic_program <- result.try(
+    input
+    |> intcode.parse_program
+    |> result.map_error(intcode.error_to_string),
+  )
+
+  use output <- result.try(
+    diagnostic_program
+    |> run(with_system_id: 5)
+    |> result.map(intcode.output),
+  )
+
+  output
+  |> list.first
+  |> result.replace_error(diagnostic_test_error(output))
+}
+
+fn run(
+  program: intcode.Program,
+  with_system_id system_id: Int,
+) -> Result(intcode.Computer, String) {
+  program
+  |> intcode.boot
+  |> intcode.with_input([system_id])
+  |> intcode.run
+  |> result.map_error(intcode.error_to_string)
 }
 
 fn diagnostic_test_error(outputs: List(Int)) -> String {

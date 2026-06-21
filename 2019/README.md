@@ -41,7 +41,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  2  | 1202 Program Alarm                 | ⭐️⭐️  |
 |  3  | Crossed Wires                      | ⭐️⭐️  |
 |  4  | Secure Container                   | ⭐️⭐️  |
-|  5  | Sunny with a Chance of Asteroids   |  ⭐️   |
+|  5  | Sunny with a Chance of Asteroids   | ⭐️⭐️  |
 |  6  |                                    |       |
 |  7  |                                    |       |
 |  8  |                                    |       |

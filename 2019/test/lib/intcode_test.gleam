@@ -96,3 +96,169 @@ pub fn day5_part1_example3_test() {
     |> result.map(memory)
     == Ok("1101,100,-1,4,99")
 }
+
+pub fn day5_part2_position_mode_equals_test() {
+  let assert Ok(program) = intcode.parse_program("3,9,8,9,10,9,4,9,99,-1,8")
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([8])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([9])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+}
+
+pub fn day5_part2_position_mode_less_than_test() {
+  let assert Ok(program) = intcode.parse_program("3,9,7,9,10,9,4,9,99,-1,8")
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([7])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([8])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([9])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+}
+
+pub fn day5_part2_immediate_mode_equals_test() {
+  let assert Ok(program) = intcode.parse_program("3,3,1108,-1,8,3,4,3,99")
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([8])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([9])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+}
+
+pub fn day5_part2_immediate_mode_less_than_test() {
+  let assert Ok(program) = intcode.parse_program("3,3,1107,-1,8,3,4,3,99")
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([7])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([8])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([9])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+}
+
+pub fn day5_part2_position_mode_jump_test() {
+  let assert Ok(program) =
+    intcode.parse_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9")
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([0])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([1])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([-2])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+}
+
+pub fn day5_part2_immediate_mode_jump_test() {
+  let assert Ok(program) =
+    intcode.parse_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1")
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([0])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([0])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([1])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([-2])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1])
+}
+
+pub fn day5_part2_larger_example_test() {
+  let assert Ok(program) =
+    intcode.parse_program(
+      "3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99",
+    )
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([7])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([999])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([8])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1000])
+
+  assert program
+    |> intcode.boot
+    |> intcode.with_input([9])
+    |> intcode.run
+    |> result.map(intcode.output)
+    == Ok([1001])
+}
