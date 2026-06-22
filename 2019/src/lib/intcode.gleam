@@ -10,47 +10,16 @@ pub type Program {
   Program(code: List(Int))
 }
 
-pub type Address {
-  Address(value: Int)
-}
-
-pub opaque type Computer {
-  Computer(
-    memory: dict.Dict(Address, Int),
-    instruction_pointer: Address,
-    input: List(Int),
-    output: List(Int),
+pub fn parse_program(input: String) -> Result(Program, IntcodeError) {
+  use integers <- result.map(
+    input
+    |> string.trim
+    |> string.split(on: ",")
+    |> list.try_map(int.parse)
+    |> result.replace_error(ParseError),
   )
-}
 
-type ParameterMode {
-  PositionMode
-  ImmediateMode
-}
-
-type Parameter {
-  PositionModeParameter(address: Address)
-  ImmediateModeParameter(value: Int)
-}
-
-type BinaryOpParameters {
-  BinaryOpParameters(a: Parameter, b: Parameter, store_in: Address)
-}
-
-type JumpParameters {
-  JumpParameters(condition: Parameter, to: Parameter)
-}
-
-type Instruction {
-  Add(with: BinaryOpParameters)
-  Multiply(with: BinaryOpParameters)
-  Read(into: Address, with: Int)
-  Write(with: Parameter)
-  JumpIfTrue(with: JumpParameters)
-  JumpIfFalse(with: JumpParameters)
-  LessThan(with: BinaryOpParameters)
-  Equals(with: BinaryOpParameters)
-  Halt
+  Program(code: integers)
 }
 
 pub type IntcodeError {
@@ -71,20 +40,54 @@ pub fn error_to_string(err: IntcodeError) -> String {
   }
 }
 
-pub fn parse_program(input: String) -> Result(Program, IntcodeError) {
-  use integers <- result.map(
-    input
-    |> string.trim
-    |> string.split(on: ",")
-    |> list.try_map(int.parse)
-    |> result.replace_error(ParseError),
-  )
-
-  Program(code: integers)
+pub type Address {
+  Address(value: Int)
 }
 
-pub fn address_at_offset(by offset: Int, from address: Address) -> Address {
-  Address(address.value + offset)
+pub type State {
+  Booted
+  Blocked
+  Halted
+}
+
+pub opaque type Computer {
+  Computer(
+    state: State,
+    memory: dict.Dict(Address, Int),
+    instruction_pointer: Address,
+    input: List(Int),
+    output: List(Int),
+    blocking_io: Bool,
+  )
+}
+
+pub fn boot(program: Program) -> Computer {
+  Computer(
+    state: Booted,
+    memory: program.code
+      |> list.index_map(fn(integer, index) { #(Address(index), integer) })
+      |> dict.from_list,
+    instruction_pointer: Address(0),
+    input: [],
+    output: [],
+    blocking_io: False,
+  )
+}
+
+pub fn with_input(computer: Computer, input: List(Int)) -> Computer {
+  Computer(..computer, input: list.append(computer.input, input))
+}
+
+pub fn with_blocking_io(computer: Computer) -> Computer {
+  Computer(..computer, blocking_io: True)
+}
+
+pub fn state(computer: Computer) -> State {
+  computer.state
+}
+
+pub fn output(computer: Computer) -> List(Int) {
+  computer.output
 }
 
 pub fn peek_memory(
@@ -116,129 +119,115 @@ pub fn dump_memory(computer: Computer) -> List(#(Address, Int)) {
   })
 }
 
-pub fn boot(program: Program) -> Computer {
-  Computer(
-    instruction_pointer: Address(0),
-    memory: program.code
-      |> list.index_map(fn(integer, index) { #(Address(index), integer) })
-      |> dict.from_list,
-    input: [],
-    output: [],
-  )
-}
-
-pub fn with_input(computer: Computer, input: List(Int)) -> Computer {
-  Computer(..computer, input:)
-}
-
-pub fn output(computer: Computer) -> List(Int) {
-  computer.output
-}
-
 pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
   use instruction <- result.try(
     computer
-    |> peek_memory(at: computer.instruction_pointer)
-    |> result.try(parse_instruction(from: computer, with: _)),
+    |> peek_memory(at: computer.instruction_pointer),
   )
 
-  case instruction {
-    Add(parameters) ->
-      computer
-      |> add(with: parameters)
-      |> result.try(run)
+  let opcode = instruction % 100
 
-    Multiply(parameters) ->
-      computer
-      |> multiply(with: parameters)
-      |> result.try(run)
+  case opcode {
+    1 | 2 -> {
+      use parameters <- result.try(
+        computer
+        |> parse_binary_op_parameters(from: instruction),
+      )
 
-    Read(address, value) -> {
+      let op = case opcode {
+        1 -> add
+        _ -> multiply
+      }
+
       computer
-      |> read(into: address, with: value)
-      |> run
+      |> op(parameters)
+      |> result.try(run)
     }
 
-    Write(parameter) ->
+    3 -> {
+      case computer |> parse_read_parameters, computer.blocking_io {
+        Ok(parameters), _ -> computer |> read(with: parameters) |> run
+        Error(EndOfInput(_)), True -> Ok(computer |> block)
+        Error(err), _ -> Error(err)
+      }
+    }
+
+    4 -> {
+      use parameters <- result.try(
+        computer
+        |> parse_write_parameters(from: instruction),
+      )
+
+      use computer <- result.try(computer |> write(with: parameters))
+
+      case computer.blocking_io {
+        True -> Ok(computer |> block)
+        False -> computer |> run
+      }
+    }
+
+    5 | 6 -> {
+      use parameters <- result.try(
+        computer
+        |> parse_jump_parameters(from: instruction),
+      )
+
       computer
-      |> write(with: parameter)
+      |> jump_if(opcode == 5, with: parameters)
       |> result.try(run)
+    }
 
-    JumpIfTrue(with: parameters) ->
+    7 | 8 -> {
+      use parameters <- result.try(
+        computer
+        |> parse_binary_op_parameters(from: instruction),
+      )
+
       computer
-      |> jump_if(True, with: parameters)
+      |> compare(
+        by: case opcode {
+          7 -> order.Lt
+          _ -> order.Eq
+        },
+        with: parameters,
+      )
       |> result.try(run)
+    }
 
-    JumpIfFalse(with: parameters) ->
-      computer
-      |> jump_if(False, with: parameters)
-      |> result.try(run)
-
-    LessThan(with: parameters) ->
-      computer
-      |> compare(by: order.Lt, with: parameters)
-      |> result.try(run)
-
-    Equals(with: parameters) ->
-      computer
-      |> compare(by: order.Eq, with: parameters)
-      |> result.try(run)
-
-    Halt -> Ok(computer)
-  }
-}
-
-fn parse_instruction(
-  from computer: Computer,
-  with instruction: Int,
-) -> Result(Instruction, IntcodeError) {
-  case parse_opcode(instruction) {
-    1 ->
-      computer
-      |> parse_binary_op_parameters(from: instruction)
-      |> result.map(Add)
-
-    2 ->
-      computer
-      |> parse_binary_op_parameters(from: instruction)
-      |> result.map(Multiply)
-
-    3 ->
-      computer
-      |> parse_read_instruction
-
-    4 ->
-      computer
-      |> parse_write_instruction(from: instruction)
-
-    5 ->
-      computer
-      |> parse_jump_parameters(from: instruction)
-      |> result.map(JumpIfTrue)
-
-    6 ->
-      computer
-      |> parse_jump_parameters(from: instruction)
-      |> result.map(JumpIfFalse)
-
-    7 ->
-      computer
-      |> parse_binary_op_parameters(from: instruction)
-      |> result.map(LessThan)
-
-    8 ->
-      computer
-      |> parse_binary_op_parameters(from: instruction)
-      |> result.map(Equals)
-
-    99 -> Ok(Halt)
+    99 -> computer |> halt |> Ok
 
     _ -> Error(InvalidInstruction(computer:, instruction: instruction))
   }
 }
 
-fn parse_opcode(instruction: Int) -> Int {
-  instruction % 100
+type ParameterMode {
+  PositionMode
+  ImmediateMode
+}
+
+type Parameter {
+  PositionModeParameter(address: Address)
+  ImmediateModeParameter(value: Int)
+}
+
+type BinaryOpParameters {
+  BinaryOpParameters(a: Parameter, b: Parameter, store_in: Address)
+}
+
+type ReadParameters {
+  ReadParameters(value: Int, into: Address)
+}
+
+type WriteParameters {
+  WriteParameters(with: Parameter)
+}
+
+type JumpParameters {
+  JumpParameters(condition: Parameter, to: Parameter)
+}
+
+fn address_at_offset(by offset: Int, from address: Address) -> Address {
+  Address(address.value + offset)
 }
 
 fn parse_parameter_modes(
@@ -304,9 +293,9 @@ fn parse_binary_op_parameters(
   BinaryOpParameters(a:, b:, store_in:)
 }
 
-fn parse_read_instruction(
+fn parse_read_parameters(
   computer: Computer,
-) -> Result(Instruction, IntcodeError) {
+) -> Result(ReadParameters, IntcodeError) {
   use value <- result.try(
     computer.input
     |> list.first
@@ -321,13 +310,13 @@ fn parse_read_instruction(
     )),
   )
 
-  Read(into: Address(parameter), with: value)
+  ReadParameters(value:, into: Address(parameter))
 }
 
-fn parse_write_instruction(
+fn parse_write_parameters(
   computer: Computer,
   from instruction: Int,
-) -> Result(Instruction, IntcodeError) {
+) -> Result(WriteParameters, IntcodeError) {
   use parameter_modes <- result.try(parse_parameter_modes(
     from: instruction,
     with: computer,
@@ -339,7 +328,7 @@ fn parse_write_instruction(
     with: parameter_modes,
   ))
 
-  Write(with: parameter)
+  WriteParameters(with: parameter)
 }
 
 fn parse_jump_parameters(
@@ -412,21 +401,17 @@ fn multiply(
   computer |> run_binary_op_instruction(with: parameters, and: int.multiply)
 }
 
-fn read(
-  computer: Computer,
-  into address: Address,
-  with value: Int,
-) -> Computer {
+fn read(computer: Computer, with parameters: ReadParameters) -> Computer {
   Computer(..computer, input: computer.input |> list.drop(1))
-  |> poke_memory(at: address, with: value)
+  |> poke_memory(at: parameters.into, with: parameters.value)
   |> increase_instruction_pointer(by: 2)
 }
 
 fn write(
   computer: Computer,
-  with parameter: Parameter,
+  with parameters: WriteParameters,
 ) -> Result(Computer, IntcodeError) {
-  use value <- result.map(computer |> get_value_of_parameter(parameter))
+  use value <- result.map(computer |> get_value_of_parameter(parameters.with))
 
   Computer(..computer, output: [value, ..computer.output])
   |> increase_instruction_pointer(by: 2)
@@ -475,4 +460,12 @@ fn compare(
 
   computer
   |> run_binary_op_instruction(with: parameters, and: apply)
+}
+
+fn block(computer: Computer) -> Computer {
+  Computer(..computer, state: Blocked)
+}
+
+fn halt(computer: Computer) -> Computer {
+  Computer(..computer, state: Halted)
 }

@@ -44,7 +44,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  4  | Secure Container                   | ⭐️⭐️  |
 |  5  | Sunny with a Chance of Asteroids   | ⭐️⭐️  |
 |  6  | Universal Orbit Map                | ⭐️⭐️  |
-|  7  | Amplification Circuit              |  ⭐️   |
+|  7  | Amplification Circuit              | ⭐️⭐️  |
 |  8  |                                    |       |
 |  9  |                                    |       |
 | 10  |                                    |       |
