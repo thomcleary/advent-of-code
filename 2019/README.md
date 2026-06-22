@@ -18,13 +18,14 @@ Save puzzle input as as `dayXX.txt` in `./priv/inputs`
 
 ```shell
 $ gleam run 2
-   Compiled in 0.07s
+   Compiled in 0.04s
     Running aoc2019.main
-
-┌ Day 02 ──────────────────────────────┐
-│ Part 1: 4023471
-│ Part 2: 8051
-└ 155ms
+ ▄▄▄▄▄▄▄▄▄▄
+╭  Day 02  ────────────────────────────╮
+│▀▀▀▀▀▀▀▀▀▀                            │
+│ Part 1: 4023471                      │
+│ Part 2: 8051                         │
+╰─────────────── 18ms + 217ms = 235ms ─╯
 
 $ gleam run 26
    Compiled in 0.03s
@@ -43,7 +44,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  4  | Secure Container                   | ⭐️⭐️  |
 |  5  | Sunny with a Chance of Asteroids   | ⭐️⭐️  |
 |  6  | Universal Orbit Map                | ⭐️⭐️  |
-|  7  |                                    |       |
+|  7  | Amplification Circuit              |  ⭐️   |
 |  8  |                                    |       |
 |  9  |                                    |       |
 | 10  |                                    |       |
