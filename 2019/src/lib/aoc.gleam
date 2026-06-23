@@ -5,6 +5,7 @@ import day04
 import day05
 import day06
 import day07
+import day08
 import gleam/erlang/application
 import gleam/int
 import gleam/option
@@ -26,9 +27,27 @@ pub type Day {
   Day05
   Day06
   Day07
+  Day08
+  // Day09
+  // Day10
+  // Day11
+  // Day12
+  // Day13
+  // Day14
+  // Day15
+  // Day16
+  // Day17
+  // Day18
+  // Day19
+  // Day20
+  // Day21
+  // Day22
+  // Day23
+  // Day24
+  // Day25
 }
 
-pub const solved_days = [Day01, Day02, Day03, Day04, Day05, Day06, Day07]
+pub const solved_days = [Day01, Day02, Day03, Day04, Day05, Day06, Day07, Day08]
 
 pub fn parse_day(str: String) -> Result(Day, Nil) {
   case str {
@@ -39,6 +58,24 @@ pub fn parse_day(str: String) -> Result(Day, Nil) {
     "5" | "05" -> Ok(Day05)
     "6" | "06" -> Ok(Day06)
     "7" | "07" -> Ok(Day07)
+    "8" | "08" -> Ok(Day08)
+    // "9" | "09" -> Ok(Day09)
+    // "10" -> Ok(Day10)
+    // "11" -> Ok(Day11)
+    // "12" -> Ok(Day12)
+    // "13" -> Ok(Day13)
+    // "14" -> Ok(Day14)
+    // "15" -> Ok(Day15)
+    // "16" -> Ok(Day16)
+    // "17" -> Ok(Day17)
+    // "18" -> Ok(Day18)
+    // "19" -> Ok(Day19)
+    // "20" -> Ok(Day20)
+    // "21" -> Ok(Day21)
+    // "22" -> Ok(Day22)
+    // "23" -> Ok(Day23)
+    // "24" -> Ok(Day24)
+    // "25" -> Ok(Day25)
     _ -> Error(Nil)
   }
 }
@@ -52,6 +89,24 @@ pub fn day_to_parts(day: Day) -> #(PartFn, PartFn) {
     Day05 -> #(day05.part1, day05.part2)
     Day06 -> #(day06.part1, day06.part2)
     Day07 -> #(day07.part1, day07.part2)
+    Day08 -> #(day08.part1, day08.part2)
+    // Day09 -> todo
+    // Day10 -> todo
+    // Day11 -> todo
+    // Day12 -> todo
+    // Day13 -> todo
+    // Day14 -> todo
+    // Day15 -> todo
+    // Day16 -> todo
+    // Day17 -> todo
+    // Day18 -> todo
+    // Day19 -> todo
+    // Day20 -> todo
+    // Day21 -> todo
+    // Day22 -> todo
+    // Day23 -> todo
+    // Day24 -> todo
+    // Day25 -> todo
   }
 }
 
@@ -64,6 +119,24 @@ fn day_to_answers(day: Day) -> #(option.Option(Int), option.Option(Int)) {
     Day05 -> #(option.Some(day05.part1_answer), option.Some(day05.part2_answer))
     Day06 -> #(option.Some(day06.part1_answer), option.Some(day06.part2_answer))
     Day07 -> #(option.Some(day07.part1_answer), option.Some(day07.part2_answer))
+    Day08 -> #(option.Some(day08.part1_answer), option.None)
+    // Day09 -> #(option.None, option.None)
+    // Day10 -> #(option.None, option.None)
+    // Day11 -> #(option.None, option.None)
+    // Day12 -> #(option.None, option.None)
+    // Day13 -> #(option.None, option.None)
+    // Day14 -> #(option.None, option.None)
+    // Day15 -> #(option.None, option.None)
+    // Day16 -> #(option.None, option.None)
+    // Day17 -> #(option.None, option.None)
+    // Day18 -> #(option.None, option.None)
+    // Day19 -> #(option.None, option.None)
+    // Day20 -> #(option.None, option.None)
+    // Day21 -> #(option.None, option.None)
+    // Day22 -> #(option.None, option.None)
+    // Day23 -> #(option.None, option.None)
+    // Day24 -> #(option.None, option.None)
+    // Day25 -> #(option.None, option.None)
   }
 }
 
@@ -76,6 +149,24 @@ pub fn day_to_string(day: Day) -> String {
     Day05 -> "05"
     Day06 -> "06"
     Day07 -> "07"
+    Day08 -> "08"
+    // Day09 -> "09"
+    // Day10 -> "10"
+    // Day11 -> "11"
+    // Day12 -> "12"
+    // Day13 -> "13"
+    // Day14 -> "14"
+    // Day15 -> "15"
+    // Day16 -> "16"
+    // Day17 -> "17"
+    // Day18 -> "18"
+    // Day19 -> "19"
+    // Day20 -> "20"
+    // Day21 -> "21"
+    // Day22 -> "22"
+    // Day23 -> "23"
+    // Day24 -> "24"
+    // Day25 -> "25"
   }
 }
 

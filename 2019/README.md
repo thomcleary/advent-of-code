@@ -45,7 +45,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  5  | Sunny with a Chance of Asteroids   | ⭐️⭐️  |
 |  6  | Universal Orbit Map                | ⭐️⭐️  |
 |  7  | Amplification Circuit              | ⭐️⭐️  |
-|  8  |                                    |       |
+|  8  | Space Image Format                 |  ⭐️   |
 |  9  |                                    |       |
 | 10  |                                    |       |
 | 11  |                                    |       |
