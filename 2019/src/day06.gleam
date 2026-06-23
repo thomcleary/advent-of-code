@@ -1,4 +1,5 @@
 import gleam/dict
+import gleam/int
 import gleam/list
 import gleam/option
 import gleam/result
@@ -9,18 +10,20 @@ pub const part1_answer = 223_251
 
 pub const part2_answer = 430
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use orbits <- result.try(parse_orbits(input))
 
   orbits
   |> count_direct_and_indirect
+  |> result.map(int.to_string)
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use orbits <- result.try(parse_orbits(input))
 
   orbits
   |> find_minimum_transfers(from: Satellite("YOU"), to: Satellite("SAN"))
+  |> result.map(int.to_string)
 }
 
 type Body {

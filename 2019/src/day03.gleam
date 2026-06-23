@@ -10,7 +10,7 @@ pub const part1_answer = 731
 
 pub const part2_answer = 5672
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use wires <- result.try(parse_wires(input))
 
   wires
@@ -20,9 +20,10 @@ pub fn part1(input: String) -> Result(Int, String) {
   |> list.map(distance_from_central_port)
   |> list.reduce(int.min)
   |> result.replace_error("No wire intersections found")
+  |> result.map(int.to_string)
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use wires <- result.try(parse_wires(input))
 
   let steps =
@@ -55,6 +56,7 @@ pub fn part2(input: String) -> Result(Int, String) {
   step_counts
   |> list.reduce(int.min)
   |> result.replace_error("No wire intersections found")
+  |> result.map(int.to_string)
 }
 
 pub type Direction {

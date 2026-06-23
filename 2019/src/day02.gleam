@@ -7,7 +7,7 @@ pub const part1_answer = 4_023_471
 
 pub const part2_answer = 8051
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use program <- result.try(
     input
     |> intcode.parse_program
@@ -15,9 +15,10 @@ pub fn part1(input: String) -> Result(Int, String) {
   )
 
   run(program, with: Input(noun: 12, verb: 2))
+  |> result.map(int.to_string)
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use program <- result.try(
     input
     |> intcode.parse_program
@@ -42,7 +43,7 @@ pub fn part2(input: String) -> Result(Int, String) {
     "Failed to find an input that produced the expected output",
   )
   |> result.flatten
-  |> result.map(fn(input) { 100 * input.noun + input.verb })
+  |> result.map(fn(input) { { 100 * input.noun + input.verb } |> int.to_string })
 }
 
 type Input {

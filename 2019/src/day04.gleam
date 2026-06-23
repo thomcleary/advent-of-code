@@ -8,7 +8,7 @@ pub const part1_answer = 1048
 
 pub const part2_answer = 677
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use password_range <- result.try(parse_password_range(input))
 
   password_range
@@ -16,9 +16,10 @@ pub fn part1(input: String) -> Result(Int, String) {
     is_non_decreasing,
     has_adjacent_pair,
   ])
+  |> result.map(int.to_string)
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use password_range <- result.try(parse_password_range(input))
 
   password_range
@@ -26,6 +27,7 @@ pub fn part2(input: String) -> Result(Int, String) {
     is_non_decreasing,
     has_adjacent_pair_with_exactly_two_digits,
   ])
+  |> result.map(int.to_string)
 }
 
 type Digits {

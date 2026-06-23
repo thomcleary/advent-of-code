@@ -1,4 +1,5 @@
 import day06
+import gleam/int
 import gleam/result
 import lib/aoc
 
@@ -16,14 +17,14 @@ E)J
 J)K
 K)L"
 
-  assert day06.part1(map) == Ok(42)
+  assert day06.part1(map) == Ok(int.to_string(42))
 }
 
 pub fn part1_test() {
   assert aoc.Day06
     |> aoc.read_input
     |> result.try(day06.part1)
-    == Ok(day06.part1_answer)
+    == Ok(int.to_string(day06.part1_answer))
 }
 
 pub fn part2_example_test() {
@@ -42,12 +43,12 @@ K)L
 K)YOU
 I)SAN"
 
-  assert day06.part2(map) == Ok(4)
+  assert day06.part2(map) == Ok(int.to_string(4))
 }
 
 pub fn part2_test() {
   assert aoc.Day06
     |> aoc.read_input
     |> result.try(day06.part2)
-    == Ok(day06.part2_answer)
+    == Ok(int.to_string(day06.part2_answer))
 }

@@ -8,7 +8,7 @@ pub const part1_answer = 92_663
 
 pub const part2_answer = 14_365_052
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use amplifier_controller_software <- result.try(
     intcode.parse_program(input)
     |> result.map_error(intcode.error_to_string),
@@ -18,9 +18,10 @@ pub fn part1(input: String) -> Result(Int, String) {
 
   amplifier_controller_software
   |> run(over: permutations, with: run_amps)
+  |> result.map(int.to_string)
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use amplifier_controller_software <- result.try(
     intcode.parse_program(input)
     |> result.map_error(intcode.error_to_string),
@@ -30,6 +31,7 @@ pub fn part2(input: String) -> Result(Int, String) {
 
   amplifier_controller_software
   |> run(over: permutations, with: run_amps_in_feedback_loop)
+  |> result.map(int.to_string)
 }
 
 type PhaseSettings =

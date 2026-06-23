@@ -8,7 +8,7 @@ pub const part1_answer = 15_259_545
 
 pub const part2_answer = 7_616_021
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use diagnostic_program <- result.try(
     input
     |> intcode.parse_program
@@ -24,14 +24,14 @@ pub fn part1(input: String) -> Result(Int, String) {
   case output {
     [diagnostic_code, ..test_outputs] ->
       case int.sum(test_outputs) {
-        0 -> Ok(diagnostic_code)
+        0 -> Ok(diagnostic_code |> int.to_string)
         _ -> Error(diagnostic_test_error(output))
       }
     [] -> Error(diagnostic_test_error(output))
   }
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use diagnostic_program <- result.try(
     input
     |> intcode.parse_program
@@ -47,6 +47,7 @@ pub fn part2(input: String) -> Result(Int, String) {
   output
   |> list.first
   |> result.replace_error(diagnostic_test_error(output))
+  |> result.map(int.to_string)
 }
 
 fn run(

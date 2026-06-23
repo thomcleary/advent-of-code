@@ -7,20 +7,22 @@ pub const part1_answer = 3_442_987
 
 pub const part2_answer = 5_161_601
 
-pub fn part1(input: String) -> Result(Int, String) {
+pub fn part1(input: String) -> Result(String, String) {
   use masses <- result.map(parse_masses(input))
 
   masses
   |> list.map(required_fuel)
   |> int.sum
+  |> int.to_string
 }
 
-pub fn part2(input: String) -> Result(Int, String) {
+pub fn part2(input: String) -> Result(String, String) {
   use masses <- result.map(parse_masses(input))
 
   masses
   |> list.map(required_fuels_fuel(_, 0))
   |> int.sum
+  |> int.to_string
 }
 
 fn parse_masses(input: String) -> Result(List(Int), String) {

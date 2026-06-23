@@ -6,6 +6,7 @@ import day05
 import day06
 import day07
 import day08
+import day09
 import gleam/erlang/application
 import gleam/int
 import gleam/option
@@ -17,7 +18,7 @@ import simplifile
 const application_name = "aoc2019"
 
 pub type PartFn =
-  fn(String) -> Result(Int, String)
+  fn(String) -> Result(String, String)
 
 pub type Day {
   Day01
@@ -28,7 +29,7 @@ pub type Day {
   Day06
   Day07
   Day08
-  // Day09
+  Day09
   // Day10
   // Day11
   // Day12
@@ -47,7 +48,33 @@ pub type Day {
   // Day25
 }
 
-pub const solved_days = [Day01, Day02, Day03, Day04, Day05, Day06, Day07, Day08]
+pub const solved_days = [
+  Day01,
+  Day02,
+  Day03,
+  Day04,
+  Day05,
+  Day06,
+  Day07,
+  Day08,
+  Day09,
+  // Day10,
+// Day11,
+// Day12,
+// Day13,
+// Day14,
+// Day15,
+// Day16,
+// Day17,
+// Day18,
+// Day19,
+// Day20,
+// Day21,
+// Day22,
+// Day23,
+// Day24,
+// Day25,
+]
 
 pub fn parse_day(str: String) -> Result(Day, Nil) {
   case str {
@@ -59,7 +86,7 @@ pub fn parse_day(str: String) -> Result(Day, Nil) {
     "6" | "06" -> Ok(Day06)
     "7" | "07" -> Ok(Day07)
     "8" | "08" -> Ok(Day08)
-    // "9" | "09" -> Ok(Day09)
+    "9" | "09" -> Ok(Day09)
     // "10" -> Ok(Day10)
     // "11" -> Ok(Day11)
     // "12" -> Ok(Day12)
@@ -90,7 +117,7 @@ pub fn day_to_parts(day: Day) -> #(PartFn, PartFn) {
     Day06 -> #(day06.part1, day06.part2)
     Day07 -> #(day07.part1, day07.part2)
     Day08 -> #(day08.part1, day08.part2)
-    // Day09 -> todo
+    Day09 -> #(day09.part1, day09.part2)
     // Day10 -> todo
     // Day11 -> todo
     // Day12 -> todo
@@ -120,7 +147,7 @@ fn day_to_answers(day: Day) -> #(option.Option(Int), option.Option(Int)) {
     Day06 -> #(option.Some(day06.part1_answer), option.Some(day06.part2_answer))
     Day07 -> #(option.Some(day07.part1_answer), option.Some(day07.part2_answer))
     Day08 -> #(option.Some(day08.part1_answer), option.None)
-    // Day09 -> #(option.None, option.None)
+    Day09 -> #(option.None, option.None)
     // Day10 -> #(option.None, option.None)
     // Day11 -> #(option.None, option.None)
     // Day12 -> #(option.None, option.None)
@@ -150,7 +177,7 @@ pub fn day_to_string(day: Day) -> String {
     Day06 -> "06"
     Day07 -> "07"
     Day08 -> "08"
-    // Day09 -> "09"
+    Day09 -> "09"
     // Day10 -> "10"
     // Day11 -> "11"
     // Day12 -> "12"
@@ -225,7 +252,6 @@ fn run_part(
 
   let assertion =
     result.map(part_result, fn(actual) {
-      let actual = int.to_string(actual)
       case expected {
         option.None -> Todo(value: actual)
         option.Some(expected) -> {

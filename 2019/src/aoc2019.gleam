@@ -212,11 +212,14 @@ fn part_to_term_output(
       }
     }),
     // TODO: break result text into lines, so it doesn't overflow the box
+    // TODO: If part has multiline answer
+    // - replace \n with padding + box + \n, so we can draw the right box side
+    // - start beginning of the answer on a new line, and prepend each line with left side of box
     term.Text(case part_result {
       Error(reason) -> reason
       Ok(assertion) ->
         case assertion {
-          aoc.Todo(value:) -> value <> " (TODO)"
+          aoc.Todo(value:) -> value
           aoc.Pass(value:) -> value
           aoc.Fail(actual:, expected:) -> actual <> " (" <> expected <> ")"
         }
