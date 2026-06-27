@@ -1,5 +1,6 @@
 import gleam/int
 import gleam/list
+import gleam/option
 import gleam/pair
 import gleam/result
 import gleam/string
@@ -261,4 +262,55 @@ pub fn day5_part2_larger_example_test() {
     |> intcode.run
     |> result.map(intcode.output)
     == Ok([1001])
+}
+
+pub fn day9_part1_example1_test() {
+  let src = "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99"
+
+  let assert Ok(program) = intcode.parse_program(src)
+
+  assert program
+    |> intcode.boot
+    |> intcode.run
+    |> result.map(fn(computer) {
+      computer
+      |> intcode.output
+      |> list.map(int.to_string)
+      |> string.join(with: ",")
+    })
+    == Ok(src)
+}
+
+pub fn day9_part1_example2_test() {
+  let assert Ok(program) =
+    intcode.parse_program("1102,34915192,34915192,7,4,7,99,0")
+
+  assert program
+    |> intcode.boot
+    |> intcode.run
+    |> result.map(fn(computer) {
+      case computer |> intcode.output {
+        [output] -> output |> int.to_string |> string.length |> option.Some
+        _ -> option.None
+      }
+    })
+    == Ok(option.Some(16))
+}
+
+pub fn day9_part1_example3_test() {
+  let large_number = 1_125_899_906_842_624
+
+  let assert Ok(program) =
+    intcode.parse_program("104," <> int.to_string(large_number) <> ",99")
+
+  assert program
+    |> intcode.boot
+    |> intcode.run
+    |> result.map(fn(computer) {
+      case computer |> intcode.output {
+        [output] -> option.Some(output)
+        _ -> option.None
+      }
+    })
+    == Ok(option.Some(large_number))
 }

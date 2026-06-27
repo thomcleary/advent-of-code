@@ -54,8 +54,12 @@ fn run(program: intcode.Program, with input: Input) -> Result(Int, String) {
   program
   |> intcode.boot
   |> intcode.poke_memory(at: intcode.Address(1), with: input.noun)
-  |> intcode.poke_memory(at: intcode.Address(2), with: input.verb)
-  |> intcode.run
+  |> result.try(intcode.poke_memory(
+    in: _,
+    at: intcode.Address(2),
+    with: input.verb,
+  ))
+  |> result.try(intcode.run)
   |> result.try(intcode.peek_memory(in: _, at: intcode.Address(0)))
   |> result.map_error(intcode.error_to_string)
 }

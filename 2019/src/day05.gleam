@@ -21,7 +21,7 @@ pub fn part1(input: String) -> Result(String, String) {
     |> result.map(intcode.output),
   )
 
-  case output {
+  case output |> list.reverse {
     [diagnostic_code, ..test_outputs] ->
       case int.sum(test_outputs) {
         0 -> Ok(diagnostic_code |> int.to_string)
@@ -45,7 +45,7 @@ pub fn part2(input: String) -> Result(String, String) {
   )
 
   output
-  |> list.first
+  |> list.last
   |> result.replace_error(diagnostic_test_error(output))
   |> result.map(int.to_string)
 }

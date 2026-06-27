@@ -54,6 +54,7 @@ pub opaque type Computer {
   Computer(
     state: State,
     memory: dict.Dict(Address, Int),
+    relative_base: Int,
     instruction_pointer: Address,
     input: List(Int),
     output: List(Int),
@@ -67,6 +68,7 @@ pub fn boot(program: Program) -> Computer {
     memory: program.code
       |> list.index_map(fn(integer, index) { #(Address(index), integer) })
       |> dict.from_list,
+    relative_base: 0,
     instruction_pointer: Address(0),
     input: [],
     output: [],
@@ -87,26 +89,34 @@ pub fn state(computer: Computer) -> State {
 }
 
 pub fn output(computer: Computer) -> List(Int) {
-  computer.output
+  computer.output |> list.reverse
 }
 
 pub fn peek_memory(
   in computer: Computer,
   at address: Address,
 ) -> Result(Int, IntcodeError) {
-  dict.get(computer.memory, address)
-  |> result.replace_error(SegmentationFault(computer:, at: address))
+  case address {
+    a if a.value < 0 -> Error(SegmentationFault(computer:, at: address))
+    _ -> Ok(result.unwrap(dict.get(computer.memory, address), or: 0))
+  }
 }
 
 pub fn poke_memory(
   in computer: Computer,
-  at addr: Address,
+  at address: Address,
   with value: Int,
-) -> Computer {
-  Computer(
-    ..computer,
-    memory: dict.insert(computer.memory, for: addr, insert: value),
-  )
+) -> Result(Computer, IntcodeError) {
+  case address {
+    a if a.value < 0 -> Error(SegmentationFault(computer, at: address))
+    _ ->
+      Ok(
+        Computer(
+          ..computer,
+          memory: dict.insert(computer.memory, for: address, insert: value),
+        ),
+      )
+  }
 }
 
 pub fn dump_memory(computer: Computer) -> List(#(Address, Int)) {
@@ -145,8 +155,15 @@ pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
     }
 
     3 -> {
-      case computer |> parse_read_parameters, computer.blocking_io {
-        Ok(parameters), _ -> computer |> read(with: parameters) |> run
+      case
+        computer |> parse_read_parameters(from: instruction),
+        computer.blocking_io
+      {
+        Ok(parameters), _ ->
+          computer
+          |> read(with: parameters)
+          |> result.try(run)
+
         Error(EndOfInput(_)), True -> Ok(computer |> block)
         Error(err), _ -> Error(err)
       }
@@ -194,6 +211,17 @@ pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
       |> result.try(run)
     }
 
+    9 -> {
+      use parameters <- result.try(
+        computer
+        |> parse_adjust_relative_base_parameters(from: instruction),
+      )
+
+      computer
+      |> adjust_relative_base(with: parameters)
+      |> result.try(run)
+    }
+
     99 -> computer |> halt |> Ok
 
     _ -> Error(InvalidInstruction(computer:, instruction: instruction))
@@ -203,11 +231,13 @@ pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
 type ParameterMode {
   PositionMode
   ImmediateMode
+  RelativeMode
 }
 
 type Parameter {
   PositionModeParameter(address: Address)
   ImmediateModeParameter(value: Int)
+  RelativeModeParameter(offset: Int)
 }
 
 type BinaryOpParameters {
@@ -226,6 +256,10 @@ type JumpParameters {
   JumpParameters(condition: Parameter, to: Parameter)
 }
 
+type AdjustRelativeBaseParameters {
+  AdjustRelativeBaseParameters(offset: Parameter)
+}
+
 fn address_at_offset(by offset: Int, from address: Address) -> Address {
   Address(address.value + offset)
 }
@@ -241,6 +275,7 @@ fn parse_parameter_modes(
     case mode {
       0 -> Ok(PositionMode)
       1 -> Ok(ImmediateMode)
+      2 -> Ok(RelativeMode)
       _ -> Error(InvalidInstruction(computer:, instruction:))
     }
   })
@@ -269,6 +304,7 @@ fn get_parameter(
   case mode {
     PositionMode -> PositionModeParameter(address: Address(value))
     ImmediateMode -> ImmediateModeParameter(value: value)
+    RelativeMode -> RelativeModeParameter(offset: value)
   }
 }
 
@@ -283,34 +319,49 @@ fn parse_binary_op_parameters(
 
   use a <- result.try(get_parameter(1, from: computer, with: parameter_modes))
   use b <- result.try(get_parameter(2, from: computer, with: parameter_modes))
+  use c <- result.try(get_parameter(3, from: computer, with: parameter_modes))
 
-  use store_in <- result.map(
-    computer
-    |> peek_memory(at: address_at_offset(3, from: computer.instruction_pointer))
-    |> result.map(Address),
-  )
+  use store_in <- result.map(case c {
+    PositionModeParameter(address:) -> Ok(address)
+    RelativeModeParameter(offset:) ->
+      Ok(Address(computer.relative_base + offset))
+    ImmediateModeParameter(_) ->
+      Error(InvalidInstruction(computer:, instruction:))
+  })
 
   BinaryOpParameters(a:, b:, store_in:)
 }
 
 fn parse_read_parameters(
   computer: Computer,
+  from instruction: Int,
 ) -> Result(ReadParameters, IntcodeError) {
-  use value <- result.try(
+  use parameter_modes <- result.try(parse_parameter_modes(
+    from: instruction,
+    with: computer,
+  ))
+
+  use parameter <- result.try(get_parameter(
+    1,
+    from: computer,
+    with: parameter_modes,
+  ))
+
+  use address <- result.try(case parameter {
+    PositionModeParameter(address:) -> Ok(address)
+    RelativeModeParameter(offset:) ->
+      Ok(Address(computer.relative_base + offset))
+    ImmediateModeParameter(_) ->
+      Error(InvalidInstruction(computer:, instruction:))
+  })
+
+  use value <- result.map(
     computer.input
     |> list.first
     |> result.replace_error(EndOfInput(computer:)),
   )
 
-  use parameter <- result.map(
-    computer
-    |> peek_memory(at: address_at_offset(
-      by: 1,
-      from: computer.instruction_pointer,
-    )),
-  )
-
-  ReadParameters(value:, into: Address(parameter))
+  ReadParameters(value:, into: address)
 }
 
 fn parse_write_parameters(
@@ -351,6 +402,24 @@ fn parse_jump_parameters(
   JumpParameters(condition:, to:)
 }
 
+fn parse_adjust_relative_base_parameters(
+  computer: Computer,
+  from instruction: Int,
+) -> Result(AdjustRelativeBaseParameters, IntcodeError) {
+  use parameter_modes <- result.try(parse_parameter_modes(
+    from: instruction,
+    with: computer,
+  ))
+
+  use offset <- result.map(get_parameter(
+    1,
+    from: computer,
+    with: parameter_modes,
+  ))
+
+  AdjustRelativeBaseParameters(offset:)
+}
+
 fn get_value_of_parameter(
   computer: Computer,
   parameter: Parameter,
@@ -358,6 +427,8 @@ fn get_value_of_parameter(
   case parameter {
     PositionModeParameter(address:) -> peek_memory(in: computer, at: address)
     ImmediateModeParameter(value:) -> Ok(value)
+    RelativeModeParameter(offset:) ->
+      peek_memory(in: computer, at: Address(computer.relative_base + offset))
   }
 }
 
@@ -380,11 +451,15 @@ fn run_binary_op_instruction(
   and apply: fn(Int, Int) -> Int,
 ) -> Result(Computer, IntcodeError) {
   use a <- result.try(computer |> get_value_of_parameter(parameters.a))
-  use b <- result.map(computer |> get_value_of_parameter(parameters.b))
+  use b <- result.try(computer |> get_value_of_parameter(parameters.b))
 
-  computer
-  |> poke_memory(at: parameters.store_in, with: apply(a, b))
-  |> increase_instruction_pointer(by: 4)
+  use computer <- result.map(poke_memory(
+    in: computer,
+    at: parameters.store_in,
+    with: apply(a, b),
+  ))
+
+  computer |> increase_instruction_pointer(by: 4)
 }
 
 fn add(
@@ -401,10 +476,19 @@ fn multiply(
   computer |> run_binary_op_instruction(with: parameters, and: int.multiply)
 }
 
-fn read(computer: Computer, with parameters: ReadParameters) -> Computer {
-  Computer(..computer, input: computer.input |> list.drop(1))
-  |> poke_memory(at: parameters.into, with: parameters.value)
-  |> increase_instruction_pointer(by: 2)
+fn read(
+  computer: Computer,
+  with parameters: ReadParameters,
+) -> Result(Computer, IntcodeError) {
+  let computer = Computer(..computer, input: computer.input |> list.drop(1))
+
+  use computer <- result.map(poke_memory(
+    in: computer,
+    at: parameters.into,
+    with: parameters.value,
+  ))
+
+  computer |> increase_instruction_pointer(by: 2)
 }
 
 fn write(
@@ -460,6 +544,18 @@ fn compare(
 
   computer
   |> run_binary_op_instruction(with: parameters, and: apply)
+}
+
+fn adjust_relative_base(
+  computer: Computer,
+  with parameters: AdjustRelativeBaseParameters,
+) -> Result(Computer, IntcodeError) {
+  use offset <- result.map(
+    computer |> get_value_of_parameter(parameters.offset),
+  )
+
+  Computer(..computer, relative_base: computer.relative_base + offset)
+  |> increase_instruction_pointer(by: 2)
 }
 
 fn block(computer: Computer) -> Computer {

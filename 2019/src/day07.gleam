@@ -190,6 +190,6 @@ fn run_amp(
 fn get_amp_output(amp: intcode.Computer) -> Result(Int, String) {
   amp
   |> intcode.output
-  |> list.first
+  |> list.last
   |> result.replace_error("Failed to get output for Amp")
 }
