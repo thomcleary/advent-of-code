@@ -46,7 +46,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  6  | Universal Orbit Map                | ⭐️⭐️  |
 |  7  | Amplification Circuit              | ⭐️⭐️  |
 |  8  | Space Image Format                 | ⭐️⭐️  |
-|  9  | Sensor Boost                       |  ⭐️   |
+|  9  | Sensor Boost                       | ⭐️⭐️  |
 | 10  |                                    |       |
 | 11  |                                    |       |
 | 12  |                                    |       |
