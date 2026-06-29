@@ -47,7 +47,7 @@ usage: gleam run [{01|02|03|..|25}]
 |  7  | Amplification Circuit              | ⭐️⭐️  |
 |  8  | Space Image Format                 | ⭐️⭐️  |
 |  9  | Sensor Boost                       | ⭐️⭐️  |
-| 10  | Monitoring Station                 |  ⭐️   |
+| 10  | Monitoring Station                 | ⭐️⭐️  |
 | 11  |                                    |       |
 | 12  |                                    |       |
 | 13  |                                    |       |
