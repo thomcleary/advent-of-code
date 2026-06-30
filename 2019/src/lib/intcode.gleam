@@ -175,12 +175,7 @@ pub fn run(computer: Computer) -> Result(Computer, IntcodeError) {
         |> parse_write_parameters(from: instruction),
       )
 
-      use computer <- result.try(computer |> write(with: parameters))
-
-      case computer.blocking_io {
-        True -> Ok(computer |> block)
-        False -> computer |> run
-      }
+      computer |> write(with: parameters) |> result.try(run)
     }
 
     5 | 6 -> {
