@@ -38,16 +38,16 @@ pub fn part2(input: String) -> Result(String, String) {
     |> result.map_error(intcode.error_to_string),
   )
 
-  use output <- result.try(
+  use output <- result.map(
     diagnostic_program
     |> run(with_system_id: 5)
     |> result.map(intcode.output),
   )
 
-  output
-  |> list.last
-  |> result.replace_error(diagnostic_test_error(output))
-  |> result.map(int.to_string)
+  case output {
+    [diagnostic_code] -> int.to_string(diagnostic_code)
+    _ -> diagnostic_test_error(output)
+  }
 }
 
 fn run(

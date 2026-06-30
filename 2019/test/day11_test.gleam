@@ -9,10 +9,3 @@ pub fn part1_test() {
     |> result.try(day11.part1)
     == Ok(int.to_string(day11.part1_answer))
 }
-
-pub fn part2_test() {
-  assert aoc.Day11
-    |> aoc.read_input
-    |> result.try(day11.part2)
-    == Ok(int.to_string(todo))
-}

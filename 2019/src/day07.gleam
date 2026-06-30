@@ -170,7 +170,13 @@ fn run_feedback_loop(amps: Amplifiers, with input: Int) -> Result(Int, String) {
     intcode.Booted -> Error("Amp E is in Booted state")
 
     intcode.Blocked ->
-      Amplifiers(amp_a, amp_b, amp_c, amp_d, amp_e)
+      Amplifiers(
+        amp_a |> intcode.purge_output,
+        amp_b |> intcode.purge_output,
+        amp_c |> intcode.purge_output,
+        amp_d |> intcode.purge_output,
+        amp_e |> intcode.purge_output,
+      )
       |> run_feedback_loop(with: output_e)
 
     intcode.Halted -> Ok(output_e)
@@ -188,8 +194,8 @@ fn run_amp(
 }
 
 fn get_amp_output(amp: intcode.Computer) -> Result(Int, String) {
-  amp
-  |> intcode.output
-  |> list.last
-  |> result.replace_error("Failed to get output for Amp")
+  case amp |> intcode.output {
+    [output] -> Ok(output)
+    _ -> Error("Failed to get output for Amp")
+  }
 }

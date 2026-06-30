@@ -94,7 +94,7 @@ fn image_to_string(data: List(ImageData)) -> String {
     data
     |> list.map(fn(pixels) {
       [
-        [term.Text("   ")],
+        [term.Text("  ")],
         pixels
           |> list.map(fn(pixel) {
             [

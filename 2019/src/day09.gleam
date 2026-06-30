@@ -9,21 +9,17 @@ pub const part1_answer = 3_512_778_005
 pub const part2_answer = 35_920
 
 pub fn part1(input: String) -> Result(String, String) {
-  use boost_program <- result.try(
-    intcode.parse_program(input) |> result.map_error(intcode.error_to_string),
-  )
-
-  boost_program
-  |> run(in: TestMode)
+  input
+  |> intcode.parse_program
+  |> result.map_error(intcode.error_to_string)
+  |> result.try(run(_, in: TestMode))
 }
 
 pub fn part2(input: String) -> Result(String, String) {
-  use boost_program <- result.try(
-    intcode.parse_program(input) |> result.map_error(intcode.error_to_string),
-  )
-
-  boost_program
-  |> run(in: BoostMode)
+  input
+  |> intcode.parse_program
+  |> result.map_error(intcode.error_to_string)
+  |> result.try(run(_, in: BoostMode))
 }
 
 type Mode {

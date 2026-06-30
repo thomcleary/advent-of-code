@@ -92,6 +92,10 @@ pub fn output(computer: Computer) -> List(Int) {
   computer.output |> list.reverse
 }
 
+pub fn purge_output(computer: Computer) -> Computer {
+  Computer(..computer, output: [])
+}
+
 pub fn peek_memory(
   in computer: Computer,
   at address: Address,
