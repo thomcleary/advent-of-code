@@ -2,23 +2,60 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/order
+import gleam/pair
 import gleam/result
 import gleam/string
+import gleam_community/maths
 
 pub const part1_answer = 6849
+
+pub const part2_answer = 356_658_899_375_688
 
 pub fn part1(input: String) -> Result(String, String) {
   use system <- result.try(parse_system(input))
 
-  use simulation_result <- result.map(simulate_motion(system, steps: 1000))
+  use simulation_result <- result.map(
+    system |> simulate_motion(until: fn(_, steps) { Ok(steps == 1000) }),
+  )
 
   simulation_result
+  |> pair.first
   |> total_energy
   |> int.to_string
 }
 
 pub fn part2(input: String) -> Result(String, String) {
-  Ok("TODO")
+  use system_start <- result.try(parse_system(input))
+
+  use x_cycle <- result.try(
+    system_start
+    |> simulate_motion_until(all: fn(steps, original_moon, sim_moon) {
+      steps > 0
+      && original_moon.position.x == sim_moon.position.x
+      && original_moon.velocity.x == sim_moon.velocity.x
+    }),
+  )
+
+  use y_cycle <- result.try(
+    system_start
+    |> simulate_motion_until(all: fn(steps, original_moon, sim_moon) {
+      steps > 0
+      && original_moon.position.y == sim_moon.position.y
+      && original_moon.velocity.y == sim_moon.velocity.y
+    }),
+  )
+
+  use z_cycle <- result.map(
+    system_start
+    |> simulate_motion_until(all: fn(steps, original_moon, sim_moon) {
+      steps > 0
+      && original_moon.position.z == sim_moon.position.z
+      && original_moon.velocity.z == sim_moon.velocity.z
+    }),
+  )
+
+  maths.lcm(x_cycle, maths.lcm(y_cycle, z_cycle))
+  |> int.to_string
 }
 
 type Vec3 {
@@ -71,20 +108,47 @@ fn parse_system(input: String) -> Result(System, String) {
   )
 }
 
-fn simulate_motion(system: System, steps steps: Int) -> Result(System, String) {
+fn simulate_motion_until(
+  system: System,
+  all condition: fn(Int, Moon, Moon) -> Bool,
+) -> Result(Int, String) {
+  system
+  |> simulate_motion(until: fn(system_sim, steps) {
+    system
+    |> dict.to_list
+    |> list.try_fold(from: True, with: fn(is_match, entry) {
+      let #(key, original) = entry
+
+      use sim <- result.map(
+        dict.get(system_sim, key)
+        |> result.replace_error("Failed to get moon"),
+      )
+
+      is_match && condition(steps, original, sim)
+    })
+  })
+  |> result.map(pair.second)
+}
+
+fn simulate_motion(
+  system: System,
+  until until: fn(System, Int) -> Result(Bool, String),
+) -> Result(#(System, Int), String) {
   let pairs = system |> dict.keys |> list.combination_pairs
 
-  do_simulate_motion(system:, pairs:, until: steps, steps: 0)
+  do_simulate_motion(system:, pairs:, until:, steps: 0)
 }
 
 fn do_simulate_motion(
   system system: System,
   pairs pairs: List(#(Int, Int)),
-  until until: Int,
+  until until: fn(System, Int) -> Result(Bool, String),
   steps steps: Int,
-) -> Result(System, String) {
-  case steps == until {
-    True -> Ok(system)
+) -> Result(#(System, Int), String) {
+  use stop <- result.try(until(system, steps))
+
+  case stop {
+    True -> Ok(#(system, steps))
     False -> {
       use gravity_applied <- result.try(
         pairs

@@ -153,7 +153,7 @@ fn day_to_answers(day: Day) -> #(option.Option(Int), option.Option(Int)) {
     Day09 -> #(option.Some(day09.part1_answer), option.Some(day09.part2_answer))
     Day10 -> #(option.Some(day10.part1_answer), option.Some(day10.part2_answer))
     Day11 -> #(option.Some(day11.part1_answer), option.None)
-    Day12 -> #(option.Some(day12.part1_answer), option.None)
+    Day12 -> #(option.Some(day12.part1_answer), option.Some(day12.part2_answer))
     // Day13 -> #(option.None, option.None)
     // Day14 -> #(option.None, option.None)
     // Day15 -> #(option.None, option.None)

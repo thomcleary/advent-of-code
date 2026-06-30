@@ -14,5 +14,5 @@ pub fn part2_test() {
   assert aoc.Day12
     |> aoc.read_input
     |> result.try(day12.part2)
-    == Ok(int.to_string(todo))
+    == Ok(int.to_string(day12.part2_answer))
 }
