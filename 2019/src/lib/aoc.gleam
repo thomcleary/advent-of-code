@@ -10,6 +10,7 @@ import day09
 import day10
 import day11
 import day12
+import day13
 import gleam/erlang/application
 import gleam/int
 import gleam/option
@@ -36,7 +37,7 @@ pub type Day {
   Day10
   Day11
   Day12
-  // Day13
+  Day13
   // Day14
   // Day15
   // Day16
@@ -64,8 +65,8 @@ pub const solved_days = [
   Day10,
   Day11,
   Day12,
-  // Day13,
-// Day14,
+  Day13,
+  // Day14,
 // Day15,
 // Day16,
 // Day17,
@@ -93,7 +94,7 @@ pub fn parse_day(str: String) -> Result(Day, Nil) {
     "10" -> Ok(Day10)
     "11" -> Ok(Day11)
     "12" -> Ok(Day12)
-    // "13" -> Ok(Day13)
+    "13" -> Ok(Day13)
     // "14" -> Ok(Day14)
     // "15" -> Ok(Day15)
     // "16" -> Ok(Day16)
@@ -124,7 +125,7 @@ pub fn day_to_parts(day: Day) -> #(PartFn, PartFn) {
     Day10 -> #(day10.part1, day10.part2)
     Day11 -> #(day11.part1, day11.part2)
     Day12 -> #(day12.part1, day12.part2)
-    // Day13 -> todo
+    Day13 -> #(day13.part1, day13.part2)
     // Day14 -> todo
     // Day15 -> todo
     // Day16 -> todo
@@ -154,7 +155,7 @@ fn day_to_answers(day: Day) -> #(option.Option(Int), option.Option(Int)) {
     Day10 -> #(option.Some(day10.part1_answer), option.Some(day10.part2_answer))
     Day11 -> #(option.Some(day11.part1_answer), option.None)
     Day12 -> #(option.Some(day12.part1_answer), option.Some(day12.part2_answer))
-    // Day13 -> #(option.None, option.None)
+    Day13 -> #(option.Some(day13.part1_answer), option.None)
     // Day14 -> #(option.None, option.None)
     // Day15 -> #(option.None, option.None)
     // Day16 -> #(option.None, option.None)
@@ -184,7 +185,7 @@ pub fn day_to_string(day: Day) -> String {
     Day10 -> "10"
     Day11 -> "11"
     Day12 -> "12"
-    // Day13 -> "13"
+    Day13 -> "13"
     // Day14 -> "14"
     // Day15 -> "15"
     // Day16 -> "16"

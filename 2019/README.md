@@ -50,7 +50,7 @@ usage: gleam run [{01|02|03|..|25}]
 | 10  | Monitoring Station                 | ⭐️⭐️  |
 | 11  | Space Police                       | ⭐️⭐️  |
 | 12  | The N-Body Problem                 | ⭐️⭐️  |
-| 13  |                                    |       |
+| 13  | Care Package                       |  ⭐️   |
 | 14  |                                    |       |
 | 15  |                                    |       |
 | 16  |                                    |       |
