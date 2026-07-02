@@ -56,6 +56,17 @@ pub fn part2(input: String) -> Result(String, String) {
     }),
   )
 
+  // TODO
+  // group board by position.y (rows)
+  // sort rows from smallest to largest
+  // sort each row by position.x (columns)
+  // map each column from tile -> string
+  // join each row's columns by ""
+  // join each row by "\n"
+  // add score to bottom
+  // print out state
+  // ask for next input
+  // loop
   echo game_state.board
     |> dict.to_list
     |> list.filter(fn(entry) {
