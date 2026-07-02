@@ -1,9 +1,8 @@
 import gleam/dict
 import gleam/int
 import gleam/list
-import gleam/order
+import gleam/pair
 import gleam/result
-import gleam/string
 import lib/intcode
 
 pub const part1_answer = 291
@@ -45,7 +44,7 @@ pub fn part2(input: String) -> Result(String, String) {
     |> result.map_error(intcode.error_to_string),
   )
 
-  use tiles <- result.try(
+  use game_state <- result.try(
     free_game
     |> intcode.with_input([0])
     |> intcode.run
@@ -53,19 +52,18 @@ pub fn part2(input: String) -> Result(String, String) {
     |> result.try(fn(computer) {
       computer
       |> intcode.output
-      |> output_to_tiles
+      |> output_to_state
     }),
   )
 
-  tiles
-  |> list.group(by: fn(tile) {
-    case tile {
-      Score(_) -> -1
-      Tile(_, Position(x:, y:)) -> y
-    }
-  })
-  |> dict.to_list
-  |> list.each(fn(row) { echo row })
+  echo game_state.board
+    |> dict.to_list
+    |> list.filter(fn(entry) {
+      case entry |> pair.second {
+        Ball -> True
+        _ -> False
+      }
+    })
 
   Ok("TODO")
 }
@@ -82,35 +80,42 @@ type Tile {
   Ball
 }
 
-type Output {
-  Tile(Tile, Position)
-  Score(Int)
+type GameState {
+  GameState(score: Int, board: dict.Dict(Position, Tile))
 }
 
-fn output_to_tiles(output: List(Int)) -> Result(List(Output), String) {
+fn output_to_state(output: List(Int)) -> Result(GameState, String) {
   output
   |> list.sized_chunk(into: 3)
-  |> list.try_map(fn(chunk) {
-    echo chunk
-    case chunk {
-      [-1, 0, score] -> Ok(Score(score))
-      [x, y, tile_id] -> {
-        let position = Position(x:, y:)
-        case tile_id {
-          0 -> Ok(Tile(Empty, position))
-          1 -> Ok(Tile(Wall, position))
-          2 -> Ok(Tile(Block, position))
-          3 -> Ok(Tile(Paddle, position))
-          4 -> Ok(Tile(Ball, position))
-          _ -> Error("Invalid tile id [" <> int.to_string(tile_id) <> "]")
+  |> list.try_fold(
+    from: GameState(score: -1, board: dict.new()),
+    with: fn(state, chunk) {
+      case chunk {
+        [-1, 0, score] -> Ok(GameState(..state, score:))
+        [x, y, tile_id] -> {
+          let position = Position(x:, y:)
+
+          use tile <- result.map(case tile_id {
+            0 -> Ok(Empty)
+            1 -> Ok(Wall)
+            2 -> Ok(Block)
+            3 -> Ok(Paddle)
+            4 -> Ok(Ball)
+            _ -> Error("Invalid tile id [" <> int.to_string(tile_id) <> "]")
+          })
+
+          GameState(
+            ..state,
+            board: state.board |> dict.insert(for: position, insert: tile),
+          )
         }
+        _ ->
+          Error(
+            "Invalid output chunk length ["
+            <> chunk |> list.length |> int.to_string
+            <> "]",
+          )
       }
-      _ ->
-        Error(
-          "Invalid output chunk length ["
-          <> chunk |> list.length |> int.to_string
-          <> "]",
-        )
-    }
-  })
+    },
+  )
 }
